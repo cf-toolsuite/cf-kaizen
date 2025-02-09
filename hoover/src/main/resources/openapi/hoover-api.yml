@@ -1,0 +1,991 @@
+openapi: 3.0.1
+info:
+  title: CF Hoover API
+  description: API specification for CF Hoover, a tool for collecting and aggregating Cloud Foundry metrics and usage data.
+  version: v1
+
+servers:
+  - url: http://localhost:8080 # Replace with your actual server URL
+
+paths:
+  /snapshot/demographics:
+    get:
+      summary: Aggregate demographics across Cloud Foundry foundations.
+      description: Retrieves aggregated demographic information, including counts of organizations, spaces, users, and service accounts across configured Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with aggregated demographics.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Demographics'
+        '404':
+          description: Demographics not found.
+
+  /snapshot/organizations:
+    get:
+      summary: Retrieve a list of organizations across Cloud Foundry foundations.
+      description: Fetches a list of organizations from all configured Cloud Foundry foundations, enriched with foundation information.
+      responses:
+        '200':
+          description: Successful response with a list of organizations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+        '404':
+          description: Organizations not found.
+
+  /snapshot/detail:
+    get:
+      summary: Retrieve detailed snapshot information.
+      description: Fetches a comprehensive snapshot detail including applications, service instances, and application relationships from all configured Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with snapshot details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotDetail'
+        '404':
+          description: Snapshot detail not found.
+
+  /snapshot/summary:
+    get:
+      summary: Retrieve a summary snapshot.
+      description: Fetches a summarized snapshot including application and service instance counts from all configured Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with snapshot summary.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotSummary'
+        '404':
+          description: Snapshot summary not found.
+
+  /snapshot/detail/si:
+    get:
+      summary: Retrieve a CSV report of service instance details.
+      description: Generates and returns a CSV formatted report of service instance details aggregated from all Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with CSV report.
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /snapshot/detail/ai:
+    get:
+      summary: Retrieve a CSV report of application instance details.
+      description: Generates and returns a CSV formatted report of application details aggregated from all Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with CSV report.
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /snapshot/spaces/users:
+    get:
+      summary: Retrieve all space users across foundations.
+      description: Fetches space user information for all spaces across all configured Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with a list of space users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpaceUsers'
+        '404':
+          description: Space users not found.
+
+  /snapshot/{foundation}/{organization}/{space}/users:
+    get:
+      summary: Retrieve space users for a specific foundation, organization, and space.
+      description: Fetches space user information for a specific space within an organization in a given Cloud Foundry foundation.
+      parameters:
+        - in: path
+          name: foundation
+          required: true
+          description: Name of the Cloud Foundry foundation.
+          schema:
+            type: string
+        - in: path
+          name: organization
+          required: true
+          description: Name of the organization.
+          schema:
+            type: string
+        - in: path
+          name: space
+          required: true
+          description: Name of the space.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with space users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceUsers'
+        '404':
+          description: Space users not found.
+
+  /snapshot/users/count:
+    get:
+      summary: Retrieve the total count of users and service accounts.
+      description: Returns the total count of user and service accounts aggregated across all Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with the total user count.
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+        '404':
+          description: User count not found.
+
+  /snapshot/users:
+    get:
+      summary: Retrieve all user and service account names.
+      description: Returns a set of unique user and service account names aggregated across all Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with a set of account names.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '404':
+          description: Account names not found.
+
+  /snapshot/spaces:
+    get:
+      summary: Retrieve a list of spaces across Cloud Foundry foundations.
+      description: Fetches a list of spaces from all configured Cloud Foundry foundations, enriched with foundation and organization information.
+      responses:
+        '200':
+          description: Successful response with a list of spaces.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Space'
+        '404':
+          description: Spaces not found.
+
+  /snapshot/detail/ai/spring:
+    get:
+      summary: Retrieve details of Spring Boot applications.
+      description: Fetches detailed information about Spring Boot applications deployed across all configured Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with a list of Spring Boot application details.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JavaAppDetail'
+        '404':
+          description: Spring Boot application details not found.
+
+  /snapshot/summary/ai/spring:
+    get:
+      summary: Calculate Spring application dependency frequency.
+      description: Calculates and returns the frequency of Spring application dependencies across all configured Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with dependency frequency map.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                  format: int32
+        '404':
+          description: Spring dependency frequency not found.
+
+  /collect:
+    get:
+      summary: Retrieve collection timestamps from Cloud Foundry foundations.
+      description: Retrieves the timestamp of the last data collection from each configured Cloud Foundry foundation.
+      responses:
+        '200':
+          description: Successful response with collection timestamps.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeKeepers'
+        '404':
+          description: Collection timestamps not found.
+
+  /accounting/tasks:
+    get:
+      summary: Retrieve aggregated task usage report.
+      description: Fetches an aggregated report of task usage across all Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with task usage report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskUsageReport'
+        '404':
+          description: Task usage report not found.
+
+  /accounting/applications:
+    get:
+      summary: Retrieve aggregated application usage report.
+      description: Fetches an aggregated report of application usage across all Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with application usage report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUsageReport'
+        '404':
+          description: Application usage report not found.
+
+  /accounting/services:
+    get:
+      summary: Retrieve aggregated service usage report.
+      description: Fetches an aggregated report of service usage across all Cloud Foundry foundations.
+      responses:
+        '200':
+          description: Successful response with service usage report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUsageReport'
+        '404':
+          description: Service usage report not found.
+
+components:
+  schemas:
+    AppDetail:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        appId:
+          type: string
+          description: Application ID.
+        appName:
+          type: string
+          description: Application name.
+        buildpack:
+          type: string
+          description: Buildpack name.
+        buildpackVersion:
+          type: string
+          description: Buildpack version.
+        image:
+          type: string
+          description: Docker image.
+        stack:
+          type: string
+          description: Stack name.
+        runningInstances:
+          type: integer
+          format: int32
+          description: Number of running instances.
+        totalInstances:
+          type: integer
+          format: int32
+          description: Total instances.
+        memoryUsed:
+          type: integer
+          format: int64
+          description: Memory used in bytes.
+        memoryQuota:
+          type: integer
+          format: int64
+          description: Memory quota in bytes.
+        diskUsed:
+          type: integer
+          format: int64
+          description: Disk used in bytes.
+        diskQuota:
+          type: integer
+          format: int64
+          description: Disk quota in bytes.
+        urls:
+          type: array
+          items:
+            type: string
+          description: List of application URLs.
+        lastPushed:
+          type: string
+          format: date-time
+          description: Timestamp of the last push.
+        lastEvent:
+          type: string
+          description: Last event description.
+        lastEventActor:
+          type: string
+          description: Actor of the last event.
+        lastEventTime:
+          type: string
+          format: date-time
+          description: Timestamp of the last event.
+        buildpackReleaseType:
+          type: string
+          description: Buildpack release type.
+        buildpackReleaseDate:
+          type: string
+          format: date-time
+          description: Buildpack release date.
+        buildpackLatestVersion:
+          type: string
+          description: Latest buildpack version.
+        buildpackLatestUrl:
+          type: string
+          description: Latest buildpack URL.
+        requestedState:
+          type: string
+          description: Requested state of the application.
+
+    AppRelationship:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        appId:
+          type: string
+          description: Application ID.
+        appName:
+          type: string
+          description: Application name.
+        serviceInstanceId:
+          type: string
+          description: Service instance ID.
+        serviceName:
+          type: string
+          description: Service name.
+        servicePlan:
+          type: string
+          description: Service plan name.
+        serviceType:
+          type: string
+          description: Service type.
+
+    ApplicationCounts:
+      type: object
+      properties:
+        by-buildpack:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Counts by buildpack.
+        by-stack:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Counts by stack.
+        by-dockerimage:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Counts by Docker image.
+        by-status:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Counts by application status.
+        total-applications:
+          type: integer
+          format: int64
+          description: Total number of applications.
+        total-running-application-instances:
+          type: integer
+          format: int64
+          description: Total running application instances.
+        total-stopped-application-instances:
+          type: integer
+          format: int64
+          description: Total stopped application instances.
+        total-crashed-application-instances:
+          type: integer
+          format: int64
+          description: Total crashed application instances.
+        total-application-instances:
+          type: integer
+          format: int64
+          description: Total application instances.
+        total-memory-used-in-gb:
+          type: number
+          format: double
+          description: Total memory used in GB.
+        total-disk-used-in-gb:
+          type: number
+          format: double
+          description: Total disk used in GB.
+        velocity:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Application velocity metrics.
+
+    Demographic:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        total-organizations:
+          type: integer
+          format: int64
+          description: Total number of organizations.
+        total-spaces:
+          type: integer
+          format: int64
+          description: Total number of spaces.
+        total-user-accounts:
+          type: integer
+          format: int64
+          description: Total number of user accounts.
+        total-service-accounts:
+          type: integer
+          format: int64
+          description: Total number of service accounts.
+
+    Demographics:
+      type: object
+      properties:
+        demographics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Demographic'
+          description: List of demographics per foundation.
+        total-foundations:
+          type: integer
+          format: int32
+          description: Total number of foundations.
+        total-user-accounts:
+          type: integer
+          format: int64
+          description: Aggregated total user accounts.
+        total-service-accounts:
+          type: integer
+          format: int64
+          description: Aggregated total service accounts.
+
+    JavaAppDetail:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        appId:
+          type: string
+          description: Application ID.
+        appName:
+          type: string
+          description: Application name.
+        dropletId:
+          type: string
+          description: Droplet ID.
+        pomContents:
+          type: string
+          description: POM file contents.
+        springDependencies:
+          type: string
+          description: Spring dependencies.
+
+    Organization:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        id:
+          type: string
+          description: Organization ID.
+        name:
+          type: string
+          description: Organization name.
+
+    ServiceInstanceCounts:
+      type: object
+      properties:
+        by-service:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Counts by service.
+        by-service-and-plan:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Counts by service and plan.
+        total-service-instances:
+          type: integer
+          format: int64
+          description: Total number of service instances.
+        velocity:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Service instance velocity metrics.
+
+    ServiceInstanceDetail:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        serviceInstanceId:
+          type: string
+          description: Service instance ID.
+        name:
+          type: string
+          description: Service instance name.
+        service:
+          type: string
+          description: Service name.
+        description:
+          type: string
+          description: Service description.
+        plan:
+          type: string
+          description: Service plan name.
+        type:
+          type: string
+          description: Service type.
+        applications:
+          type: array
+          items:
+            type: string
+          description: List of bound application IDs.
+        lastOperation:
+          type: string
+          description: Last operation description.
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Timestamp of the last update.
+        dashboardUrl:
+          type: string
+          description: Service dashboard URL.
+        requestedState:
+          type: string
+          description: Requested state of the service instance.
+
+    SnapshotDetail:
+      type: object
+      properties:
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppDetail'
+          description: List of application details.
+        service-instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceInstanceDetail'
+          description: List of service instance details.
+        application-relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppRelationship'
+          description: List of application relationships.
+        user-accounts:
+          type: array
+          items:
+            type: string
+          description: Set of user account names.
+        service-accounts:
+          type: array
+          items:
+            type: string
+          description: Set of service account names.
+
+    SnapshotSummary:
+      type: object
+      properties:
+        application-counts:
+          $ref: '#/components/schemas/ApplicationCounts'
+          description: Application counts summary.
+        service-instance-counts:
+          $ref: '#/components/schemas/ServiceInstanceCounts'
+          description: Service instance counts summary.
+
+    Space:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        organization-id:
+          type: string
+          description: Organization ID.
+        organization-name:
+          type: string
+          description: Organization name.
+        space-id:
+          type: string
+          description: Space ID.
+        space-name:
+          type: string
+          description: Space name.
+
+    SpaceUsers:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        auditors:
+          type: array
+          items:
+            type: string
+          description: List of auditor user names.
+        developers:
+          type: array
+          items:
+            type: string
+          description: List of developer user names.
+        managers:
+          type: array
+          items:
+            type: string
+          description: List of manager user names.
+        users:
+          type: array
+          items:
+            type: string
+          description: Set of all user names in the space.
+        user-count:
+          type: integer
+          format: int32
+          description: Total user count in the space.
+
+    TimeKeeper:
+      type: object
+      properties:
+        foundation:
+          type: string
+          description: Cloud Foundry foundation name.
+        collection-date-time:
+          type: string
+          format: date-time
+          description: Timestamp of data collection.
+
+    TimeKeepers:
+      type: object
+      properties:
+        time-keepers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeKeeper'
+          description: List of collection timestamps per foundation.
+
+    AppUsageMonthly:
+      type: object
+      properties:
+        month:
+          type: integer
+          format: int32
+          description: Month of the usage report.
+        year:
+          type: integer
+          format: int32
+          description: Year of the usage report.
+        average_app_instances:
+          type: number
+          format: double
+          description: Average application instances for the month.
+        maximum_app_instances:
+          type: integer
+          format: int32
+          description: Maximum application instances for the month.
+        app_instance_hours:
+          type: number
+          format: double
+          description: Total application instance hours for the month.
+
+    AppUsageReport:
+      type: object
+      properties:
+        report_time:
+          type: string
+          description: Time the report was generated.
+        monthly_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUsageMonthly'
+          description: Monthly application usage reports.
+        yearly_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUsageYearly'
+          description: Yearly application usage reports.
+
+    AppUsageYearly:
+      type: object
+      properties:
+        year:
+          type: integer
+          format: int32
+          description: Year of the usage report.
+        average_app_instances:
+          type: number
+          format: double
+          description: Average application instances for the year.
+        maximum_app_instances:
+          type: integer
+          format: int32
+          description: Maximum application instances for the year.
+        app_instance_hours:
+          type: number
+          format: double
+          description: Total application instance hours for the year.
+
+    ServicePlanUsageMonthly:
+      type: object
+      properties:
+        usages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceUsageMonthly'
+          description: Monthly service usage reports for this plan.
+        service_plan_name:
+          type: string
+          description: Name of the service plan.
+        service_plan_guid:
+          type: string
+          description: GUID of the service plan.
+
+    ServicePlanUsageYearly:
+      type: object
+      properties:
+        service_plan_name:
+          type: string
+          description: Name of the service plan.
+        service_plan_guid:
+          type: string
+          description: GUID of the service plan.
+        year:
+          type: integer
+          format: int32
+          description: Year of the usage report.
+        duration_in_hours:
+          type: number
+          format: double
+          description: Total duration in hours for the year.
+        maximum_instances:
+          type: integer
+          format: int32
+          description: Maximum instances for the year.
+        average_instances:
+          type: number
+          format: double
+          description: Average instances for the year.
+
+    ServiceUsageMonthly:
+      type: object
+      properties:
+        month:
+          type: integer
+          format: int32
+          description: Month of the usage report.
+        year:
+          type: integer
+          format: int32
+          description: Year of the usage report.
+        duration_in_hours:
+          type: number
+          format: double
+          description: Total duration in hours for the month.
+        average_instances:
+          type: number
+          format: double
+          description: Average instances for the month.
+        maximum_instances:
+          type: integer
+          format: int32
+          description: Maximum instances for the month.
+
+    ServiceUsageMonthlyAggregate:
+      type: object
+      properties:
+        service_name:
+          type: string
+          description: Name of the service.
+        service_guid:
+          type: string
+          description: GUID of the service.
+        usages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceUsageMonthly'
+          description: Monthly service usage reports.
+        plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicePlanUsageMonthly'
+          description: Monthly service plan usage reports.
+
+    ServiceUsageReport:
+      type: object
+      properties:
+        report_time:
+          type: string
+          description: Time the report was generated.
+        monthly_service_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceUsageMonthlyAggregate'
+          description: Monthly aggregated service usage reports.
+        yearly_service_report:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceUsageYearlyAggregate'
+          description: Yearly aggregated service usage reports.
+
+    ServiceUsageYearlyAggregate:
+      type: object
+      properties:
+        service_name:
+          type: string
+          description: Name of the service.
+        service_guid:
+          type: string
+          description: GUID of the service.
+        year:
+          type: integer
+          format: int32
+          description: Year of the usage report.
+        duration_in_hours:
+          type: number
+          format: double
+          description: Total duration in hours for the year.
+        maximum_instances:
+          type: integer
+          format: int32
+          description: Maximum instances for the year.
+        average_instances:
+          type: number
+          format: double
+          description: Average instances for the year.
+        plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicePlanUsageYearly'
+          description: Yearly service plan usage reports.
+
+    TaskUsageMonthly:
+      type: object
+      properties:
+        month:
+          type: integer
+          format: int32
+          description: Month of the usage report.
+        year:
+          type: integer
+          format: int32
+          description: Year of the usage report.
+        total_task_runs:
+          type: integer
+          format: int32
+          description: Total task runs for the month.
+        maximum_concurrent_tasks:
+          type: integer
+          format: int32
+          description: Maximum concurrent tasks for the month.
+        task_hours:
+          type: number
+          format: double
+          description: Total task hours for the month.
+
+    TaskUsageReport:
+      type: object
+      properties:
+        report_time:
+          type: string
+          description: Time the report was generated.
+        monthly_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskUsageMonthly'
+          description: Monthly task usage reports.
+        yearly_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskUsageYearly'
+          description: Yearly task usage reports.
+
+    TaskUsageYearly:
+      type: object
+      properties:
+        year:
+          type: integer
+          format: int32
+          description: Year of the usage report.
+        total_task_runs:
+          type: integer
+          format: int32
+          description: Total task runs for the year.
+        maximum_concurrent_tasks:
+          type: integer
+          format: int32
+          description: Maximum concurrent tasks for the year.
+        task_hours:
+          type: number
+          format: double
+          description: Total task hours for the year.

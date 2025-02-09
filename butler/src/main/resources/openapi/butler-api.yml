@@ -1,0 +1,2442 @@
+openapi: 3.0.1
+info:
+  title: CF App Butler API
+  description: API specification for CF App Butler, a tool for managing and monitoring Cloud Foundry applications.
+  version: v1
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+tags:
+  - name: Snapshot
+    description: Endpoints related to retrieving snapshot data.
+  - name: Policies
+    description: Endpoints for managing application policies.
+  - name: Accounting
+    description: Endpoints for accessing usage accounting reports.
+  - name: Products
+    description: Endpoints for retrieving product information from Ops Manager and Pivnet.
+  - name: On Demand
+    description: Endpoints for triggering on-demand data collection and policy execution (profile, on-demand).
+
+paths:
+  /snapshot/demographics:
+    get:
+      tags:
+        - Snapshot
+      summary: Get demographic information about the Cloud Foundry instance.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Demographics'
+        '404':
+          description: Demographics not found
+
+  /snapshot/detail/dormant/{daysSinceLastUpdate}:
+    get:
+      tags:
+        - Snapshot
+      summary: Get dormant workloads (applications and service instances).
+      parameters:
+        - name: daysSinceLastUpdate
+          in: path
+          required: true
+          description: Number of days since the last update to consider workloads dormant.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workloads'
+        '404':
+          description: Workloads not found
+
+  /policies/report:
+    get:
+      tags:
+        - Policies
+      summary: Generate a historical report of policy executions.
+      parameters:
+        - name: start
+          in: query
+          description: Start date for the report (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: end
+          in: query
+          description: End date for the report (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Bad request if start date is after end date.
+        '404':
+          description: Historical records not found
+
+  /snapshot/detail/ai/spring:
+    get:
+      tags:
+        - Snapshot
+      summary: Get details of Spring applications.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties:
+                    type: string
+
+  /snapshot/summary/ai/spring:
+    get:
+      tags:
+        - Snapshot
+      summary: Get a summary of Spring dependency frequencies.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+
+  /snapshot/detail/legacy:
+    get:
+      tags:
+        - Snapshot
+      summary: Get details of legacy workloads based on stacks and service offerings.
+      parameters:
+        - name: stacks
+          in: query
+          description: Comma-separated list of stacks to filter by.
+          schema:
+            type: string
+        - name: service-offerings
+          in: query
+          description: Comma-separated list of service offerings to filter by.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workloads'
+        '404':
+          description: Workloads not found
+
+  /events/{id}:
+    get:
+      tags:
+        - On Demand
+      summary: Get events for a specific entity (profile, on-demand).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the entity to retrieve events for.
+          schema:
+            type: string
+        - name: numberOfEvents
+          in: query
+          description: Number of events to retrieve.
+          schema:
+            type: integer
+            format: int32
+        - name: types[]
+          in: query
+          description: Array of event types to filter by.
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '404':
+          description: Events not found
+
+  /policies/execute:
+    post:
+      tags:
+        - Policies
+        - On Demand
+      summary: Trigger on-demand policy execution (profile, on-demand).
+      responses:
+        '202':
+          description: Execution accepted
+
+  /metadata/{type}:
+    get:
+      tags:
+        - On Demand
+      summary: Get metadata for resources of a specific type (profile, on-demand).
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Type of resource metadata to retrieve (e.g., apps, services).
+          schema:
+            type: string
+        - name: label_selector
+          in: query
+          description: Label selector to filter resources.
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination.
+          schema:
+            type: integer
+            format: int32
+        - name: per_page
+          in: query
+          description: Number of resources per page.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resources'
+        '404':
+          description: Resources metadata not found
+
+  /products/deployed:
+    get:
+      tags:
+        - Products
+      summary: Get deployed products from Ops Manager.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeployedProduct'
+        '404':
+          description: Deployed products not found
+
+  /products/om/info:
+    get:
+      tags:
+        - Products
+      summary: Get Ops Manager info.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OmInfo'
+        '404':
+          description: Ops Manager info not found
+
+  /products/stemcell/assignments:
+    get:
+      tags:
+        - Products
+      summary: Get stemcell assignments from Ops Manager.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StemcellAssignments'
+        '404':
+          description: Stemcell assignments not found
+
+  /products/stemcell/associations:
+    get:
+      tags:
+        - Products
+      summary: Get stemcell associations from Ops Manager (v2.6+).
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StemcellAssociations'
+        '404':
+          description: Stemcell associations not found
+
+  /snapshot/organizations:
+    get:
+      tags:
+        - Snapshot
+      summary: List all organizations.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+        '404':
+          description: Organizations not found
+
+  /snapshot/organizations/count:
+    get:
+      tags:
+        - Snapshot
+      summary: Get the count of organizations.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+
+  /store/product/releases:
+    get:
+      tags:
+        - Products
+      summary: Get product releases from Pivnet.
+      parameters:
+        - name: q
+          in: query
+          description: Query option (latest, all, recent).
+          schema:
+            type: string
+            enum: [latest, all, recent]
+            default: latest
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Release'
+        '400':
+          description: Bad request if query option is invalid.
+        '404':
+          description: Product releases not found
+
+  /store/product/catalog:
+    get:
+      tags:
+        - Products
+      summary: Get product catalog from Pivnet.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Products'
+        '404':
+          description: Product catalog not found
+
+  /policies:
+    get:
+      tags:
+        - Policies
+      summary: List all policies.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policies'
+        '404':
+          description: Policies not found
+
+  /policies/application/{id}:
+    get:
+      tags:
+        - Policies
+      summary: Get a specific application policy by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the application policy.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policies'
+        '404':
+          description: Application policy not found
+
+  /policies/endpoint/{id}:
+    get:
+      tags:
+        - Policies
+      summary: Get a specific endpoint policy by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the endpoint policy.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policies'
+        '404':
+          description: Endpoint policy not found
+
+  /policies/hygiene/{id}:
+    get:
+      tags:
+        - Policies
+      summary: Get a specific hygiene policy by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the hygiene policy.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policies'
+        '404':
+          description: Hygiene policy not found
+
+  /policies/legacy/{id}:
+    get:
+      tags:
+        - Policies
+      summary: Get a specific legacy policy by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the legacy policy.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policies'
+        '404':
+          description: Legacy policy not found
+
+  /policies/query/{id}:
+    get:
+      tags:
+        - Policies
+      summary: Get a specific query policy by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the query policy.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policies'
+        '404':
+          description: Query policy not found
+
+  /policies/serviceInstance/{id}:
+    get:
+      tags:
+        - Policies
+      summary: Get a specific service instance policy by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the service instance policy.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policies'
+        '404':
+          description: Service instance policy not found
+
+  /policies/refresh:
+    post:
+      tags:
+        - Policies
+      summary: Refresh policies from Git repository.
+      responses:
+        '202':
+          description: Policies refresh accepted
+        '404':
+          description: Policies loader not found
+
+  /download/pomfiles:
+    get:
+      tags:
+        - Snapshot
+      summary: Download a tarball of POM files for Java applications (profile, unpack-pom-contents-in-droplet).
+      responses:
+        '200':
+          description: Successful response, tarball downloaded
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /products/metrics:
+    get:
+      tags:
+        - Products
+      summary: Get product metrics from Ops Manager and Pivnet (profiles, om & pivnet enabled).
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductMetrics'
+        '404':
+          description: Product metrics not found
+
+  /snapshot/detail/ai:
+    get:
+      tags:
+        - Snapshot
+      summary: Get application instance detail as CSV.
+      responses:
+        '200':
+          description: Successful response, CSV data returned
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Application instance data not found
+
+  /snapshot/detail/relations:
+    get:
+      tags:
+        - Snapshot
+      summary: Get application relationships detail as CSV.
+      responses:
+        '200':
+          description: Successful response, CSV data returned
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Application relationships data not found
+
+  /snapshot/detail:
+    get:
+      tags:
+        - Snapshot
+      summary: Get snapshot detail as JSON.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotDetail'
+        '404':
+          description: Snapshot detail not found
+
+  /snapshot/detail/si:
+    get:
+      tags:
+        - Snapshot
+      summary: Get service instance detail as CSV.
+      responses:
+        '200':
+          description: Successful response, CSV data returned
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Service instance data not found
+
+  /snapshot/summary:
+    get:
+      tags:
+        - Snapshot
+      summary: Get snapshot summary as JSON.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotSummary'
+        '404':
+          description: Snapshot summary not found
+
+  /snapshot/detail/users:
+    get:
+      tags:
+        - Snapshot
+      summary: Get user account detail as CSV.
+      responses:
+        '200':
+          description: Successful response, CSV data returned
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: User account data not found
+
+  /snapshot/spaces:
+    get:
+      tags:
+        - Snapshot
+      summary: List all spaces.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Space'
+        '404':
+          description: Spaces not found
+
+  /snapshot/spaces/count:
+    get:
+      tags:
+        - Snapshot
+      summary: Get the count of spaces.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+
+  /snapshot/users:
+    get:
+      tags:
+        - Snapshot
+      summary: List all account names.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '404':
+          description: User accounts not found
+
+  /snapshot/spaces/users:
+    get:
+      tags:
+        - Snapshot
+      summary: List all space users.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpaceUsers'
+        '404':
+          description: Space users not found
+
+  /snapshot/{organization}/{space}/users:
+    get:
+      tags:
+        - Snapshot
+      summary: Get users in a specific organization and space.
+      parameters:
+        - name: organization
+          in: path
+          required: true
+          description: Organization name.
+          schema:
+            type: string
+        - name: space
+          in: path
+          required: true
+          description: Space name.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceUsers'
+        '404':
+          description: Space users not found
+
+  /snapshot/users/count:
+    get:
+      tags:
+        - Snapshot
+      summary: Get the total count of user accounts.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+
+  /collect:
+    get:
+      tags:
+        - Snapshot
+      summary: Get the last collection time.
+      responses:
+        '200':
+          description: Successful response, collection time returned
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: date-time
+        '404':
+          description: Collection time not found
+
+  /accounting/applications/{orgName}/{startDate}/{endDate}:
+    get:
+      tags:
+        - Accounting
+      summary: Get application usage report for an organization within a date range.
+      parameters:
+        - name: orgName
+          in: path
+          required: true
+          description: Organization name.
+          schema:
+            type: string
+        - name: startDate
+          in: path
+          required: true
+          description: Start date (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: path
+          required: true
+          description: End date (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Usage report not found
+
+  /accounting/services/{orgName}/{startDate}/{endDate}:
+    get:
+      tags:
+        - Accounting
+      summary: Get service usage report for an organization within a date range.
+      parameters:
+        - name: orgName
+          in: path
+          required: true
+          description: Organization name.
+          schema:
+            type: string
+        - name: startDate
+          in: path
+          required: true
+          description: Start date (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: path
+          required: true
+          description: End date (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Usage report not found
+
+  /accounting/tasks/{orgName}/{startDate}/{endDate}:
+    get:
+      tags:
+        - Accounting
+      summary: Get task usage report for an organization within a date range.
+      parameters:
+        - name: orgName
+          in: path
+          required: true
+          description: Organization name.
+          schema:
+            type: string
+        - name: startDate
+          in: path
+          required: true
+          description: Start date (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: path
+          required: true
+          description: End date (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Usage report not found
+
+  /accounting/applications:
+    get:
+      tags:
+        - Accounting
+      summary: Get system-wide application usage report.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUsageReport'
+        '404':
+          description: Usage report not found
+
+  /accounting/services:
+    get:
+      tags:
+        - Accounting
+      summary: Get system-wide service usage report.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUsageReport'
+        '404':
+          description: Usage report not found
+
+  /accounting/tasks:
+    get:
+      tags:
+        - Accounting
+      summary: Get system-wide task usage report.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskUsageReport'
+        '404':
+          description: Usage report not found
+
+  /snapshot/spaces/users/{name}:
+    get:
+      tags:
+        - Snapshot
+      summary: Get spaces for a specific user account name.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: User account name.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSpaces'
+        '404':
+          description: User spaces not found
+
+components:
+  schemas:
+    Demographics:
+      type: object
+      properties:
+        total-organizations:
+          type: integer
+          format: int64
+          description: Total number of organizations.
+        total-spaces:
+          type: integer
+          format: int64
+          description: Total number of spaces.
+        total-user-accounts:
+          type: integer
+          format: int64
+          description: Total number of user accounts.
+        total-service-accounts:
+          type: integer
+          format: int64
+          description: Total number of service accounts.
+
+    Workloads:
+      type: object
+      properties:
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppDetail'
+        service-instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceInstanceDetail'
+        application-relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppRelationship'
+
+    AppDetail:
+      type: object
+      properties:
+        pk:
+          type: integer
+          format: int64
+          description: Primary key (internal use).
+          readOnly: true
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        appId:
+          type: string
+          description: Application ID.
+        appName:
+          type: string
+          description: Application name.
+        buildpack:
+          type: string
+          description: Buildpack name.
+        buildpackVersion:
+          type: string
+          description: Buildpack version.
+        image:
+          type: string
+          description: Docker image.
+        stack:
+          type: string
+          description: Stack name.
+        runningInstances:
+          type: integer
+          format: int32
+          description: Number of running instances.
+        totalInstances:
+          type: integer
+          format: int32
+          description: Total number of instances.
+        memoryUsed:
+          type: integer
+          format: int64
+          description: Memory used in bytes.
+        diskUsed:
+          type: integer
+          format: int64
+          description: Disk space used in bytes.
+        memoryQuota:
+          type: integer
+          format: int64
+          description: Memory quota in bytes.
+        diskQuota:
+          type: integer
+          format: int64
+          description: Disk quota in bytes.
+        lastPushed:
+          type: string
+          format: date-time
+          description: Timestamp of last push.
+        lastEvent:
+          type: string
+          description: Last event description.
+        lastEventActor:
+          type: string
+          description: Last event actor.
+        lastEventTime:
+          type: string
+          format: date-time
+          description: Last event timestamp.
+        requestedState:
+          type: string
+          description: Requested state of the application.
+        urls:
+          type: array
+          items:
+            type: string
+          description: Application URLs.
+        buildpackReleaseType:
+          type: string
+          description: Latest buildpack release type
+        buildpackReleaseDate:
+          type: string
+          format: date-time
+          description: Latest buildpack release date
+        buildpackLatestVersion:
+          type: string
+          description: Latest buildpack version
+        buildpackLatestUrl:
+          type: string
+          description: Latest buildpack URL
+
+    ServiceInstanceDetail:
+      type: object
+      properties:
+        pk:
+          type: integer
+          format: int64
+          description: Primary key (internal use).
+          readOnly: true
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        serviceInstanceId:
+          type: string
+          description: Service instance ID.
+        name:
+          type: string
+          description: Service instance name.
+        service:
+          type: string
+          description: Service offering name.
+        description:
+          type: string
+          description: Service description.
+        plan:
+          type: string
+          description: Service plan name.
+        type:
+          type: string
+          description: Service type (managed_service_instance, user_provided_service_instance).
+        applications:
+          type: array
+          items:
+            type: string
+          description: List of application names bound to the service instance.
+        lastOperation:
+          type: string
+          description: Last operation performed on the service instance.
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Timestamp of last update.
+        dashboardUrl:
+          type: string
+          format: url
+          description: Dashboard URL for the service instance.
+        requestedState:
+          type: string
+          description: Requested state of the service instance.
+
+    AppRelationship:
+      type: object
+      properties:
+        pk:
+          type: integer
+          format: int64
+          description: Primary key (internal use).
+          readOnly: true
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        appId:
+          type: string
+          description: Application ID.
+        appName:
+          type: string
+          description: Application name.
+        serviceInstanceId:
+          type: string
+          description: Service instance ID.
+        serviceName:
+          type: string
+          description: Service instance name.
+        serviceOffering:
+          type: string
+          description: Service offering name.
+        servicePlan:
+          type: string
+          description: Service plan name.
+        serviceType:
+          type: string
+          description: Service type.
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Organization ID.
+        name:
+          type: string
+          description: Organization name.
+
+    Space:
+      type: object
+      properties:
+        organization-id:
+          type: string
+          description: Organization ID.
+        organization-name:
+          type: string
+          description: Organization name.
+        space-id:
+          type: string
+          description: Space ID.
+        space-name:
+          type: string
+          description: Space name.
+
+    Policies:
+      type: object
+      properties:
+        application-policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationPolicy'
+        service-instance-policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceInstancePolicy'
+        endpoint-policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/EndpointPolicy'
+        query-policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryPolicy'
+        hygiene-policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/HygienePolicy'
+        legacy-policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegacyPolicy'
+        resource-notification-policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceNotificationPolicy'
+
+    ApplicationPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Policy ID.
+        git-commit:
+          type: string
+          description: Git commit ID for policy versioning.
+        operation:
+          type: string
+          description: Operation to perform (delete, scale-instances, stop, change-stack).
+          enum: [ delete, scale-instances, stop, change-stack ]
+        description:
+          type: string
+          description: Policy description.
+        state:
+          type: string
+          description: Application state for policy to target (started, stopped).
+          enum: [ started, stopped ]
+        options:
+          type: object
+          description: Policy-specific options.
+        organization-whitelist:
+          type: array
+          items:
+            type: string
+          description: List of organizations to whitelist.
+        cron-expression:
+          type: string
+          description: Cron expression for scheduled execution.
+
+    ServiceInstancePolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Policy ID.
+        git-commit:
+          type: string
+          description: Git commit ID for policy versioning.
+        operation:
+          type: string
+          description: Operation to perform (delete).
+          enum: [ delete ]
+        description:
+          type: string
+          description: Policy description.
+        options:
+          type: object
+          description: Policy-specific options.
+        organization-whitelist:
+          type: array
+          items:
+            type: string
+          description: List of organizations to whitelist.
+        cron-expression:
+          type: string
+          description: Cron expression for scheduled execution.
+
+    EndpointPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Policy ID.
+        git-commit:
+          type: string
+          description: Git commit ID for policy versioning.
+        description:
+          type: string
+          description: Policy description.
+        endpoint-requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/EndpointRequest'
+        email-notification-template:
+          $ref: '#/components/schemas/EmailNotificationTemplate'
+        cron-expression:
+          type: string
+          description: Cron expression for scheduled execution.
+
+    EndpointRequest:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          description: Endpoint URL path to request.
+        json-path-expression:
+          type: string
+          description: JSONPath expression to extract data from JSON response.
+        apply-json-to-csv-converter:
+          type: boolean
+          description: Flag to apply JSON to CSV conversion for the response.
+
+    QueryPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Policy ID.
+        git-commit:
+          type: string
+          description: Git commit ID for policy versioning.
+        description:
+          type: string
+          description: Policy description.
+        queries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Query'
+        email-notification-template:
+          $ref: '#/components/schemas/EmailNotificationTemplate'
+        cron-expression:
+          type: string
+          description: Cron expression for scheduled execution.
+
+    Query:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Query name.
+        description:
+          type: string
+          description: Query description.
+        sql:
+          type: string
+          description: SQL query to execute.
+
+    HygienePolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Policy ID.
+        git-commit:
+          type: string
+          description: Git commit ID for policy versioning.
+        days-since-last-update:
+          type: integer
+          format: int32
+          description: Number of days since last update to consider workloads as dormant.
+        operator-email-template:
+          $ref: '#/components/schemas/EmailNotificationTemplate'
+          description: Email template for operator notifications.
+        notifyee-email-template:
+          $ref: '#/components/schemas/EmailNotificationTemplate'
+          description: Email template for notifyee notifications.
+        organization-whitelist:
+          type: array
+          items:
+            type: string
+          description: List of organizations to whitelist.
+        cron-expression:
+          type: string
+          description: Cron expression for scheduled execution.
+        include-applications:
+          type: boolean
+          description: Flag to include applications in hygiene policy.
+        include-service-instances:
+          type: boolean
+          description: Flag to include service instances in hygiene policy.
+
+    ResourceNotificationPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Policy ID.
+        git-commit:
+          type: string
+          description: Git commit ID for policy versioning.
+        resource-email-template:
+          $ref: '#/components/schemas/EmailNotificationTemplate'
+          description: Email template for resource notifications.
+        resource-email-metadata:
+          $ref: '#/components/schemas/ResourceEmailMetadata'
+          description: Metadata for resource email notifications.
+        resource-whitelist:
+          type: array
+          items:
+            type: string
+          description: List of resources to whitelist.
+        resource-blacklist:
+          type: array
+          items:
+            type: string
+          description: List of resources to blacklist.
+        cron-expression:
+          type: string
+          description: Cron expression for scheduled execution.
+
+    ResourceEmailMetadata:
+      type: object
+      properties:
+        resource:
+          type: string
+          description: Resource type for metadata (apps, services, etc.).
+        labels:
+          type: array
+          items:
+            type: string
+          description: List of labels to filter resources for email recipients.
+        email-domain:
+          type: string
+          description: Email domain to append to the label value to create email addresses.
+
+    LegacyPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Policy ID.
+        git-commit:
+          type: string
+          description: Git commit ID for policy versioning.
+        stacks:
+          type: array
+          items:
+            type: string
+          description: List of stacks to filter legacy applications.
+        service-offerings:
+          type: array
+          items:
+            type: string
+          description: List of service offerings to filter legacy applications.
+        operator-email-template:
+          $ref: '#/components/schemas/EmailNotificationTemplate'
+          description: Email template for operator notifications.
+        notifyee-email-template:
+          $ref: '#/components/schemas/EmailNotificationTemplate'
+          description: Email template for notifyee notifications.
+        organization-whitelist:
+          type: array
+          items:
+            type: string
+          description: List of organizations to whitelist.
+        cron-expression:
+          type: string
+          description: Cron expression for scheduled execution.
+
+    EmailNotificationTemplate:
+      type: object
+      properties:
+        from:
+          type: string
+          format: email
+          description: Sender email address.
+        to:
+          type: array
+          items:
+            type: string
+            format: email
+          description: List of recipient email addresses.
+        cc:
+          type: array
+          items:
+            type: string
+            format: email
+          description: List of CC email addresses.
+        bcc:
+          type: array
+          items:
+            type: string
+            format: email
+          description: List of BCC email addresses.
+        subject:
+          type: string
+          description: Email subject.
+        body:
+          type: string
+          description: Email body (supports HTML).
+
+    UserSpaces:
+      type: object
+      properties:
+        account-name:
+          type: string
+          description: User account name
+        spaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/Space'
+
+    Products:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Product ID
+        slug:
+          type: string
+          description: Product slug
+        name:
+          type: string
+          description: Product name
+        logo_url:
+          type: string
+          format: url
+          description: Product logo URL
+        _links:
+          $ref: '#/components/schemas/ProductLinks'
+        platform_compatibility:
+          type: array
+          items:
+            type: string
+          description: List of platform compatibilities
+        installs_on_pks:
+          type: boolean
+          description: Installs on PKS flag
+
+    ProductLinks:
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/Self'
+        releases:
+          $ref: '#/components/schemas/Releases'
+        product_files:
+          $ref: '#/components/schemas/ProductFiles'
+        file_groups:
+          $ref: '#/components/schemas/FileGroups'
+
+    Self:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
+
+    Releases:
+      type: object
+      properties:
+        releases:
+          type: array
+          items:
+            $ref: '#/components/schemas/Release'
+
+    Release:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Release ID
+        slug:
+          type: string
+          description: Product slug
+        version:
+          type: string
+          description: Release version
+        release_type:
+          type: string
+          description: Release type
+        release_date:
+          type: string
+          format: date
+          description: Release date
+        release_notes_url:
+          type: string
+          format: url
+          description: Release notes URL
+        availability:
+          type: string
+          description: Availability
+        description:
+          type: string
+          description: Release description
+        eula:
+          $ref: '#/components/schemas/Eula'
+        end_of_support_date:
+          type: string
+          format: date
+          description: End of support date
+        end_of_guidance_date:
+          type: string
+          format: date
+          description: End of guidance date
+        end_of_availability_date:
+          type: string
+          format: date
+          description: End of availability date
+        eccn:
+          type: string
+          description: ECCN
+        license_exception:
+          type: string
+          description: License exception
+        updated_at:
+          type: string
+          format: date-time
+          description: Updated timestamp
+        software_files_updated_at:
+          type: string
+          format: date-time
+          description: Software files updated timestamp
+        _links:
+          $ref: '#/components/schemas/ReleaseLinks'
+
+    ReleaseLinks:
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/Self'
+        eula_acceptance:
+          $ref: '#/components/schemas/EulaAcceptance'
+        product_files:
+          $ref: '#/components/schemas/ProductFiles'
+        file_groups:
+          $ref: '#/components/schemas/FileGroups'
+        user_groups:
+          $ref: '#/components/schemas/UserGroups'
+        artifact_references:
+          $ref: '#/components/schemas/ArtifactReferences'
+
+    Eula:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: EULA ID
+        slug:
+          type: string
+          description: EULA slug
+        name:
+          type: string
+          description: EULA name
+        _links:
+          $ref: '#/components/schemas/EulaLinks'
+        archived_at:
+          type: string
+          format: date-time
+          description: Archived timestamp
+
+    EulaLinks:
+      type: object
+      properties:
+        self:
+          $ref: '#/components/schemas/Self'
+
+    EulaAcceptance:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
+
+    ProductFiles:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
+
+    FileGroups:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
+
+    UserGroups:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
+
+    ArtifactReferences:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
+
+    OmInfo:
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/OmInfoInfo'
+
+    OmInfoInfo:
+      type: object
+      properties:
+        version:
+          type: string
+          description: Ops Manager version
+
+    StemcellAssignments:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/StemcellAssignment'
+
+    StemcellAssignment:
+      type: object
+      properties:
+        available_stemcell_versions:
+          type: array
+          items:
+            type: string
+          description: List of available stemcell versions
+        deployed_product_version:
+          type: string
+          description: Deployed product version
+        deployed_stemcell_version:
+          type: string
+          description: Deployed stemcell version
+        guid:
+          type: string
+          description: Stemcell Assignment GUID
+        identifier:
+          type: string
+          description: Stemcell Assignment Identifier
+        is_staged_for_deletion:
+          type: boolean
+          description: Is Staged for Deletion flag
+        label:
+          type: string
+          description: Stemcell Assignment Label
+        required_stemcell_os:
+          type: string
+          description: Required stemcell OS
+        required_stemcell_version:
+          type: string
+          description: Required stemcell version
+        staged_product_version:
+          type: string
+          description: Staged product version
+        staged_stemcell_version:
+          type: string
+          description: Staged stemcell version
+
+    StemcellAssociations:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/StemcellAssociation'
+
+    StemcellAssociation:
+      type: object
+      properties:
+        guid:
+          type: string
+          description: Stemcell Association GUID
+        identifier:
+          type: string
+          description: Stemcell Association Identifier
+        label:
+          type: string
+          description: Stemcell Association Label
+        staged_product_version:
+          type: string
+          description: Staged product version
+        deployed_product_version:
+          type: string
+          description: Deployed product version
+        is_staged_for_deletion:
+          type: boolean
+          description: Is Staged for Deletion flag
+        staged_stemcells:
+          type: array
+          items:
+            $ref: '#/components/schemas/StemcellDetail'
+        deployed_stemcells:
+          type: array
+          items:
+            $ref: '#/components/schemas/StemcellDetail'
+        available_stemcells:
+          type: array
+          items:
+            $ref: '#/components/schemas/StemcellDetail'
+        required_stemcells:
+          type: array
+          items:
+            $ref: '#/components/schemas/StemcellDetail'
+
+    StemcellDetail:
+      type: object
+      properties:
+        os:
+          type: string
+          description: Stemcell OS
+        version:
+          type: string
+          description: Stemcell version
+
+    ProductMetrics:
+      type: object
+      properties:
+        product-metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductMetric'
+
+    ProductMetric:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Product name
+        type:
+          type: string
+          description: Product type
+          enum: [ buildpack, stemcell, tile ]
+        currently-installed-release-date:
+          type: string
+          format: date
+          description: Currently installed release date
+        currently-installed-version:
+          type: string
+          description: Currently installed version
+        latest-available-release-date:
+          type: string
+          format: date
+          description: Latest available release date
+        latest-available-version:
+          type: string
+          description: Latest available version
+        end-of-support-date:
+          type: string
+          format: date
+          description: End of support date
+        days-behind-latest-available-version:
+          type: integer
+          format: int64
+          description: Days behind latest available version
+        days-out-of-support:
+          type: integer
+          format: int64
+          description: Days out of support
+        end-of-life:
+          type: boolean
+          description: End of life flag
+        pre-release:
+          type: boolean
+          description: Pre-release flag
+
+    AppUsageReport:
+      type: object
+      properties:
+        report_time:
+          type: string
+          format: date-time
+          description: Report generation timestamp
+        monthly_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUsageMonthly'
+        yearly_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUsageYearly'
+
+    AppUsageMonthly:
+      type: object
+      properties:
+        month:
+          type: integer
+          format: int32
+          description: Month of usage
+        year:
+          type: integer
+          format: int32
+          description: Year of usage
+        average_app_instances:
+          type: number
+          format: double
+          description: Average number of app instances
+        maximum_app_instances:
+          type: integer
+          format: int32
+          description: Maximum number of app instances
+        app_instance_hours:
+          type: number
+          format: double
+          description: Total app instance hours
+
+    AppUsageYearly:
+      type: object
+      properties:
+        year:
+          type: integer
+          format: int32
+          description: Year of usage
+        average_app_instances:
+          type: number
+          format: double
+          description: Average number of app instances
+        maximum_app_instances:
+          type: integer
+          format: int32
+          description: Maximum number of app instances
+        app_instance_hours:
+          type: number
+          format: double
+          description: Total app instance hours
+
+    ServiceUsageReport:
+      type: object
+      properties:
+        report_time:
+          type: string
+          format: date-time
+          description: Report generation timestamp
+        monthly_service_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceUsageMonthlyAggregate'
+        yearly_service_report:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceUsageYearlyAggregate'
+
+    ServiceUsageMonthlyAggregate:
+      type: object
+      properties:
+        service_name:
+          type: string
+          description: Service name
+        service_guid:
+          type: string
+          description: Service GUID
+        usages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceUsageMonthly'
+        plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicePlanUsageMonthly'
+
+    ServiceUsageMonthly:
+      type: object
+      properties:
+        month:
+          type: integer
+          format: int32
+          description: Month of usage
+        year:
+          type: integer
+          format: int32
+          description: Year of usage
+        duration_in_hours:
+          type: number
+          format: double
+          description: Total usage duration in hours
+        average_instances:
+          type: number
+          format: double
+          description: Average number of service instances
+        maximum_instances:
+          type: integer
+          format: int32
+          description: Maximum number of service instances
+
+    ServicePlanUsageMonthly:
+      type: object
+      properties:
+        usages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceUsageMonthly'
+        service_plan_name:
+          type: string
+          description: Service plan name
+        service_plan_guid:
+          type: string
+          description: Service plan GUID
+
+    ServiceUsageYearlyAggregate:
+      type: object
+      properties:
+        service_name:
+          type: string
+          description: Service name
+        service_guid:
+          type: string
+          description: Service GUID
+        year:
+          type: integer
+          format: int32
+          description: Year of usage
+        duration_in_hours:
+          type: number
+          format: double
+          description: Total usage duration in hours
+        maximum_instances:
+          type: integer
+          format: int32
+          description: Maximum number of service instances
+        average_instances:
+          type: number
+          format: double
+          description: Average number of service instances
+        plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicePlanUsageYearly'
+
+    ServicePlanUsageYearly:
+      type: object
+      properties:
+        service_plan_name:
+          type: string
+          description: Service plan name
+        service_plan_guid:
+          type: string
+          description: Service plan GUID
+        year:
+          type: integer
+          format: int32
+          description: Year of usage
+        duration_in_hours:
+          type: number
+          format: double
+          description: Total usage duration in hours
+        maximum_instances:
+          type: integer
+          format: int32
+          description: Maximum number of service instances
+        average_instances:
+          type: number
+          format: double
+          description: Average number of service instances
+
+    TaskUsageReport:
+      type: object
+      properties:
+        report_time:
+          type: string
+          format: date-time
+          description: Report generation timestamp
+        monthly_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskUsageMonthly'
+        yearly_reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskUsageYearly'
+
+    TaskUsageMonthly:
+      type: object
+      properties:
+        month:
+          type: integer
+          format: int32
+          description: Month of usage
+        year:
+          type: integer
+          format: int32
+          description: Year of usage
+        total_task_runs:
+          type: integer
+          format: int32
+          description: Total task runs
+        maximum_concurrent_tasks:
+          type: integer
+          format: int32
+          description: Maximum concurrent tasks
+        task_hours:
+          type: number
+          format: double
+          description: Total task hours
+
+    TaskUsageYearly:
+      type: object
+      properties:
+        year:
+          type: integer
+          format: int32
+          description: Year of usage
+        total_task_runs:
+          type: integer
+          format: int32
+          description: Total task runs
+        maximum_concurrent_tasks:
+          type: integer
+          format: int32
+          description: Maximum concurrent tasks
+        task_hours:
+          type: number
+          format: double
+          description: Total task hours
+
+    Event:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Event Type
+        actee:
+          type: string
+          description: Event Actee
+        actor:
+          type: string
+          description: Event Actor
+        time:
+          type: string
+          format: date-time
+          description: Event Timestamp
+
+    Resources:
+      type: object
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Resource:
+      type: object
+      properties:
+        guid:
+          type: string
+          description: Resource GUID
+        name:
+          type: string
+          description: Resource name
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Update timestamp
+        metadata:
+          $ref: '#/components/schemas/EmbeddedMetadata'
+
+    Metadata:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/EmbeddedMetadata'
+
+    EmbeddedMetadata:
+      type: object
+      properties:
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          description: Resource Labels
+        annotations:
+          type: object
+          additionalProperties:
+            type: string
+          description: Resource Annotations
+
+    Pagination:
+      type: object
+      properties:
+        total_results:
+          type: integer
+          format: int32
+          description: Total results
+        total_pages:
+          type: integer
+          format: int32
+          description: Total pages
+        next:
+          $ref: '#/components/schemas/Href'
+        previous:
+          $ref: '#/components/schemas/Href'
+        first:
+          $ref: '#/components/schemas/Href'
+        last:
+          $ref: '#/components/schemas/Href'
+
+    Href:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
+          description: URL Reference
+
+    DeployedProduct:
+      type: object
+      properties:
+        installation_name:
+          type: string
+          description: Installation name of the deployed product.
+        guid:
+          type: string
+          description: GUID of the deployed product.
+        type:
+          type: string
+          description: Type of the deployed product.
+        product_version:
+          type: string
+          description: Version of the deployed product.
+        label:
+          type: string
+          description: Label of the deployed product.
+        service_broker:
+          type: boolean
+          description: Indicates if the product is a service broker.
+        stale:
+          $ref: '#/components/schemas/Staleness'
+
+    SnapshotDetail:
+      type: object
+      properties:
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppDetail'
+        service-instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceInstanceDetail'
+        application-relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppRelationship'
+        user-accounts:
+          type: array
+          items:
+            type: string
+          description: List of user accounts in the snapshot.
+        service-accounts:
+          type: array
+          items:
+            type: string
+          description: List of service accounts in the snapshot.
+
+    SnapshotSummary:
+      type: object
+      properties:
+        application-counts:
+          $ref: '#/components/schemas/ApplicationCounts'
+        service-instance-counts:
+          $ref: '#/components/schemas/ServiceInstanceCounts'
+        user-counts:
+          $ref: '#/components/schemas/UserCounts'
+
+    SpaceUsers:
+      type: object
+      properties:
+        pk:
+          type: integer
+          format: int64
+          description: Primary key (internal use).
+          readOnly: true
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        auditors:
+          type: array
+          items:
+            type: string
+          description: List of auditor usernames in the space.
+        developers:
+          type: array
+          items:
+            type: string
+          description: List of developer usernames in the space.
+        managers:
+          type: array
+          items:
+            type: string
+          description: List of manager usernames in the space.
+        user-count:
+          type: integer
+          format: int32
+          description: Total count of users in the space.
+        users:
+          type: array
+          items:
+            type: string
+          description: List of all usernames in the space.
+
+    ApplicationCounts:
+      type: object
+      properties:
+        by-organization:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Application counts grouped by organization.
+        by-buildpack:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Application counts grouped by buildpack.
+        by-stack:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Application counts grouped by stack.
+        by-dockerimage:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Application counts grouped by Docker image.
+        by-status:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Application counts grouped by application state.
+        total-applications:
+          type: integer
+          format: int64
+          description: Total number of applications.
+        total-running-application-instances:
+          type: integer
+          format: int64
+          description: Total number of running application instances.
+        total-stopped-application-instances:
+          type: integer
+          format: int64
+          description: Total number of stopped application instances.
+        total-crashed-application-instances:
+          type: integer
+          format: int64
+          description: Total number of crashed application instances.
+        total-application-instances:
+          type: integer
+          format: int64
+          description: Total number of application instances.
+        total-memory-used-in-gb:
+          type: number
+          format: double
+          description: Total memory used by applications in gigabytes.
+        total-disk-used-in-gb:
+          type: number
+          format: double
+          description: Total disk space used by applications in gigabytes.
+        velocity:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Application velocity metrics over different time ranges.
+
+    ServiceInstanceCounts:
+      type: object
+      properties:
+        by-organization:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Service instance counts grouped by organization.
+        by-service:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Service instance counts grouped by service offering.
+        by-service-and-plan:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Service instance counts grouped by service offering and plan.
+        total-service-instances:
+          type: integer
+          format: int64
+          description: Total number of service instances.
+        velocity:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          description: Service instance velocity metrics over different time ranges.
+
+    UserCounts:
+      type: object
+      properties:
+        by-organization:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+          description: User counts grouped by organization.
+        total-user-accounts:
+          type: integer
+          format: int64
+          description: Total number of user accounts.
+        total-service-accounts:
+          type: integer
+          format: int64
+          description: Total number of service accounts.
+
+    Staleness:
+      type: object
+      properties:
+        parent_products_deployed_more_recently:
+          type: array
+          items:
+            type: string
+          description: List of GUIDs of parent products deployed more recently.
