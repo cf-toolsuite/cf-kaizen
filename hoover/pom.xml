@@ -5,19 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.cftoolsuite.cfapp</groupId>
-        <artifactId>cf-kaizen</artifactId>
+        <artifactId>cf-kaizen-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>cf-kaizen-hoover-client</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-
-    <properties>
-        <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
-        <spring-doc.version>2.8.4</spring-doc.version>
-        <assertj.version>3.27.3</assertj.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -30,11 +24,6 @@
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
         <dependency>
@@ -64,6 +53,26 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp-spring-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-mcp-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -74,7 +83,6 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <dependencyManagement>
@@ -125,8 +133,8 @@
                                 <useTags>true</useTags>
                                 <dateLibrary>java8</dateLibrary>
                                 <java8>true</java8>
-                                <useBeanValidation>true</useBeanValidation>
-                                <performBeanValidation>true</performBeanValidation>
+                                <useBeanValidation>false</useBeanValidation>
+                                <performBeanValidation>false</performBeanValidation>
                                 <useOptional>false</useOptional>
                                 <serializableModel>true</serializableModel>
                                 <sourceFolder>src/gen/java/main</sourceFolder>

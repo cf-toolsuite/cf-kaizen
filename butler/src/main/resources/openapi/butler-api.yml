@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.1
 info:
   title: CF App Butler API
   description: API specification for CF App Butler, a tool for managing and monitoring Cloud Foundry applications.
@@ -1466,25 +1466,21 @@ components:
       properties:
         from:
           type: string
-          format: email
           description: Sender email address.
         to:
           type: array
           items:
             type: string
-            format: email
           description: List of recipient email addresses.
         cc:
           type: array
           items:
             type: string
-            format: email
           description: List of CC email addresses.
         bcc:
           type: array
           items:
             type: string
-            format: email
           description: List of BCC email addresses.
         subject:
           type: string
