@@ -1,0 +1,55 @@
+name: Publish package to GitHub Packages
+
+on:
+  release:
+    types: [created]
+
+jobs:
+
+  publish:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Java for Github Packages
+        uses: actions/setup-java@v4
+        with:
+          distribution: liberica
+          java-version: 21
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Set version in POM
+        run: ./mvnw versions:set -DnewVersion=${{ github.event.release.tag_name }}
+
+      - name: Build artifact
+        run: ./mvnw package -B
+
+      - name: Publish to GitHub Packages (Apache Maven)
+        run: ./mvnw deploy -Pgithub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+      - name: Set up Java for Apache Maven Central
+        uses: actions/setup-java@v4
+        with:
+          distribution: liberica
+          java-version: 21
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+
+      - name: Publish to Apache Maven Central
+        run: ./mvnw deploy -Pmaven-central
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}

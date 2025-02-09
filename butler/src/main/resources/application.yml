@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: cf-kaizen-butler-client
+
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: ${spring.application.name}
+        version: 1.2-modified
+        transport: STDIO
+
+  main:
+    banner-mode: off
+    web-application-type: none
+
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  info:
+    build:
+      enabled: true
+    git:
+      mode: FULL
+    java:
+      enabled: true
+    os:
+      enabled: true
+  endpoint:
+    health:
+      show-details: ALWAYS
+    metrics:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,loggers,sbom
+
+default:
+  url: ${CF_BUTLER_API_ENDPOINT:}
+
+logging:
+  pattern:
+    console:
+  file:
+    name: /cf-kaizen-butler-client.log
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+debug: true
+
+default:
+  url: http://localhost:8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+server:
+  port: 8088
