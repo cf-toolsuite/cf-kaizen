@@ -13,10 +13,6 @@ It also includes an MCP server, MCP client configuration for use with Claude des
     * [Build](#how-to-build)
     * [Consume](#how-to-consume)
     * [Run](#how-to-run)
-* Also see
-  * [ResoOS API](https://documenter.getpostman.com/view/3308304/SzzehLGp?version=latest)
-  * the [spark](docs/SPARK.md) that lit this project up
-  * [Roadmap](docs/ROADMAP.md)
 
 ## Background
 
