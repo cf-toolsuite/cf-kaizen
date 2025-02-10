@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: cf-toolsuite-service-discovery
+
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+
+server:
+  port: 8761
+  compression:
+    enabled: true
+  undertow:
+    accesslog:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+    prometheus:
+      enabled: true
