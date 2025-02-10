@@ -7,7 +7,7 @@ spring:
       server:
         enabled: true
         name: ${spring.application.name}
-        version: 1.2-modified
+        version: 1.0
         transport: STDIO
 
   main:
