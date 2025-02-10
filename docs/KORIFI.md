@@ -27,11 +27,13 @@ mvn install
 
 ### Installation
 
-Follow these [instructions](https://github.com/cloudfoundry/korifi/blob/main/INSTALL.md).
+Solely following these [instructions](https://github.com/cloudfoundry/korifi/blob/main/INSTALL.md) would be great, but we also have to weave in [experimental support for UAA](https://github.com/cloudfoundry/korifi/blob/main/docs/experimental-uaa-authentication.md). 
 
 > [!TIP]
 > Arguably the simplest thing to do is to launch a Kind cluster.  If you choose that path, follow these [instructions](https://github.com/cloudfoundry/korifi/blob/main/INSTALL.kind.md).
 > When you're ready to "test Korifi" with a cf push, choose to push a Docker app, like nginx.
+
+// TODO Author step-by-step instructions for standing up Korifi integrating Github OIDC credentials.  
 
 ### Deployment
 
