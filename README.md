@@ -131,7 +131,7 @@ or
 
 ```yaml
 default:
-url: ${CF_HOOVER_API_ENDPOINT:}
+  url: ${CF_HOOVER_API_ENDPOINT:}
 ```
 
 ## How to run
