@@ -30,7 +30,7 @@ Use-case:
 Start with:
 
 * A Github [account](https://github.com/signup)
-* Endpoints for
+* API endpoints for
   * one or more application instances of cf-butler
   * an application instance of cf-hoover
 
