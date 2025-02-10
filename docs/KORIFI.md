@@ -72,7 +72,6 @@ cf push config-server --no-start
 cf set-env config-server EUREKA_CLIENT_REGISTER_WITH_EUREKA false
 cf set-env config-server EUREKA_CLIENT_FETCH_REGISTRY false
 cf set-env config-server JAVA_OPTS '-XX:+UseG1GC -XX:+UseStringDeduplication'
-cf set-env config-server SERVER_PORT 8888
 cf start config-server
 cd ..
 cd discovery-service
@@ -94,7 +93,7 @@ gh repo clone cf-toolsuite/cf-butler
 cd cf-butler
 rm -f manifest.yml
 cf push cf-butler --no-start
-cf create-user-provided-service cf-butler-secrets -p {path-to-cf-kaizen-root-directory}/config/secrets.butler.json
+cf create-user-provided-service cf-butler-secrets -p /tmp/cf-kaizen/config/secrets.butler.json
 cf bind-service cf-butler cf-butler-secrets
 cf set-env cf-butler JAVA_OPTS '-Djava.security.egd=file:///dev/urandom -XX:+UseG1GC -XX:SoftRefLRUPolicyMSPerMB=1 -XX:+UseStringDeduplication -XX:MaxDirectMemorySize=1G'
 cf set-env cf-butler SPRING_PROFILES_ACTIVE 'on-demand,cloud'
@@ -117,9 +116,9 @@ cf set-env cf-hoover EUREKA_CLIENT_HEALTHCHECK_ENABLED true
 cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED true
 cf set-env cf-hoover SPRING_CONFIG_IMPORT 'optional:configserver:https://config-server.apps-127-0-0-1.nip.io'
 cf push cf-hoover --no-start
-cf set-env cf-butler JAVA_OPTS '-Djava.security.egd=file:///dev/urandom -XX:+UseG1GC -XX:SoftRefLRUPolicyMSPerMB=1 -XX:+UseStringDeduplication -XX:MaxDirectMemorySize=1G'
-cf set-env cf-butler SPRING_PROFILES_ACTIVE 'on-demand,cloud'
-cf start cf-butler
+cf set-env cf-hoover JAVA_OPTS '-Djava.security.egd=file:///dev/urandom -XX:+UseG1GC -XX:+UseStringDeduplication'
+cf set-env cf-hoover SPRING_PROFILES_ACTIVE 'on-demand,cloud'
+cf start cf-hoover
 ```
 
 ### Configuring Claude Desktop
@@ -149,7 +148,10 @@ Validate that the additional tools are present before crafting and executing you
   "args": [
     "-jar",
     "-Ddefault.url=cf-hoover.apps-127-0-0-1.nip.io",
-    "<path-to-.m2-home>repository/org/cftoolsuite/cfapp/cf-kaizen-hoover-client/0.0.1-SNAPSHOT/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar""
+    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-hoover-client/0.0.1-SNAPSHOT/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar""
   ]
 }
 ```
+
+> [!IMPORTANT]
+> Replace <path-to.m2-home> above with $HOME/.m2 when on Linux or MacOS and %USERPROFILE%\.m2 when on Windows.  Evaluate the path options mentioned and be sure to replace with an absolute path. 
