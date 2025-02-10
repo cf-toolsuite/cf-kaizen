@@ -2,7 +2,7 @@
 
 [![GA](https://img.shields.io/badge/Release-Alpha-darkred)](https://img.shields.io/badge/Release-Alpha-darkred) ![Github Action CI Workflow Status](https://github.com/cf-toolsuite/cf-kaizen/actions/workflows/ci.yml/badge.svg) [![Known Vulnerabilities](https://snyk.io/test/github/cf-toolsuite/cf-kaizen/badge.svg?style=plastic)](https://snyk.io/test/github/cf-toolsuite/cf-kaizen)
 
-This multi-module project hosts a client code-generated from an OpenAPI derivative of the [cf-butler](https://github.com/cf-toolsuite/cf-butler) and [cf-hoover](https://github.com/cf-toolsuite/cf-hoover) APIs combined with a Spring AI implementation.
+This multi-module project hosts a client code-generated from an OpenAPI derivative of the [cf-butler](https://github.com/cf-toolsuite/cf-butler/blob/main/docs/ENDPOINTS.md) and [cf-hoover](https://github.com/cf-toolsuite/cf-hoover/blob/main/docs/ENDPOINTS.md) APIs combined with a Spring AI implementation.
 It also includes an MCP server, MCP client configuration for use with Claude desktop.
 
 * [Background](#background)
