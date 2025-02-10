@@ -103,6 +103,7 @@ or
 implementation 'org.cftoolsuite:cf-kaizen-hoover-client:{release-version}'
 ```
 
+> [!IMPORTANT]
 > Replace occurrences of {release-version} above with a valid artifact release version number
 
 ### Add configuration
@@ -169,6 +170,7 @@ or
 }
 ```
 
+> [!IMPORTANT]
 > Replace occurrences of `<path-to-project>` and `<cf-kaizen-*-application-instance-api-endpoint>` above with appropriate values
 
 Restart Claude Desktop instance.
