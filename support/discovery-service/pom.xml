@@ -10,13 +10,13 @@
         <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>org.cftoolsuite</groupId>
-    <artifactId>cf-toolsuite-discovery-service</artifactId>
+    <groupId>org.cftoolsuite.cfapp</groupId>
+    <artifactId>cf-kaizen-discovery-service</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
-    <name>CF Toolsuite Discovery Service</name>
+    <name>CF Kaizen Discovery Service</name>
     <description>This discovery service is powered by Eureka.  Eureka is a REST based service that is primarily used in the AWS cloud for locating services for the purpose of load balancing and fail-over of middle-tier servers.</description>
     <inceptionYear>2025</inceptionYear>
 

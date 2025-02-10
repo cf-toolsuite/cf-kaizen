@@ -16,6 +16,15 @@
   * (optionally) [sdk](https://sdkman.io/)
     * it might be the easiest way to install the Java SDK, Maven and Gradle
 
+### Building MCP servers
+
+```bash
+cd /tmp
+gh repo clone cf-toolsuite/cf-kaizen
+cd cf-kaizen
+mvn install
+```
+
 ### Installation
 
 Follow these [instructions](https://github.com/cloudfoundry/korifi/blob/main/INSTALL.md).
@@ -52,14 +61,95 @@ http --verify=no https://primes.apps-127-0-0-1.nip.io/primes/37/99
 
 #### of infrastructure services
 
-Since Korifi does not have marketplace service offerings for Spring Cloud Config Server and Spring Cloud Service Registry, we will configure and deploy each as application instances.
+Since Korifi does not have Marketplace service offerings for [Spring Cloud Config Server](https://docs.spring.io/spring-cloud-config/docs/current/reference/html/#_quick_start) and [Spring Cloud Service Registry](https://spring.io/guides/gs/service-registration-and-discovery), we will configure and deploy each as application instances.
 
-TBD
+You built the MCP servers, right?
+
+```bash
+cd /tmp/cf-kaizen/support
+cd config-server
+cf push config-server --no-start
+cf set-env config-server EUREKA_CLIENT_REGISTER_WITH_EUREKA false
+cf set-env config-server EUREKA_CLIENT_FETCH_REGISTRY false
+cf set-env config-server JAVA_OPTS '-XX:+UseG1GC -XX:+UseStringDeduplication'
+cf set-env config-server SERVER_PORT 8888
+cf start config-server
+cd ..
+cd discovery-service
+cf push discovery-service --no-start
+cf set-env discovery-service JAVA_OPTS '-XX:+UseG1GC -XX:+UseStringDeduplication'
+cf start discovery-service
+```
 
 #### of cf-toolsuite applications
 
-TBD
+> [!WARNING]
+> This has NOT been tested! Some further research, diagnosis, and troubleshooting may be required.
+
+cf-butler 
+
+```bash
+cd /tmp
+gh repo clone cf-toolsuite/cf-butler
+cd cf-butler
+rm -f manifest.yml
+cf push cf-butler --no-start
+cf create-user-provided-service cf-butler-secrets -p {path-to-cf-kaizen-root-directory}/config/secrets.butler.json
+cf bind-service cf-butler cf-butler-secrets
+cf set-env cf-butler JAVA_OPTS '-Djava.security.egd=file:///dev/urandom -XX:+UseG1GC -XX:SoftRefLRUPolicyMSPerMB=1 -XX:+UseStringDeduplication -XX:MaxDirectMemorySize=1G'
+cf set-env cf-butler SPRING_PROFILES_ACTIVE 'on-demand,cloud'
+cf start cf-butler
+```
+
+cf-hoover
+
+```bash
+cd /tmp
+gh repo clone cf-toolsuite/cf-hoover
+cd cf-hoover
+rm -f manifest.yml
+cf set-env cf-hoover EUREKA_INSTANCE_HEALTH-CHECK-URL-PATH /actuator/health
+cf set-env cf-hoover EUREKA_INSTANCE_PREFER-IP-ADDRESS true
+cf set-env cf-hoover EUREKA_CLIENT_REGISTER-WITH-EUREKA true
+cf set-env cf-hoover EUREKA_CLIENT_FETCH-REGISTRY true
+cf set-env cf-hoover EUREKA_CLIENT_SERVICE-URL_DEFAULT-ZONE 'https://discovery-service.apps-127-0-0-1.nip.io/eureka/'
+cf set-env cf-hoover EUREKA_CLIENT_HEALTHCHECK_ENABLED true
+cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED true
+cf set-env cf-hoover SPRING_CONFIG_IMPORT 'optional:configserver:https://config-server.apps-127-0-0-1.nip.io'
+cf push cf-hoover --no-start
+cf set-env cf-butler JAVA_OPTS '-Djava.security.egd=file:///dev/urandom -XX:+UseG1GC -XX:SoftRefLRUPolicyMSPerMB=1 -XX:+UseStringDeduplication -XX:MaxDirectMemorySize=1G'
+cf set-env cf-butler SPRING_PROFILES_ACTIVE 'on-demand,cloud'
+cf start cf-butler
+```
 
 ### Configuring Claude Desktop
 
-TBD 
+Now we need to configure Claude Desktop.
+Launch the desktop.
+From the File menu, choose Settings.
+Click on the Developer tab in the left-hand navigation pane.
+Click on the Edit Config button.
+Open the file named `claude_desktop_config.json` for editing in your favorite text editor,
+then insert the following stanzas within `"mcpServers": {}`.
+Save your update.
+Close and re-launch Claude Desktop for the update to take effect.
+Validate that the additional tools are present before crafting and executing your next prompt.
+
+```json
+"cf-kaizen-butler-client": {
+  "command": "java",
+  "args": [
+    "-jar",
+    "-Ddefault.url=cf-butler.apps-127-0-0-1.nip.io",
+    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-butler-client/0.0.1-SNAPSHOT/cf-kaizen-butler-client-0.0.1-SNAPSHOT.jar"
+  ]
+},
+"cf-kaizen-hoover-client": {
+  "command": "java",
+  "args": [
+    "-jar",
+    "-Ddefault.url=cf-hoover.apps-127-0-0-1.nip.io",
+    "<path-to-.m2-home>repository/org/cftoolsuite/cfapp/cf-kaizen-hoover-client/0.0.1-SNAPSHOT/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar""
+  ]
+}
+```
