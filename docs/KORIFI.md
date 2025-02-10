@@ -72,6 +72,8 @@ cf push config-server --no-start
 cf set-env config-server EUREKA_CLIENT_REGISTER_WITH_EUREKA false
 cf set-env config-server EUREKA_CLIENT_FETCH_REGISTRY false
 cf set-env config-server JAVA_OPTS '-XX:+UseG1GC -XX:+UseStringDeduplication'
+cf create-user-provided-service github-repository-target -p /tmp/cf-kaizen/config/secrets.hoover.json
+cf bind-service config-server github-repository-target
 cf start config-server
 cd ..
 cd discovery-service
