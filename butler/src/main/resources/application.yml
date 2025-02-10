@@ -41,6 +41,17 @@ management:
 default:
   url: ${CF_BUTLER_API_ENDPOINT:}
 
+accounting:
+  url: ${default.url}
+onDemand:
+  url: ${default.url}
+policies:
+  url: ${default.url}
+products:
+  url: ${default.url}
+snapshot:
+  url: ${default.url}
+
 logging:
   pattern:
     console:

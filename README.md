@@ -37,9 +37,9 @@ Start with:
 
 * Git CLI (2.43.0 or better)
 * Github CLI (2.65.0 or better)
-* httpie CLI (3.2.2 or better)
 * Java SDK (21 or better)
 * Maven (3.9.9 or better)
+* Claude desktop
 
 ## How to clone
 
@@ -143,11 +143,33 @@ Then you'll want to integrate one or multiple clients with Claude desktop via MC
 
 Follow these instructions.
 
-Add the following stanza to a file called `claude_desktop_config.json`:
+Add the following stanza(s) to a file called `claude_desktop_config.json`:
 
 ```json
-"": {}
+"cf-kaizen-butler-client": {
+  "command": "java",
+  "args": [
+    "-jar",
+    "-Ddefault.url=<cf-butler-application-instance-endpoint-api>",
+    "<path-to-project>/target/cf-kaizen-butler-client-0.0.1-SNAPSHOT.jar"
+  ]
+}
 ```
+
+or 
+
+```json
+"cf-kaizen-hoover-client": {
+  "command": "java",
+  "args": [
+    "-jar",
+    "-Ddefault.url=<cf-hoover-application-instance-endpoint-api>",
+    "<path-to-project>/target/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar"
+  ]
+}
+```
+
+> Replace occurrences of `<path-to-project>` and `<cf-kaizen-*-application-instance-endpoint-api>` above with appropriate values
 
 Restart Claude Desktop instance.
 Verify that you have a new set of tool calls available.
