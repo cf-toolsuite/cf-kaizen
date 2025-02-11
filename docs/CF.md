@@ -118,6 +118,7 @@ while [[ $(cf service cf-hoover-config) != *"succeeded"* ]]; do
   sleep 5
 done
 cf bind-service cf-hoover cf-hoover-config
+cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED false
 cf start cf-hoover
 ```
 

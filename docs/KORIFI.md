@@ -110,6 +110,7 @@ cf set-env cf-hoover SPRING_CONFIG_IMPORT 'optional:configserver:https://config-
 cf push cf-hoover --no-start
 cf set-env cf-hoover JAVA_OPTS '-Djava.security.egd=file:///dev/urandom -XX:+UseG1GC -XX:+UseStringDeduplication'
 cf set-env cf-hoover SPRING_PROFILES_ACTIVE 'on-demand,cloud'
+cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED false
 cf start cf-hoover
 ```
 
