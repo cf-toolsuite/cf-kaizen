@@ -63,7 +63,7 @@ http --verify=no https://primes.apps-127-0-0-1.nip.io/primes/37/99
 
 #### of infrastructure services
 
-Since Korifi does not have Marketplace service offerings for [Spring Cloud Config Server](https://docs.spring.io/spring-cloud-config/docs/current/reference/html/#_quick_start) and [Spring Cloud Service Registry](https://spring.io/guides/gs/service-registration-and-discovery), we will configure and deploy each as application instances.
+Since Korifi does not have a Marketplace service offering for [Spring Cloud Config Server](https://docs.spring.io/spring-cloud-config/docs/current/reference/html/#_quick_start), we will configure and deploy it as an application instance.
 
 You built the MCP servers, right?
 
@@ -77,11 +77,6 @@ cf set-env config-server JAVA_OPTS '-XX:+UseG1GC -XX:+UseStringDeduplication'
 cf create-user-provided-service github-repository-target -p /tmp/cf-kaizen/config/secrets.hoover.json
 cf bind-service config-server github-repository-target
 cf start config-server
-cd ..
-cd discovery-service
-cf push discovery-service --no-start
-cf set-env discovery-service JAVA_OPTS '-XX:+UseG1GC -XX:+UseStringDeduplication'
-cf start discovery-service
 ```
 
 #### of cf-toolsuite applications
@@ -111,13 +106,6 @@ cd /tmp
 gh repo clone cf-toolsuite/cf-hoover
 cd cf-hoover
 rm -f manifest.yml
-cf set-env cf-hoover EUREKA_INSTANCE_HEALTH-CHECK-URL-PATH /actuator/health
-cf set-env cf-hoover EUREKA_INSTANCE_PREFER-IP-ADDRESS true
-cf set-env cf-hoover EUREKA_CLIENT_REGISTER-WITH-EUREKA true
-cf set-env cf-hoover EUREKA_CLIENT_FETCH-REGISTRY true
-cf set-env cf-hoover EUREKA_CLIENT_SERVICE-URL_DEFAULT-ZONE 'https://discovery-service.apps-127-0-0-1.nip.io/eureka/'
-cf set-env cf-hoover EUREKA_CLIENT_HEALTHCHECK_ENABLED true
-cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED true
 cf set-env cf-hoover SPRING_CONFIG_IMPORT 'optional:configserver:https://config-server.apps-127-0-0-1.nip.io'
 cf push cf-hoover --no-start
 cf set-env cf-hoover JAVA_OPTS '-Djava.security.egd=file:///dev/urandom -XX:+UseG1GC -XX:+UseStringDeduplication'

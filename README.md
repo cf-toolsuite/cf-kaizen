@@ -13,7 +13,9 @@ It also includes two MCP servers and MCP client configuration for use with Claud
     * [Build](#how-to-build)
     * [Consume](#how-to-consume)
     * [Run](#how-to-run)
-    * Integrate w/ cf-butler and cf-hoover hosted on [Korifi](docs/KORIFI.md)
+    * Integrate w/ cf-butler and cf-hoover hosted on
+      * [Korifi](docs/KORIFI.md)
+      * [Cloud Foundry](docs/CF.md)
 
 ## Background
 
