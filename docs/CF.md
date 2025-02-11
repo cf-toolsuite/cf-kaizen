@@ -9,6 +9,7 @@
   * git
   * gh
   * java
+  * jq
   * mvn
   * gradle
   * (optionally) [sdk](https://sdkman.io/)
@@ -93,7 +94,8 @@ gh repo clone cf-toolsuite/cf-butler
 cd cf-butler
 mvn package
 cf push cf-butler --no-start
-cf create-service credhub default cf-butler-secrets -p /tmp/cf-kaizen/config/secrets.butler.json
+jq '.["CF_API-HOST"] = "api.sys.dhaka.cf-app.com"' /tmp/cf-kaizen/config/secrets.butler.json > /tmp/cf-kaizen/config/secrets.butler-on-dhaka.json
+cf create-service credhub default cf-butler-secrets -c /tmp/cf-kaizen/config/secrets.butler-on-dhaka.json
 cf bind-service cf-butler cf-butler-secrets
 cf start cf-butler
 ```
@@ -106,7 +108,8 @@ gh repo clone cf-toolsuite/cf-hoover
 cd cf-hoover
 mvn package
 cf push cf-hoover --no-start
-cf create-service p.config-server standard cf-hoover-config -c config/config-server.json
+jq '.git.label = "dhaka"' /tmp/cf-kaizen/config/secrets.hoover.json > /tmp/cf-kaizen/config/secrets.hoover-on-dhaka.json
+cf create-service p.config-server standard cf-hoover-config -c /tmp/cf-kaizen/config/secrets.hoover-on-dhaka.json
 while [[ $(cf service cf-hoover-config) != *"succeeded"* ]]; do
   echo "cf-hoover-config is not ready yet..."
   sleep 5
