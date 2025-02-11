@@ -40,7 +40,7 @@ Solely following these [instructions](https://github.com/cloudfoundry/korifi/blo
 Set these environment variables:
 
 ```bash
-export CF_ORG=zoolabs
+export CF_ORG=kaizen
 export CF_SPACE=dev
 ```
 

@@ -58,7 +58,7 @@ cf login -u {username} -p "{password}"
 Set these environment variables:
 
 ```bash
-export CF_ORG=zoolabs
+export CF_ORG=kaizen
 export CF_SPACE=dev
 ```
 
