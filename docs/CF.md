@@ -75,6 +75,7 @@ cd /tmp
 gh repo clone fastnsilver/primes
 cd primes
 git checkout 3.4
+gradle build
 cf push primes -m 1G -p ./build/libs/primes-1.0-SNAPSHOT.jar -s cflinuxfs4
 ```
 
@@ -86,6 +87,7 @@ cf-butler
 cd /tmp
 gh repo clone cf-toolsuite/cf-butler
 cd cf-butler
+mvn package
 cf push cf-butler --no-start
 cf create-service credhub default cf-butler-secrets -p /tmp/cf-kaizen/config/secrets.butler.json
 cf bind-service cf-butler cf-butler-secrets
@@ -98,6 +100,7 @@ cf-hoover
 cd /tmp
 gh repo clone cf-toolsuite/cf-hoover
 cd cf-hoover
+mvn package
 cf push cf-hoover --no-start
 cf create-service p.config-server standard cf-hoover-config -c config/config-server.json
 while [[ $(cf service cf-hoover-config) != *"succeeded"* ]]; do
