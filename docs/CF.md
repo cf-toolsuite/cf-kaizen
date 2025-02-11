@@ -143,7 +143,7 @@ Validate that the additional tools are present before crafting and executing you
   "command": "java",
   "args": [
     "-jar",
-    "-Ddefault.url=cf-butler.apps-127-0-0-1.nip.io",
+    "-Ddefault.url=cf-butler-dev.apps.dhaka.cf-app.com",
     "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-butler-client/0.0.1-SNAPSHOT/cf-kaizen-butler-client-0.0.1-SNAPSHOT.jar"
   ]
 },
@@ -151,11 +151,12 @@ Validate that the additional tools are present before crafting and executing you
   "command": "java",
   "args": [
     "-jar",
-    "-Ddefault.url=cf-hoover.apps-127-0-0-1.nip.io",
+    "-Ddefault.url=cf-hoover.apps.dhaka.cf-app.com",
     "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-hoover-client/0.0.1-SNAPSHOT/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar""
   ]
 }
 ```
 
 > [!IMPORTANT]
-> Replace <path-to.m2-home> above with $HOME/.m2 when on Linux or MacOS and %USERPROFILE%\.m2 when on Windows.  Evaluate the path options mentioned and be sure to replace with an absolute path. 
+> Replace <path-to.m2-home> above with $HOME/.m2 when on Linux or MacOS and %USERPROFILE%\.m2 when on Windows.  Evaluate the path options mentioned and be sure to replace with an absolute path.
+> And if you're targeting different foundation(s); replace the value(s) for the default.url args above.
