@@ -76,7 +76,11 @@ gh repo clone fastnsilver/primes
 cd primes
 git checkout 3.4
 gradle build
-cf push primes -m 1G -p ./build/libs/primes-1.0-SNAPSHOT.jar -s cflinuxfs4
+cf push primes -m 1G -p ./build/libs/primes-1.0-SNAPSHOT.jar -s cflinuxfs4 --no-start
+cf set-env primes JAVA_OPTS '-Djava.security.egd=file:///dev/urandom'
+cf set-env primes JBP_CONFIG_OPEN_JDK_JRE '{ jre: { version: 21.+ } }'
+cf set-env primes JBP_CONFIG_SPRING_AUTO_RECONFIGURATION '{ enabled: false }'
+cf start primes
 ```
 
 #### of cf-toolsuite applications
