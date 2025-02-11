@@ -92,10 +92,12 @@ cd /tmp
 gh repo clone cf-toolsuite/cf-butler
 cd cf-butler
 mvn package
-cf push cf-butler --no-start
-jq --arg token "$(jq -r '.RefreshToken' $HOME/.cf/config.json)" '.["CF_REFRESH_TOKEN"] = $token' /tmp/cf-kaizen/config/secrets.butler-on-dhaka.json > /tmp/cf-kaizen/config/secrets.butler-on-dhaka-updated.json
+cf push --no-start --no-route
+jq --arg token "$(jq -r '.RefreshToken' $HOME/.cf/config.json)" '.["CF_REFRESH-TOKEN"] = $token' /tmp/cf-kaizen/config/secrets.butler-on-dhaka.json > /tmp/cf-kaizen/config/secrets.butler-on-dhaka-updated.json
 cf create-service credhub default cf-butler-secrets -c /tmp/cf-kaizen/config/secrets.butler-on-dhaka-updated.json
 cf bind-service cf-butler cf-butler-secrets
+cf create-route apps.dhaka.cf-app.com --hostname cf-butler-dev
+cf map-route cf-butler apps.dhaka.cf-app.com --hostname cf-butler-dev 
 cf start cf-butler
 ```
 
