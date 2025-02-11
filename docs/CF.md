@@ -65,7 +65,7 @@ export CF_SPACE=dev
 Create the organization, the space within it, then target that organization and space:
 
 ```bash
-cf create-org $CF_ORG && cf create-space -o $CF_ORG $CF_SPACE && cf target -o $CF_ORG -s $CF_SPACE
+cf create-org $CF_ORG && cf create-space $CF_SPACE -o $CF_ORG && cf target -o $CF_ORG -s $CF_SPACE
 ```
 
 #### of sample application
