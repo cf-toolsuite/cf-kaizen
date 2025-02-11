@@ -8,7 +8,7 @@ spring:
         enabled: true
         name: ${spring.application.name}
         version: 1.0
-        transport: STDIO
+        stdio: true
 
   main:
     banner-mode: off
