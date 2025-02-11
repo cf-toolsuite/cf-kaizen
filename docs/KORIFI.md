@@ -74,7 +74,7 @@ cf push config-server --no-start
 cf set-env config-server EUREKA_CLIENT_REGISTER_WITH_EUREKA false
 cf set-env config-server EUREKA_CLIENT_FETCH_REGISTRY false
 cf set-env config-server JAVA_OPTS '-XX:+UseG1GC -XX:+UseStringDeduplication'
-cf create-user-provided-service github-repository-target -p /tmp/cf-kaizen/config/secrets.hoover.json
+cf create-user-provided-service github-repository-target -p /tmp/cf-kaizen/config/secrets.hoover-on-korifi.json
 cf bind-service config-server github-repository-target
 cf start config-server
 ```
@@ -92,7 +92,7 @@ gh repo clone cf-toolsuite/cf-butler
 cd cf-butler
 rm -f manifest.yml
 cf push cf-butler --no-start
-cf create-user-provided-service cf-butler-secrets -p /tmp/cf-kaizen/config/secrets.butler.json
+cf create-user-provided-service cf-butler-secrets -p /tmp/cf-kaizen/config/secrets.butler-on-korifi.json
 cf bind-service cf-butler cf-butler-secrets
 cf set-env cf-butler JAVA_OPTS '-Djava.security.egd=file:///dev/urandom -XX:+UseG1GC -XX:SoftRefLRUPolicyMSPerMB=1 -XX:+UseStringDeduplication -XX:MaxDirectMemorySize=1G'
 cf set-env cf-butler SPRING_PROFILES_ACTIVE 'on-demand,cloud'
