@@ -7,7 +7,7 @@ spring:
       server:
         enabled: true
         name: ${spring.application.name}
-        version: 1.0
+        version: 1.0.0
         stdio: true
 
   main:
