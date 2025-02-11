@@ -152,7 +152,7 @@ Validate that the additional tools are present before crafting and executing you
   "args": [
     "-jar",
     "-Ddefault.url=cf-hoover.apps.dhaka.cf-app.com",
-    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-hoover-client/0.0.1-SNAPSHOT/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar""
+    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-hoover-client/0.0.1-SNAPSHOT/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar"
   ]
 }
 ```
