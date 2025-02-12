@@ -8,7 +8,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -178,7 +178,7 @@ public class ButlerService {
     }
 
     @Tool(description = "Get the last collection time.")
-    public OffsetDateTime getCollectionTime() {
+    public LocalDateTime getCollectionTime() {
         return snapshotApiClient.collectGet().getBody();
     }
 

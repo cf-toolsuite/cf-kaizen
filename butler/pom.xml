@@ -119,7 +119,7 @@
                                 <interfaceOnly>false</interfaceOnly>
                                 <useJakartaEe>true</useJakartaEe>
                                 <useTags>true</useTags>
-                                <dateLibrary>java8</dateLibrary>
+                                <dateLibrary>java8-localdatetime</dateLibrary>
                                 <java8>true</java8>
                                 <useBeanValidation>false</useBeanValidation>
                                 <performBeanValidation>false</performBeanValidation>

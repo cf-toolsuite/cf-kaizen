@@ -10,6 +10,9 @@ spring:
         version: 1.0.0
         stdio: true
 
+  jackson:
+    default-property-inclusion: non_null
+
   main:
     banner-mode: off
     web-application-type: none
@@ -56,7 +59,7 @@ logging:
   pattern:
     console:
   file:
-    name: /cf-kaizen-butler-client.log
+    name: ${user.home}/logs/cf-kaizen-butler-client.log
 
 ---
 
