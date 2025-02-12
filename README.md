@@ -178,3 +178,5 @@ or
 Restart Claude Desktop instance.
 Verify that you have a new set of tool calls available.
 Chat with Claude.
+
+![Screenshot of tools enabled in Claude Desktop](docs/snap-from-claude-desktop.png)
