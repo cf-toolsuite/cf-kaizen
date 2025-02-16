@@ -20,11 +20,13 @@ These steps outline how to configure Korifi to use a GitHub OIDC provider for UA
 1.  **Register a New OIDC Application in GitHub:**
 
     *   Navigate to your GitHub organization or personal account settings.
-    *   Go to **Developer settings** -> **OAuth Apps** and click on **Register a new application**.
+    *   Go to **Developer settings** -> **OAuth Apps** and click on the **New OAuth app** button.
     *   Fill in the required details:
         *   **Application name:** A descriptive name for your Korifi integration (e.g., "Korifi UAA OIDC").
         *   **Homepage URL:** The URL of your Korifi API server (e.g., `https://api.korifi.example.org`).
+          * If you're installing Korifi on a Kind cluster hosted on your workstation or laptop, set the Homepage URL to `https://localhost`.
         *   **Authorization callback URL:**  The callback URL for your UAA instance. This URL should be in the format `<UAA_URL>/oauth/callback`.  For example: `https://uaa.korifi.example.org/oauth/callback`.
+          * If you're installing Korifi on a Kind cluster hosted on your workstation or laptop, set the Authorization callback URL to `https://localhost/oauth/callback`.
     *   Click **Register application**.
     *   Note the **Client ID** and generate a new **Client Secret**.  You'll need these later.
 
