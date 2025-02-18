@@ -65,46 +65,31 @@ spec:
     spec:
       containers:
         - name: install-uaa
-          image: cloudfoundry/uaa:77.21.0
+          image: bitnami/kubectl:1.32.2
           command:
             - /bin/bash
             - -c
             - |
               set -euo pipefail
               
+              # Install git (needed for cloning the UAA repo)
+              apt-get update && apt-get install -y --no-install-recommends git
+              
+              UAA_VERSION="v77.26.0"
+              git clone https://github.com/cloudfoundry/uaa.git /tmp/uaa
+              cd /tmp/uaa
+              git checkout "${UAA_VERSION}"
               cat <<EOF > /tmp/uaa-values.yaml
-              replicaCount: 1
-              
-              image:
-                repository: cloudfoundry/uaa
-                tag: 77.21.0  #<--Set to desired image
-                pullPolicy: IfNotPresent
-              
-              service:
-                type: ClusterIP
-                port: 8080
-              
-              uaa:
-                spring_profiles: "default,hsqldb"
-                url: http://uaa.uaa.svc.cluster.local:8080
-                javaOpts: "-Xmx512m -Xms128m"
-                authentication:
-                    oauth:
-                      clients:
-                        admin:
-                          secret: adminsecret
-                          authorized-grant-types: client_credentials,password,refresh_token
-                          authorities: uaa.admin
-                          scope: openid
-                          override: true
-                scim:
-                  userids_enabled: true
-              
-              secrets:
-                adminClientSecret: adminsecret
-              
+              image: cloudfoundry/uaa:${UAA_VERSION}
+              database:
+                scheme: hsqldb
+                url: "jdbc:hsqldb:mem:uaa"
+              admin:
+                client_secret: GITHUB_OIDC_CLIENT_SECRET
+              issuer:
+                uri: http://uaa.uaa.svc.cluster.local:8080
               EOF
-              helm install uaa oci://ghcr.io/cloudfoundry/uaa-helm-chart --version 9.6.0 -n uaa -f /tmp/uaa-values.yaml
+              helm template uaa ./uaa-helm-chart -n uaa -f /tmp/uaa-values.yaml  | kubectl apply -f -
               kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=uaa -n uaa --timeout=5m
 
       restartPolicy: Never
