@@ -15,6 +15,7 @@
   * gradle
   * (optionally) [sdk](https://sdkman.io/)
     * it might be the easiest way to install the Java SDK, Maven and Gradle
+  * yq
 
 ### Building MCP servers
 
@@ -27,13 +28,137 @@ mvn install
 
 ### Installation
 
-Solely following these [instructions](https://github.com/cloudfoundry/korifi/blob/main/INSTALL.md) would be great, but we also have to weave in [experimental support for UAA](https://github.com/cloudfoundry/korifi/blob/main/docs/experimental-uaa-authentication.md). 
+Navigate to your GitHub Organization or Personal Account **Settings**.
 
-> [!TIP]
-> Arguably the simplest thing to do is to launch a Kind cluster.  If you choose that path, follow these [instructions](https://github.com/cloudfoundry/korifi/blob/main/INSTALL.kind.md).
-> When you're ready to "test Korifi" with a cf push, choose to push a Docker app, like nginx.
+Go to **Developer settings** &#x226B; **OAuth Apps** and click on the **New OAuth app** button. 
 
-// TODO Author step-by-step instructions for standing up Korifi integrating Github OIDC credentials.  
+Fill in the required details:
+
+| Key               | Value |
+|-------------------|-------|
+| Application name  | Korifi UAA OIDC |
+| Homepage URL | https://localhost |
+| Authorization callback URL |  http://uaa.uaa.svc.cluster.local:8080/oauth/callback |
+
+Click **Register application**.
+
+Note the **Client ID** and generate a new **Client Secret**.
+
+Configure and launch a new Kind cluster.
+
+> [!IMPORTANT]
+> Set the value of the GITHUB_OIDC_CLIENT_ID environment variable before attempting to launch Kind
+
+```bash
+export GITHUB_OIDC_CLIENT_ID=
+cat <<EOF | kind create cluster --name korifi --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localregistry-docker-registry.default.svc.cluster.local:30050"]
+  endpoint = ["http://127.0.0.1:30050"]
+  [plugins."io.containerd.grpc.v1.cri".registry.configs]
+  [plugins."io.containerd.grpc.v1.cri".registry.configs."127.0.0.1:30050".tls]
+  insecure_skip_verify = true
+  nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: ClusterConfiguration
+    apiServer:
+      extraArgs:
+        oidc-issuer-url: https://token.actions.githubusercontent.com
+        oidc-client-id: ${GITHUB_OIDC_CLIENT_ID}
+        oidc-username-claim: sub 
+  extraPortMappings:
+  - containerPort: 32080
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 32443
+    hostPort: 443
+    protocol: TCP
+  - containerPort: 30050
+    hostPort: 30050
+    protocol: TCP
+  - containerPort: 8080
+    hostPort: 8080
+    protocol: TCP
+    EOF
+```
+
+Install Korifi with experimental UAA support enabled.
+
+> [!IMPORTANT]
+> Set the value of the GITHUB_OIDC_CLIENT_SECRET environment variable before attempting to install Korifi
+
+```bash
+export GITHUB_OIDC_CLIENT_SECRET=
+curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yaml
+yq -i --arg new_secret "$GITHUB_OIDC_CLIENT_SECRET" '
+  .spec.template.spec.containers[0].command[2] |=
+  (
+    sub("client_secret: GITHUB_OIDC_CLIENT_SECRET"; "client_secret: " + $new_secret)
+  )
+' "install-korifi-kind-w-uaa-enabled.yaml"
+kubectl apply -f install-korifi-kind-w-uaa-enabled.yaml
+```
+
+If you want to track each job's progress, run:
+
+```bash
+kubectl -n korifi-installer logs --follow job/install-uaa
+```
+
+or
+
+```bash
+kubectl -n korifi-installer logs --follow job/install-korifi
+```
+
+(Optional) After the job is complete, you can delete the `korifi-installer` namespace with:
+
+```bash
+kubectl delete namespace korifi-installer
+```
+
+Configure the Admin User Role Binding.
+
+> [!IMPORTANT]
+> Set the value of the GITHUB_USERNAME environment variable before attempting to apply the RoleBinding
+> 
+```bash
+export GITHUB_USERNAME=
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations:
+    cloudfoundry.org/propagate-cf-role: "true"
+  name: github-user-admin-binding
+  namespace: cf
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: korifi-controllers-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: github:${GITHUB_USERNAME}
+EOF
+```
+
+### Authentication
+
+```bash
+cf api https://localhost --skip-ssl-validation
+cf login
+```
+
+> When you run `cf login`, the CLI will redirect you to GitHub for authentication.
+> After successful authentication, you'll be redirected back to the CLI, and you'll be logged in to Korifi using your GitHub identity.
 
 ### Deployment
 
@@ -48,6 +173,12 @@ Create the organization, the space within it, then target that organization and 
 
 ```bash
 cf create-org $CF_ORG && cf create-space $CF_SPACE -o $CF_ORG && cf target -o $CF_ORG -s $CF_SPACE
+```
+
+Grant role for User using GitHub OIDC for UAA:
+
+```bash
+cf set-space-role $GITHUB_USERNAME $CF_ORG $CF_SPACE SpaceDeveloper --origin github
 ```
 
 #### of sample application
@@ -80,9 +211,6 @@ cf start config-server
 ```
 
 #### of cf-toolsuite applications
-
-> [!WARNING]
-> This has NOT been tested! Some further research, diagnosis, and troubleshooting may be required.
 
 cf-butler 
 
