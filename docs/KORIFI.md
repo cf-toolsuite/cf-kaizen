@@ -29,7 +29,7 @@ mvn install
 
 Navigate to your GitHub Organization or Personal Account **Settings**.
 
-Go to **Developer settings** &#x226B; **OAuth Apps** and click on the **New OAuth app** button. 
+Go to **Developer settings** &#x226B; **OAuth Apps** and click on the **New OAuth app** button.
 
 Fill in the required details:
 
@@ -42,7 +42,7 @@ Fill in the required details:
 Click **Register application**.  Then generate a new **Client Secret**.
 
 > [!Note]
-> Jot down the client id and client secret, you'll need them later on!   
+> Jot down the client id and client secret, you'll need them later on!
 
 Configure and launch a new Kind cluster.
 
@@ -115,7 +115,7 @@ Configure the Admin User Role Binding.
 
 > [!IMPORTANT]
 > Set the value of the GITHUB_USERNAME environment variable before attempting to apply the RoleBinding
-> 
+
 ```bash
 export GITHUB_USERNAME=
 kubectl apply -f - <<EOF
@@ -144,6 +144,7 @@ cf api https://localhost --skip-ssl-validation
 cf login
 ```
 
+> [!NOTE]
 > When you run `cf login`, the CLI will redirect you to GitHub for authentication.
 > After successful authentication, you'll be redirected back to the CLI, and you'll be logged in to Korifi using your GitHub identity.
 

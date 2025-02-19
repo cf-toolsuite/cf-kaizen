@@ -71,34 +71,34 @@ spec:
             - -c
             - |
               set -euo pipefail
-              
+
               apk add openssl util-linux
-              
+
               indent() {
                 local indent_level=$1
                 local input_string=$2
                 local spaces=$(printf '%*s' "$indent_level" "")
-              
+
                 # Use sed to insert spaces at the beginning of lines 2 and onwards.
                 sed "2,\$s/^/${spaces}/" <<< "$input_string"
               }
-              
+
               openssl genrsa -out /tmp/jwt_private.pem 2048
               openssl rsa -in /tmp/jwt_private.pem -pubout -out /tmp/jwt_public.pem
               JWT_PRIVATE_KEY=$(cat /tmp/jwt_private.pem)
               JWT_PUBLIC_KEY=$(cat /tmp/jwt_public.pem)
-              
+
               openssl req -x509 -sha256 -newkey rsa:2048 -keyout /tmp/saml_private.pem -out /tmp/saml_cert.pem -days 3650 -nodes -subj "/CN=uaa-saml-key" -outform PEM
               SAML_PRIVATE_KEY=$(cat /tmp/saml_private.pem)
               SAML_CERTIFICATE=$(cat /tmp/saml_cert.pem)
-              
+
               PASSPHRASE=$(uuidgen)
-              
+
               CF_KAIZEN_BRANCH="main"
               git clone https://github.com/cf-toolsuite/cf-kaizen.git /tmp/cf-kaizen
               cd /tmp/cf-kaizen
               git checkout "${CF_KAIZEN_BRANCH}"
-              
+
               cat <<EOF > /tmp/uaa-values.yaml
               admin:
                 client_secret: ADMIN_PASSWORD
@@ -124,15 +124,19 @@ spec:
                       relyingPartyId: GITHUB_OIDC_CLIENT_ID
                       relyingPartySecret: GITHUB_OIDC_CLIENT_SECRET
                 saml:
-                  activeKeyId: saml-key
+                  serviceProviderKey: |
+                    $(indent 6 "${SAML_PRIVATE_KEY}")
+                  serviceProviderCertificate: |
+                    $(indent 6 "${SAML_CERTIFICATE}")
+                  activeKeyId: "saml-key"
                   keys:
                     saml-key:
-                      key: |
+                      signingKey: |
                         $(indent 10 "${SAML_PRIVATE_KEY}")
                       certificate: |
                         $(indent 10 "${SAML_CERTIFICATE}")
               EOF
-              
+
               helm upgrade --install uaa ./korifi/uaa -n uaa --create-namespace -f /tmp/uaa-values.yaml
               kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=uaa -n uaa --timeout=5m
 
@@ -171,19 +175,19 @@ spec:
                 --set persistence.enabled=true \
                 --set persistence.deleteEnabled=true \
                 --set secrets.htpasswd='user:$2y$05$Ue5dboOfmqk6Say31Sin9uVbHWTl8J1Sgq9QyAEmFQRnq1TPfP1n2'
-              
+
               while ! curl -o /dev/null http://localregistry-docker-registry.default.svc.cluster.local:30050/v2/_catalog 2>/dev/null; do
                 echo Waiting for the local docker registry to respond...
                 sleep 1
               done
-              
+
               registry_status_code=""
               while [[ "$registry_status_code" != "200" ]]; do
                 echo Waiting for the local docker registry to start...
                 registry_status_code=$(curl -o /dev/null -w "%{http_code}" --user user:password http://localregistry-docker-registry.default.svc.cluster.local:30050/v2/_catalog 2>/dev/null)
                 sleep 1
               done
-              
+
               helm upgrade --install korifi helm/korifi \
                 --namespace korifi \
                 --set=adminUserName="kubernetes-admin" \
@@ -205,9 +209,9 @@ spec:
                 --set=experimental.uaa.enabled="true" \
                 --set=experimental.uaa.url="http://uaa.uaa.svc.cluster.local:8080" \
                 --wait
-              
+
               kubectl wait --for=condition=ready clusterbuilder --all=true --timeout=15m
-              
+
               kubectl apply -f - <<EOF
               kind: GatewayClass
               apiVersion: gateway.networking.k8s.io/v1beta1
@@ -220,7 +224,7 @@ spec:
                   group: projectcontour.io
                   name: contour-nodeport-params
                   namespace: projectcontour
-              
+
               ---
               kind: ContourDeployment
               apiVersion: projectcontour.io/v1alpha1
