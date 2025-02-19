@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-uaa
+  name: {{ .Release.Name }}
   labels:
     {{- include "uaa.labels" . | nindent 4 }}
 spec:
@@ -181,30 +181,30 @@ spec:
       volumes:
         - name: uaa-config
           configMap:
-            name: {{ .Release.Name }}-uaa-config
+            name: {{ .Release.Name }}-config
         - name: smtp-credentials-file
           secret:
             optional: true
-            secretName: {{ .Release.Name }}-uaa-smtp-credentials
+            secretName: {{ .Release.Name }}-smtp-credentials
         - name: database-credentials-file
           secret:
             optional: true
-            secretName: {{ .Release.Name }}-uaa-database-credentials
+            secretName: {{ .Release.Name }}-database-credentials
         - name: admin-client-credentials-file
           secret:
-            secretName: {{ .Release.Name }}-uaa-admin-client-credentials
+            secretName: {{ .Release.Name }}-admin-client-credentials
         - name: jwt-policy-signing-keys-file
           secret:
-            secretName: {{ .Release.Name }}-uaa-jwt-policy-signing-keys
+            secretName: {{ .Release.Name }}-jwt-policy-signing-keys
         - name: ca-certs-files
           secret:
             optional: true
-            secretName: {{ .Release.Name }}-uaa-ca-certs
+            secretName: {{ .Release.Name }}-ca-certs
         - name: truststore-file
           emptyDir: {}
         - name: saml-keys-file
           secret:
-            secretName: {{ .Release.Name }}-uaa-saml-keys
+            secretName: {{ .Release.Name }}-saml-keys
         - name: encryption-keys-file
           secret:
             secretName: {{ .Release.Name }}-encryption-keys

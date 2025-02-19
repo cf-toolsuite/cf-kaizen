@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-uaa-config
+  name: {{ .Release.Name }}-config
   labels:
     {{- include "uaa.labels" . | nindent 4 }}
 data:
