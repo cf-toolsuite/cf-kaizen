@@ -65,31 +65,23 @@ spec:
     spec:
       containers:
         - name: install-uaa
-          image: bitnami/kubectl:1.32.2
+          image: dtzar/helm-kubectl:3.17
           command:
             - /bin/bash
             - -c
             - |
               set -euo pipefail
-              
-              # Install git (needed for cloning the UAA repo)
-              apt-get update && apt-get install -y --no-install-recommends git
-              
-              UAA_VERSION="v77.26.0"
-              git clone https://github.com/cloudfoundry/uaa.git /tmp/uaa
-              cd /tmp/uaa
-              git checkout "${UAA_VERSION}"
+              CF_KAIZEN_BRANCH="main"
+              git clone https://github.com/cf-toolsuite/cf-kaizen.git /tmp/cf-kaizen
+              cd /tmp/cf-kaizen
+              git checkout "${CF_KAIZEN_BRANCH}"
               cat <<EOF > /tmp/uaa-values.yaml
-              image: cloudfoundry/uaa:${UAA_VERSION}
-              database:
-                scheme: hsqldb
-                url: "jdbc:hsqldb:mem:uaa"
               admin:
                 client_secret: GITHUB_OIDC_CLIENT_SECRET
               issuer:
                 uri: http://uaa.uaa.svc.cluster.local:8080
               EOF
-              helm template uaa ./uaa-helm-chart -n uaa -f /tmp/uaa-values.yaml  | kubectl apply -f -
+              helm upgrade --install uaa ./korifi/uaa -n uaa --create-namespace -f /tmp/uaa-values.yaml
               kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=uaa -n uaa --timeout=5m
 
       restartPolicy: Never

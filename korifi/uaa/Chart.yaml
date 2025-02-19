@@ -1,0 +1,5 @@
+apiVersion: v3
+name: uaa-helm-chart
+description: A Helm chart for Cloud Foundry UAA
+version: 0.1.0
+appVersion: "77.21.0"

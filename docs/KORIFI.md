@@ -57,22 +57,22 @@ apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry]
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localregistry-docker-registry.default.svc.cluster.local:30050"]
-  endpoint = ["http://127.0.0.1:30050"]
-  [plugins."io.containerd.grpc.v1.cri".registry.configs]
-  [plugins."io.containerd.grpc.v1.cri".registry.configs."127.0.0.1:30050".tls]
-  insecure_skip_verify = true
-  nodes:
+    [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localregistry-docker-registry.default.svc.cluster.local:30050"]
+        endpoint = ["http://127.0.0.1:30050"]
+    [plugins."io.containerd.grpc.v1.cri".registry.configs]
+      [plugins."io.containerd.grpc.v1.cri".registry.configs."127.0.0.1:30050".tls]
+        insecure_skip_verify = true
+nodes:
 - role: control-plane
   kubeadmConfigPatches:
   - |
     kind: ClusterConfiguration
     apiServer:
       extraArgs:
-        oidc-issuer-url: https://token.actions.githubusercontent.com
-        oidc-client-id: ${GITHUB_OIDC_CLIENT_ID}
-        oidc-username-claim: sub 
+        oidc-issuer-url: "https://token.actions.githubusercontent.com"
+        oidc-client-id: "${GITHUB_OIDC_CLIENT_ID}"
+        oidc-username-claim: sub
   extraPortMappings:
   - containerPort: 32080
     hostPort: 80
@@ -86,7 +86,7 @@ containerdConfigPatches:
   - containerPort: 8080
     hostPort: 8080
     protocol: TCP
-    EOF
+EOF
 ```
 
 Install Korifi with experimental UAA support enabled.
@@ -97,12 +97,7 @@ Install Korifi with experimental UAA support enabled.
 ```bash
 export GITHUB_OIDC_CLIENT_SECRET=
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yaml
-yq -i --arg new_secret "$GITHUB_OIDC_CLIENT_SECRET" '
-  .spec.template.spec.containers[0].command[2] |=
-  (
-    sub("client_secret: GITHUB_OIDC_CLIENT_SECRET"; "client_secret: " + $new_secret)
-  )
-' "install-korifi-kind-w-uaa-enabled.yaml"
+sed -i "s|client_secret: GITHUB_OIDC_CLIENT_SECRET|client_secret: \"$GITHUB_OIDC_CLIENT_SECRET\"|" install-korifi-kind-w-uaa-enabled.yaml
 kubectl apply -f install-korifi-kind-w-uaa-enabled.yaml
 ```
 

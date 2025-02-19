@@ -1,0 +1,98 @@
+# Default values for uaa-helm-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: cloudfoundry/uaa
+  tag: "77.21.0"  # Use appVersion if you want to tie it to Chart.yaml
+  pullPolicy: IfNotPresent
+  digest: "sha256:10bd2a98241f86c52c1d1c2e45593f190eec19fd8308785b16a539804dd46f9b"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "uaa"
+  automountServiceAccountToken: false
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  uaa:
+    requests:
+      memory: "512Mi"
+      cpu: "50m"
+    limits:
+      memory: "2000Mi"
+      cpu: "500m"
+  statsd_exporter:
+    requests:
+      memory: "10Mi"
+      cpu: "10m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
+
+issuer:
+  uri: http://localhost:8080/uaa  # Default, but SHOULD be overridden
+
+tomcat:
+  accessLoggingEnabled: "y"
+
+statsdExporter:
+  image:
+    repository: cloudfoundry/statsd_exporter
+    tag: v0.15.0
+    digest: "sha256:10a64dc4ad0a3e3fe88372f0481dea5c02595c38d168617836a99a649d3ac407"
+
+# --- UAA Configuration ---
+database:
+  scheme: hsqldb      # Default: in-memory
+  url: "jdbc:hsqldb:mem:uaa"  # Default for in-memory
+  # For external databases (MySQL, PostgreSQL), set scheme, url, username, and password.
+  username: ""
+  password: ""
+
+admin:
+  client_secret: "CHANGE_ME" # MUST be changed by the user
+
+smtp:
+  host: ""           # Configure for email
+  port: 25
+  user: ""
+  password: ""
+  starttls: ""
+  from_address: ""
+  sslprotocols: ""
+
+
+jwt:
+  policy:
+    activeKeyId: "CHANGE_ME"  # MUST be changed
+    keys:
+      CHANGE_ME:  # Use the activeKeyId as the key here
+        signingKey: "CHANGE_ME" # And the actual signing key here
+
+login:
+  saml:
+    activeKeyId: "CHANGE_ME"  # MUST be changed
+    keys:
+      CHANGE_ME:  # Use the activeKeyId
+        signingKey: "CHANGE_ME"     # The signing key
+        certificate: "CHANGE_ME"    # The certificate
+
+encryption:
+  active_key_label: "CHANGE_ME"  # MUST be changed
+  encryption_keys:
+    - label: "CHANGE_ME"
+      passphrase: "CHANGE_ME"
+      encryptionKey: "CHANGE_ME" # The actual encryption key
+
+ca_certs: [] # Array of PEM-encoded certs

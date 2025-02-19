@@ -1,0 +1,20 @@
+UAA has been installed.
+
+**IMPORTANT:** You MUST update the following values in `values.yaml`
+before using this chart in a production environment:
+
+*   `admin.client_secret`
+*   `jwt.policy.activeKeyId` and `jwt.policy.keys`
+*   `login.saml.activeKeyId` and `login.saml.keys`
+*   `encryption.active_key_label` and `encryption.encryption_keys`
+
+If you are *not* using the in-memory database (the default), you also
+need to configure the `database` section with your database credentials:
+
+*   `database.scheme`
+*   `database.url`
+*   `database.username`
+*   `database.password`
+
+To access UAA, you'll need to configure networking (e.g., Ingress)
+to expose the `uaa` service.
