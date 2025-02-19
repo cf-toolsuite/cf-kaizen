@@ -6,9 +6,9 @@ metadata:
     {{- include "uaa.labels" . | nindent 4 }}
 data:
   uaa.yml: |
-    {{- $values := .Values -}}
+    {{- with .Values }}
     issuer:
-      uri: {{ $values.issuer.uri }}
+      uri: {{ .issuer.uri }}
     database:
       maxactive: 100
       maxidle: 10
@@ -16,13 +16,13 @@ data:
       removeabandoned: false
       logabandoned: true
       abandonedtimeout: 300
-      url: {{ $values.database.url }}
+      url: {{ .database.url }}
     smtp:
-      host: {{ $values.smtp.host }}
-      port: {{ $values.smtp.port }}
-      starttls: {{ $values.smtp.starttls }}
-      from_address: {{ $values.smtp.from_address }}
-      sslprotocols: {{ $values.smtp.sslprotocols }}
+      host: {{ .smtp.host }}
+      port: {{ .smtp.port }}
+      starttls: {{ .smtp.starttls }}
+      from_address: {{ .smtp.from_address }}
+      sslprotocols: {{ .smtp.sslprotocols }}
     oauth:
       client:
         override: true
@@ -30,5 +30,6 @@ data:
         admin:
           authorized-grant-types: client_credentials
           authorities: "clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write"
+    {{- end }}
   log4j2.properties: |
     {{- .Files.Get "templates/log4j2.properties" | nindent 4 }}
