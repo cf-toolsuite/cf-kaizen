@@ -113,7 +113,7 @@ spec:
               protocol: TCP
           env:
             - name: BPL_TOMCAT_ACCESS_LOGGING
-              value: {{ .Values.tomcat.accessLoggingEnabled }}
+              value: "{{ .Values.tomcat.accessLoggingEnabled }}"
             - name: JAVA_OPTS
               value: >-
                 -Dspring_profiles={{ .Values.database.scheme }}
