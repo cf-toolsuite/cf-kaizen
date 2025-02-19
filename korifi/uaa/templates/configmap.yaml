@@ -32,4 +32,4 @@ data:
           authorities: "clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write"
     {{- end }}
   log4j2.properties: |
-    {{- .Files.Get "templates/log4j2.properties" | nindent 4 }}
+    {{- .Files.Get "files/log4j2.properties" | nindent 4 }}
