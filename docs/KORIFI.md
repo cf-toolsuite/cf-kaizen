@@ -38,19 +38,16 @@ Fill in the required details:
 |-------------------|-------|
 | Application name  | Korifi UAA OIDC |
 | Homepage URL | https://localhost |
-| Authorization callback URL |  http://uaa.uaa.svc.cluster.local:8080/oauth/callback |
+| Authorization callback URL |  http://localhost:31000/uaa/login/callback/github |
 
-Click **Register application**.
+Click **Register application**.  Then generate a new **Client Secret**.
 
-Note the **Client ID** and generate a new **Client Secret**.
+> [!Note]
+> Jot down the client id and client secret, you'll need them later on!   
 
 Configure and launch a new Kind cluster.
 
-> [!IMPORTANT]
-> Set the value of the GITHUB_OIDC_CLIENT_ID environment variable before attempting to launch Kind
-
 ```bash
-export GITHUB_OIDC_CLIENT_ID=
 cat <<EOF | kind create cluster --name korifi --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -65,14 +62,6 @@ containerdConfigPatches:
         insecure_skip_verify = true
 nodes:
 - role: control-plane
-  kubeadmConfigPatches:
-  - |
-    kind: ClusterConfiguration
-    apiServer:
-      extraArgs:
-        oidc-issuer-url: "https://token.actions.githubusercontent.com"
-        oidc-client-id: "${GITHUB_OIDC_CLIENT_ID}"
-        oidc-username-claim: sub
   extraPortMappings:
   - containerPort: 32080
     hostPort: 80
@@ -89,12 +78,19 @@ EOF
 Install Korifi with experimental UAA support enabled.
 
 > [!IMPORTANT]
-> Set the value of the ADMIN_PASSWORD environment variable before attempting to install Korifi
+> Set the values of the environment variables below, as appropriate, before attempting to install Korifi
 
 ```bash
 export ADMIN_PASSWORD=
+export GITHUB_OIDC_CLIENT_ID=
+export GITHUB_OIDC_CLIENT_SECRET=
+
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yaml
+
 sed -i "s|client_secret: ADMIN_PASSWORD|client_secret: \"$ADMIN_PASSWORD\"|" install-korifi-kind-w-uaa-enabled.yaml
+sed -i "s|relyingPartyId: GITHUB_OIDC_CLIENT_ID|relyingPartyId:  \"$GITHUB_OIDC_CLIENT_ID\"|" install-korifi-kind-w-uaa-enabled.yaml
+sed -i "s|relyingPartySecret: GITHUB_OIDC_CLIENT_SECRET|relyingPartySecret: \"$GITHUB_OIDC_CLIENT_SECRET\"|" install-korifi-kind-w-uaa-enabled.yaml
+
 kubectl apply -f install-korifi-kind-w-uaa-enabled.yaml
 ```
 

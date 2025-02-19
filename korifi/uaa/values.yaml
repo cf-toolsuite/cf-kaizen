@@ -6,7 +6,8 @@ replicaCount: 1
 
 image:
   repository: cloudfoundry/uaa
-  tag: "77.21.0"  # Use appVersion if you want to tie it to Chart.yaml
+  # Use appVersion if you want to tie it to Chart.yaml
+  tag: "77.21.0"
   pullPolicy: IfNotPresent
   digest: "sha256:10bd2a98241f86c52c1d1c2e45593f190eec19fd8308785b16a539804dd46f9b"
 
@@ -21,8 +22,10 @@ serviceAccount:
   automountServiceAccountToken: false
 
 service:
-  type: ClusterIP
+  type: NodePort
   port: 8080
+  # Choose a port in the 30000-32767 range
+  nodePort: 31000
 
 resources:
   uaa:
@@ -40,8 +43,9 @@ resources:
       memory: "100Mi"
       cpu: "100m"
 
+# Default, but SHOULD be overridden
 issuer:
-  uri: http://localhost:8080/uaa  # Default, but SHOULD be overridden
+  uri: http://localhost:31000/uaa
 
 tomcat:
   accessLoggingEnabled: "y"
@@ -54,17 +58,20 @@ statsdExporter:
 
 # --- UAA Configuration ---
 database:
-  scheme: hsqldb      # Default: in-memory
-  url: "jdbc:hsqldb:mem:uaa"  # Default for in-memory
+  scheme: hsqldb
+  # Default for in-memory
+  url: "jdbc:hsqldb:mem:uaa"
   # For external databases (MySQL, PostgreSQL), set scheme, url, username, and password.
   username: ""
   password: ""
 
+# MUST be changed by the user
 admin:
-  client_secret: "CHANGE_ME" # MUST be changed by the user
+  client_secret: "CHANGE_ME"
 
+# Configure for email
 smtp:
-  host: ""           # Configure for email
+  host: ""
   port: 25
   user: ""
   password: ""
@@ -75,24 +82,62 @@ smtp:
 
 jwt:
   policy:
-    activeKeyId: "CHANGE_ME"  # MUST be changed
+    # MUST be changed
+    activeKeyId: "CHANGE_ME"
     keys:
-      CHANGE_ME:  # Use the activeKeyId as the key here
-        signingKey: "CHANGE_ME" # And the actual signing key here
+      # Use the activeKeyId as the key here
+      CHANGE_ME:
+        # And the actual signing key here
+        signingKey: "CHANGE_ME"
 
 login:
+  oauth:
+    providers:
+      # This is the "origin key". It MUST be "github".
+      github:
+        type: oidc1.0
+        # The Issuer Identifier for GitHub
+        issuer: https://github.com
+        # GitHub's Authorization Endpoint
+        authUrl: https://github.com/login/oauth/authorize
+        # GitHub's Token Endpoint
+        tokenUrl: https://github.com/login/oauth/access_token
+        # GitHub UserInfo Endpoint
+        userInfoUrl: https://api.github.com/user
+        # Add other scopes you need, like "read:org" if you want org info.
+        scopes:
+          - openid
+          - email
+          - profile
+        # Your GitHub OAuth App Client ID
+        relyingPartyId: "CHANGE_ME"
+        # Your GitHub OAuth App Client Secret. Keep this SECRET!
+        relyingPartySecret: "CHANGE_ME"
+        linkText: Login with GitHub
+        showLinkText: true
+        # Create a UAA user when someone logs in via GitHub.  Important!
+        addShadowUserOnLogin: true
+        # GitHub requires client credentials in the body not Basic header
+        clientAuthInBody: true
   saml:
-    activeKeyId: "CHANGE_ME"  # MUST be changed
+    # MUST be changed
+    activeKeyId: "CHANGE_ME"
     keys:
-      CHANGE_ME:  # Use the activeKeyId
-        signingKey: "CHANGE_ME"     # The signing key
-        certificate: "CHANGE_ME"    # The certificate
+      # Use the activeKeyId
+      CHANGE_ME:
+        # The signing key
+        signingKey: "CHANGE_ME"
+        # The certificate
+        certificate: "CHANGE_ME"
 
 encryption:
-  active_key_label: "CHANGE_ME"  # MUST be changed
+  # MUST be changed
+  active_key_label: "CHANGE_ME"
   encryption_keys:
     - label: "CHANGE_ME"
       passphrase: "CHANGE_ME"
-      encryptionKey: "CHANGE_ME" # The actual encryption key
+      # The actual encryption key
+      encryptionKey: "CHANGE_ME"
 
-ca_certs: [] # Array of PEM-encoded certs
+# Array of PEM-encoded certs
+ca_certs: []
