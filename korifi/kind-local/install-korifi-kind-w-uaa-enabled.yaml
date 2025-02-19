@@ -77,7 +77,7 @@ spec:
               git checkout "${CF_KAIZEN_BRANCH}"
               cat <<EOF > /tmp/uaa-values.yaml
               admin:
-                client_secret: GITHUB_OIDC_CLIENT_SECRET
+                client_secret: ADMIN_PASSWORD
               issuer:
                 uri: http://uaa.uaa.svc.cluster.local:8080
               EOF

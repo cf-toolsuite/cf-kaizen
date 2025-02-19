@@ -83,21 +83,18 @@ nodes:
   - containerPort: 30050
     hostPort: 30050
     protocol: TCP
-  - containerPort: 8080
-    hostPort: 8080
-    protocol: TCP
 EOF
 ```
 
 Install Korifi with experimental UAA support enabled.
 
 > [!IMPORTANT]
-> Set the value of the GITHUB_OIDC_CLIENT_SECRET environment variable before attempting to install Korifi
+> Set the value of the ADMIN_PASSWORD environment variable before attempting to install Korifi
 
 ```bash
-export GITHUB_OIDC_CLIENT_SECRET=
+export ADMIN_PASSWORD=
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yaml
-sed -i "s|client_secret: GITHUB_OIDC_CLIENT_SECRET|client_secret: \"$GITHUB_OIDC_CLIENT_SECRET\"|" install-korifi-kind-w-uaa-enabled.yaml
+sed -i "s|client_secret: ADMIN_PASSWORD|client_secret: \"$ADMIN_PASSWORD\"|" install-korifi-kind-w-uaa-enabled.yaml
 kubectl apply -f install-korifi-kind-w-uaa-enabled.yaml
 ```
 
