@@ -15,7 +15,6 @@
   * gradle
   * (optionally) [sdk](https://sdkman.io/)
     * it might be the easiest way to install the Java SDK, Maven and Gradle
-  * yq
 
 ### Building MCP servers
 
@@ -88,7 +87,7 @@ export GITHUB_OIDC_CLIENT_SECRET=
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yaml
 
 sed -i "s|client_secret: ADMIN_PASSWORD|client_secret: \"$ADMIN_PASSWORD\"|" install-korifi-kind-w-uaa-enabled.yaml
-sed -i "s|relyingPartyId: GITHUB_OIDC_CLIENT_ID|relyingPartyId:  \"$GITHUB_OIDC_CLIENT_ID\"|" install-korifi-kind-w-uaa-enabled.yaml
+sed -i "s|relyingPartyId: GITHUB_OIDC_CLIENT_ID|relyingPartyId: \"$GITHUB_OIDC_CLIENT_ID\"|" install-korifi-kind-w-uaa-enabled.yaml
 sed -i "s|relyingPartySecret: GITHUB_OIDC_CLIENT_SECRET|relyingPartySecret: \"$GITHUB_OIDC_CLIENT_SECRET\"|" install-korifi-kind-w-uaa-enabled.yaml
 
 kubectl apply -f install-korifi-kind-w-uaa-enabled.yaml

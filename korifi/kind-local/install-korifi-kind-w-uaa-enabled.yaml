@@ -72,22 +72,25 @@ spec:
             - |
               set -euo pipefail
               
-              apk add openssl
+              apk add openssl util-linux
               
               indent() {
                 local indent_level=$1
                 local input_string=$2
                 local spaces=$(printf '%*s' "$indent_level" "")
-                sed "s/^/${spaces}/" <<< "$input_string"
+              
+                # Use sed to insert spaces at the beginning of lines 2 and onwards.
+                sed "2,\$s/^/${spaces}/" <<< "$input_string"
               }
               
               openssl genrsa -out /tmp/jwt_private.pem 2048
               openssl rsa -in /tmp/jwt_private.pem -pubout -out /tmp/jwt_public.pem
-              JWT_PRIVATE_KEY=$(cat /tmp/jwt_private.pem | tr -d '\n' | sed 's/-----BEGIN RSA PRIVATE KEY-----/-----BEGIN RSA PRIVATE KEY-----\n/g' | sed 's/-----END RSA PRIVATE KEY-----/\n-----END RSA PRIVATE KEY-----/g')
+              JWT_PRIVATE_KEY=$(cat /tmp/jwt_private.pem)
+              JWT_PUBLIC_KEY=$(cat /tmp/jwt_public.pem)
               
-              openssl req -x509 -sha256 -newkey rsa:2048 -keyout /tmp/saml_private.pem -out /tmp/saml_cert.pem -days 3650 -nodes -subj "/CN=uaa-saml-key"
-              SAML_PRIVATE_KEY=$(cat /tmp/saml_private.pem | tr -d '\n' | sed 's/-----BEGIN PRIVATE KEY-----/-----BEGIN PRIVATE KEY-----\n/g'| sed 's/-----END PRIVATE KEY-----/\n-----END PRIVATE KEY-----/g')
-              SAML_CERTIFICATE=$(cat /tmp/saml_cert.pem | tr -d '\n' | sed 's/-----BEGIN CERTIFICATE-----/-----BEGIN CERTIFICATE-----\n/g' | sed 's/-----END CERTIFICATE-----/\n-----END CERTIFICATE-----/g')
+              openssl req -x509 -sha256 -newkey rsa:2048 -keyout /tmp/saml_private.pem -out /tmp/saml_cert.pem -days 3650 -nodes -subj "/CN=uaa-saml-key" -outform PEM
+              SAML_PRIVATE_KEY=$(cat /tmp/saml_private.pem)
+              SAML_CERTIFICATE=$(cat /tmp/saml_cert.pem)
               
               PASSPHRASE=$(uuidgen)
               
@@ -113,7 +116,7 @@ spec:
                     signingAlg: RS256
                     jwt-key:
                       signingKey: |
-                        $(indent 24 "${JWT_PRIVATE_KEY}")
+                        $(indent 10 "${JWT_PRIVATE_KEY}")
               login:
                 oauth:
                   providers:
@@ -125,9 +128,9 @@ spec:
                   keys:
                     saml-key:
                       key: |
-                        $(indent 24 "${SAML_PRIVATE_KEY}")
+                        $(indent 10 "${SAML_PRIVATE_KEY}")
                       certificate: |
-                        $(indent 24 "${SAML_CERTIFICATE}")
+                        $(indent 10 "${SAML_CERTIFICATE}")
               EOF
               
               helm upgrade --install uaa ./korifi/uaa -n uaa --create-namespace -f /tmp/uaa-values.yaml
