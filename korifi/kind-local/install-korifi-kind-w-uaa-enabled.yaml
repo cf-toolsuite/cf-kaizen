@@ -73,28 +73,46 @@ spec:
               set -euo pipefail
 
               # Install required tools
+              apk add --no-cache ca-certificates
               apk add openssl util-linux curl
 
               # Download and install ytt
               curl -L -o /usr/local/bin/ytt https://github.com/carvel-dev/ytt/releases/download/v0.51.1/ytt-linux-amd64
               chmod +x /usr/local/bin/ytt
 
-              # Generate keys
+              # Generate JWT keys
               openssl genrsa -out /tmp/jwt_private.pem 2048
               openssl rsa -in /tmp/jwt_private.pem -pubout -out /tmp/jwt_public.pem
 
-              openssl req -x509 -sha256 -newkey rsa:2048 -keyout /tmp/saml_private.pem -out /tmp/saml_cert.pem -days 3650 -nodes -subj "/CN=uaa-saml-key" -outform PEM
+              # Generate SAML keys with specific format
+              openssl req -x509 -newkey rsa:2048 -keyout /tmp/saml_private.pem \
+                -out /tmp/saml_cert.pem -days 3650 -nodes \
+                -subj "/C=US/ST=CA/L=San Francisco/O=Cloud Foundry/OU=UAA/CN=uaa-saml-key" \
+                -sha256 -extensions v3_req \
+                -config <(echo "[req]"; \
+                          echo "distinguished_name=req"; \
+                          echo "[v3_req]"; \
+                          echo "basicConstraints=CA:FALSE"; \
+                          echo "keyUsage=digitalSignature,keyEncipherment"; \
+                          echo "extendedKeyUsage=serverAuth,clientAuth")
+
+              # Format certificates to ensure they're in the right format
+              # Convert private key to PKCS#8 format
+              openssl pkcs8 -topk8 -inform PEM -in /tmp/saml_private.pem -outform PEM -nocrypt -out /tmp/saml_private_pkcs8.pem
+
+              # Ensure certificate is in proper PEM format
+              openssl x509 -in /tmp/saml_cert.pem -outform PEM -out /tmp/saml_cert_formatted.pem
 
               PASSPHRASE=$(uuidgen)
 
-              # Create data values file
+              # Create data values file with properly formatted certificates
               cat > /tmp/values.yml <<EOF
               #@data/values
               ---
               passphrase: "${PASSPHRASE}"
               jwt_private_key: "$(cat /tmp/jwt_private.pem)"
-              saml_private_key: "$(cat /tmp/saml_private.pem)"
-              saml_certificate: "$(cat /tmp/saml_cert.pem)"
+              saml_private_key: "$(cat /tmp/saml_private_pkcs8.pem)"
+              saml_certificate: "$(cat /tmp/saml_cert_formatted.pem)"
               EOF
 
               # Create ytt template
