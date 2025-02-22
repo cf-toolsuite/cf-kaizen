@@ -126,7 +126,7 @@ login:
       # Use the activeKeyId
       CHANGE_ME:
         # The signing key
-        signingKey: "CHANGE_ME"
+        key: "CHANGE_ME"
         # The certificate
         certificate: "CHANGE_ME"
 
