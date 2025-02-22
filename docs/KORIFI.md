@@ -118,6 +118,7 @@ Configure the Admin User Role Binding.
 
 ```bash
 export GITHUB_USERNAME=
+
 kubectl apply -f - <<EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
