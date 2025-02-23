@@ -129,7 +129,7 @@ spec:
                 -Dservlet.session-store=database
           volumeMounts:
             - name: uaa-spring-servlet-override
-              mountPath: /WEB-INF/spring-servlet.xml
+              mountPath: /workspace/WEB-INF/spring-servlet.xml
               subPath: spring-servlet.xml
             - name: uaa-config
               mountPath: /etc/config

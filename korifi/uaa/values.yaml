@@ -7,9 +7,9 @@ replicaCount: 1
 image:
   repository: cloudfoundry/uaa
   # Use appVersion if you want to tie it to Chart.yaml
-  tag: "77.21.0"
+  tag: "77.25.0"
   pullPolicy: IfNotPresent
-  digest: "sha256:10bd2a98241f86c52c1d1c2e45593f190eec19fd8308785b16a539804dd46f9b"
+  digest: "sha256:677480cd88dc27bd88d2dc020c8ed640a600d6250b3b0f1f33b0c2d2d613b9e8"
 
 serviceAccount:
   # Specifies whether a service account should be created
