@@ -84,25 +84,6 @@ spec:
               openssl genrsa -out /tmp/jwt_private.pem 2048
               openssl rsa -in /tmp/jwt_private.pem -pubout -out /tmp/jwt_public.pem
 
-              # Generate SAML keys with specific format
-              openssl req -x509 -newkey rsa:2048 -keyout /tmp/saml_private.pem \
-                -out /tmp/saml_cert.pem -days 3650 -nodes \
-                -subj "/C=US/ST=CA/L=San Francisco/O=Cloud Foundry/OU=UAA/CN=uaa-saml-key" \
-                -sha256 -extensions v3_req \
-                -config <(echo "[req]"; \
-                          echo "distinguished_name=req"; \
-                          echo "[v3_req]"; \
-                          echo "basicConstraints=CA:FALSE"; \
-                          echo "keyUsage=digitalSignature,keyEncipherment"; \
-                          echo "extendedKeyUsage=serverAuth,clientAuth")
-
-              # Format certificates to ensure they're in the right format
-              # Convert private key to PKCS#8 format
-              openssl pkcs8 -topk8 -inform PEM -in /tmp/saml_private.pem -outform PEM -nocrypt -out /tmp/saml_private_pkcs8.pem
-
-              # Ensure certificate is in proper PEM format
-              openssl x509 -in /tmp/saml_cert.pem -outform PEM -out /tmp/saml_cert_formatted.pem
-
               PASSPHRASE=$(uuidgen)
 
               # Create data values file with properly formatted certificates
@@ -111,8 +92,6 @@ spec:
               ---
               passphrase: "${PASSPHRASE}"
               jwt_private_key: "$(cat /tmp/jwt_private.pem)"
-              saml_private_key: "$(cat /tmp/saml_private_pkcs8.pem)"
-              saml_certificate: "$(cat /tmp/saml_cert_formatted.pem)"
               EOF
 
               # Create ytt template
@@ -127,13 +106,6 @@ spec:
               ---
               admin:
                 client_secret: ADMIN_PASSWORD
-              encryption:
-                active_key_label: "encryption-key"
-                encryption_keys:
-                  - label: "encryption-key"
-                    passphrase: #@ data.values.passphrase
-              issuer:
-                uri: http://uaa.uaa.svc.cluster.local:8080
               jwt:
                 policy:
                   activeKeyId: jwt-key
@@ -147,14 +119,6 @@ spec:
                     github:
                       relyingPartyId: GITHUB_OIDC_CLIENT_ID
                       relyingPartySecret: GITHUB_OIDC_CLIENT_SECRET
-                saml:
-                  serviceProviderKey: #@ format_key(data.values.saml_private_key)
-                  serviceProviderCertificate: #@ format_key(data.values.saml_certificate)
-                  activeKeyId: "saml-key"
-                  keys:
-                    saml-key:
-                      signingKey: #@ format_key(data.values.saml_private_key)
-                      certificate: #@ format_key(data.values.saml_certificate)
               EOF
 
               # Generate the values file using ytt

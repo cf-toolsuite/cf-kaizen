@@ -149,14 +149,6 @@ spec:
             - name: truststore-file
               mountPath: /etc/truststore
               readOnly: true
-            - name: saml-keys-file
-              mountPath: /etc/secrets/saml_keys.yml
-              subPath: saml_keys.yml
-              readOnly: true
-            - name: encryption-keys-file
-              mountPath: /etc/secrets/encryption_keys.yml
-              subPath: encryption_keys.yml
-              readOnly: true
           livenessProbe:
             httpGet:
               path: /healthz
@@ -202,9 +194,3 @@ spec:
             secretName: {{ .Release.Name }}-ca-certs
         - name: truststore-file
           emptyDir: {}
-        - name: saml-keys-file
-          secret:
-            secretName: {{ .Release.Name }}-saml-keys
-        - name: encryption-keys-file
-          secret:
-            secretName: {{ .Release.Name }}-encryption-keys

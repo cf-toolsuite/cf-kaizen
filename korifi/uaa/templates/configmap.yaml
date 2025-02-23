@@ -34,6 +34,11 @@ data:
       oauth:
         providers:
           {{- toYaml .login.oauth.providers | nindent 10 }}
+      saml:
+        signMetadata: false
+        signRequest: false
+        wantAssertionsSigned: false
+        disableInResponseToCheck: true
     {{- end }}
   log4j2.properties: |
     {{- .Files.Get "files/log4j2.properties" | nindent 4 }}

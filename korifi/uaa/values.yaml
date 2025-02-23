@@ -93,51 +93,26 @@ jwt:
 login:
   oauth:
     providers:
-      # This is the "origin key". It MUST be "github".
       github:
-        type: oidc1.0
-        # The Issuer Identifier for GitHub
-        issuer: https://github.com
-        # GitHub's Authorization Endpoint
+        type: oauth2.0
+        providerDescription: Github OAuth provider, using the 'Authorization Code Grant' flow
         authUrl: https://github.com/login/oauth/authorize
-        # GitHub's Token Endpoint
         tokenUrl: https://github.com/login/oauth/access_token
-        # GitHub UserInfo Endpoint
         userInfoUrl: https://api.github.com/user
-        # Add other scopes you need, like "read:org" if you want org info.
         scopes:
-          - openid
-          - email
-          - profile
-        # Your GitHub OAuth App Client ID
-        relyingPartyId: "CHANGE_ME"
-        # Your GitHub OAuth App Client Secret. Keep this SECRET!
-        relyingPartySecret: "CHANGE_ME"
+          - read:user
+          - user:email
         linkText: Login with GitHub
         showLinkText: true
-        # Create a UAA user when someone logs in via GitHub.  Important!
         addShadowUserOnLogin: true
-        # GitHub requires client credentials in the body not Basic header
+        relyingPartyId: "CHANGE_ME"
+        relyingPartySecret: "CHANGE_ME"
         clientAuthInBody: true
-  saml:
-    # MUST be changed
-    activeKeyId: "CHANGE_ME"
-    keys:
-      # Use the activeKeyId
-      CHANGE_ME:
-        # The signing key
-        key: "CHANGE_ME"
-        # The certificate
-        certificate: "CHANGE_ME"
-
-encryption:
-  # MUST be changed
-  active_key_label: "CHANGE_ME"
-  encryption_keys:
-    - label: "CHANGE_ME"
-      passphrase: "CHANGE_ME"
-      # The actual encryption key
-      encryptionKey: "CHANGE_ME"
+        skipSslValidation: false
+        attributeMappings:
+          given_name: login
+          family_name: name # Github doesn't split 'given_name' and 'family_name'
+          user_name: email
 
 # Array of PEM-encoded certs
 ca_certs: []
