@@ -17,12 +17,14 @@ data:
       logabandoned: true
       abandonedtimeout: 300
       url: {{ .database.url }}
+    {{- if or .smtp.user .smtp.password }}
     smtp:
       host: {{ .smtp.host }}
       port: {{ .smtp.port }}
       starttls: {{ .smtp.starttls }}
       from_address: {{ .smtp.from_address }}
       sslprotocols: {{ .smtp.sslprotocols }}
+    {{- end }}
     oauth:
       client:
         override: true
