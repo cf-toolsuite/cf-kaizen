@@ -114,5 +114,9 @@ login:
           family_name: name # Github doesn't split 'given_name' and 'family_name'
           user_name: email
 
+uaa:
+  saml:
+    enabled: false
+
 # Array of PEM-encoded certs
 ca_certs: []
