@@ -36,10 +36,13 @@ data:
       oauth:
         providers:
           {{- toYaml .login.oauth.providers | nindent 10 }}
+      saml:
+        {{- toYaml .login.saml | nindent 8 }}
     {{- end }}
   log4j2.properties: |
     {{- .Files.Get "files/log4j2.properties" | nindent 4 }}
   spring-servlet.xml: |
+    {{- with .Values }}
     <?xml version="1.0" encoding="UTF-8" ?>
     <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.springframework.org/schema/beans"
            xmlns:sec="http://www.springframework.org/schema/security"
@@ -54,7 +57,19 @@ data:
            http://www.springframework.org/schema/util https://www.springframework.org/schema/util/spring-util.xsd">
 
         <context:annotation-config/>
-        <context:component-scan base-package="org.cloudfoundry.identity.uaa"/>
+
+        <context:component-scan base-package="org.cloudfoundry.identity.uaa">
+            {{- if not .uaa.saml.enabled }}
+            <context:exclude-filter type="assignable" expression="org.cloudfoundry.identity.uaa.provider.saml.SamlMetadataEndpoint"/>
+            <context:exclude-filter type="assignable" expression="org.springframework.security.saml2.provider.service.web.Saml2WebSsoAuthenticationRequestFilter"/>
+            <context:exclude-filter type="assignable" expression="org.springframework.security.saml2.provider.service.web.authentication.Saml2WebSsoAuthenticationFilter"/>
+            <context:exclude-filter type="assignable" expression="org.cloudfoundry.identity.uaa.login.SamlLoginAuthenticationFailureHandler"/>
+            <context:exclude-filter type="assignable" expression="org.springframework.security.saml2.provider.service.web.authentication.logout.OpenSaml4LogoutRequestResolver"/>
+            <context:exclude-filter type="assignable" expression="org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2RelyingPartyInitiatedLogoutSuccessHandler"/>
+            <context:exclude-filter type="assignable" expression="org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutResponseFilter"/>
+            <context:exclude-filter type="assignable" expression="org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutRequestFilter"/>
+            {{- end }}
+        </context:component-scan>
 
         <bean id="uaaConfig" class="org.cloudfoundry.identity.uaa.impl.config.YamlConfigurationValidator">
             <constructor-arg>
@@ -104,8 +119,7 @@ data:
         <sec:http name="secFilterOpen03" pattern="/info" security="none"/>
         <sec:http name="secFilterOpen04" pattern="/password/**" security="none"/>
         <sec:http name="secFilterOpen05Healthz" pattern="/healthz/**" security="none"/>
-        <sec:http name="secFilterOpen06SAMLMetadata" pattern="/saml/metadata/**" security="none"/>
-          {{- if .Values.uaa.saml.enabled }}
+          {{- if .uaa.saml.enabled }}
         <sec:http name="secFilterOpen06SAMLMetadata" pattern="/saml/metadata/**" security="none"/>
           {{- end }}
         <sec:http name="secFilterOpen07" pattern="/vendor/**" security="none"/>
@@ -115,7 +129,7 @@ data:
 
         <sec:http name="secFilterOpen13" pattern="/accounts/email_sent" security="none"/>
         <sec:http name="secFilterCsrfLandingPage14" pattern="/invalid_request" security="none"/>
-          {{- if .Values.uaa.saml.enabled }}
+          {{- if .uaa.saml.enabled }}
         <sec:http name="secFilterOpen15" pattern="/saml_error" security="none"/>
           {{- end }}
         <sec:http name="secFilterOpen16" pattern="/favicon.ico" security="none"/>
@@ -232,7 +246,7 @@ data:
             <property name="redirectToHttps">
                 <list>
                     <value>uiSecurity</value>
-                      {{- if .Values.uaa.saml.enabled }}
+                      {{- if .uaa.saml.enabled }}
                     <value>secFilterOpen06SAMLMetadata</value>
                       {{- end }}
                 </list>
@@ -273,7 +287,7 @@ data:
                     <!-- Add in a flag that removes id_token from /oauth/authorize requests-->
                     <entry value-ref="disableIdTokenResponseFilter"
                            key="#{T(org.cloudfoundry.identity.uaa.security.web.SecurityFilterChainPostProcessor.FilterPosition).position(9)}"/>
-                      {{- if .Values.uaa.saml.enabled }}
+                      {{- if .uaa.saml.enabled }}
                     <entry value-ref="saml2WebSsoAuthenticationRequestFilter"
                            key="#{T(org.cloudfoundry.identity.uaa.security.web.SecurityFilterChainPostProcessor.FilterPosition).position(10)}"/>
                     <entry value-ref="saml2WebSsoAuthenticationFilter"
@@ -282,14 +296,14 @@ data:
                     <!-- Zone switcher goes *after* class OAuth2AuthenticationProcessingFilter as it requires a token to be present to work -->
                     <entry value-ref="identityZoneSwitchingFilter"
                            key="#{T(org.cloudfoundry.identity.uaa.security.web.SecurityFilterChainPostProcessor.FilterPosition).after(@oauth2TokenParseFilter)}"/>
-                      {{- if .Values.uaa.saml.enabled }}
+                      {{- if .uaa.saml.enabled }}
                     <entry value-ref="saml2LogoutRequestFilter"
                            key="#{T(org.cloudfoundry.identity.uaa.security.web.SecurityFilterChainPostProcessor.FilterPosition).after(T(org.cloudfoundry.identity.uaa.zone.IdentityZoneSwitchingFilter))}"/>
                     <entry value-ref="saml2LogoutResponseFilter"
                            key="#{T(org.cloudfoundry.identity.uaa.security.web.SecurityFilterChainPostProcessor.FilterPosition).after(T(org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutRequestFilter))}"/>
-                      {{- end }}
                     <entry value-ref="userManagementSecurityFilter"
                            key="#{T(org.cloudfoundry.identity.uaa.security.web.SecurityFilterChainPostProcessor.FilterPosition).after(T(org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutResponseFilter))}"/>
+                      {{- end }}
                     <entry value-ref="userManagementFilter"
                            key="#{T(org.cloudfoundry.identity.uaa.security.web.SecurityFilterChainPostProcessor.FilterPosition).after(T(org.cloudfoundry.identity.uaa.scim.DisableUserManagementSecurityFilter))}"/>
                     <entry value-ref="sessionResetFilter"
@@ -588,3 +602,4 @@ data:
                                @config['uaa']['limitedFunctionality']['whitelist']['methods']}"/>
         </bean>
     </beans>
+    {{- end }}

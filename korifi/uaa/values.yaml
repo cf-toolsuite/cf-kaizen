@@ -113,6 +113,11 @@ login:
           given_name: login
           family_name: name # Github doesn't split 'given_name' and 'family_name'
           user_name: email
+    saml:
+      disableInResponseToCheck: true
+      signMetaData: false
+      signRequest: false
+      wantAssertionSigned: false
 
 uaa:
   saml:
