@@ -1,0 +1,87 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uaa-config
+  namespace: uaa
+  labels:
+    app.kubernetes.io/name: uaa
+    app.kubernetes.io/component: authorization_server
+data:
+  log4j2.properties: |
+    status = error
+    dest = err
+    name = UaaLog
+    
+    property.log_pattern=[%d{yyyy-MM-dd'T'HH:mm:ss.nnnnnn}{GMT+0}Z] uaa%X{context} - %pid [%t] .... %5p --- %c{1}: %replace{%m}{(?<=password=|client_secret=)([^&]*)}{<redacted>}%n
+    
+    appender.uaaDefaultAppender.type = Console
+    appender.uaaDefaultAppender.name = UaaDefaultAppender
+    appender.uaaDefaultAppender.layout.type = PatternLayout
+    appender.uaaDefaultAppender.layout.pattern = [UAA] ${log_pattern}
+    
+    appender.uaaAuditAppender.type = Console
+    appender.uaaAuditAppender.name = UaaAuditAppender
+    appender.uaaAuditAppender.layout.type = PatternLayout
+    appender.uaaAuditAppender.layout.pattern = [UAA_AUDIT] ${log_pattern}
+    
+    rootLogger.level = info
+    rootLogger.appenderRef.uaaDefaultAppender.ref = UaaDefaultAppender
+    
+    logger.UAAAudit.name = UAA.Audit
+    logger.UAAAudit.level = info
+    logger.UAAAudit.additivity = true
+    logger.UAAAudit.appenderRef.auditEventLog.ref = UaaAuditAppender
+    
+    logger.cfIdentity.name = org.cloudfoundry.identity
+    logger.cfIdentity.level = info
+    logger.cfIdentity.additivity = false
+    logger.cfIdentity.appenderRef.uaaDefaultAppender.ref = UaaDefaultAppender
+  uaa.yml: |
+    issuer:
+      uri: #@ data.values.uaa_url
+    database:
+      maxactive: 100
+      maxidle: 10
+      minidle: 0
+      removeabandoned: false
+      logabandoned: true
+      abandonedtimeout: 300
+      url: "jdbc:hsqldb:mem:uaa"
+    oauth:
+      client:
+        override: true
+      clients:
+        admin:
+          authorized-grant-types: client_credentials
+          authorities: "clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write"
+    login:
+      oauth:
+        providers:
+          github:
+            type: oauth2.0
+            providerDescription: Github OAuth provider, using the 'Authorization Code Grant' flow
+            authUrl: https://github.com/login/oauth/authorize
+            tokenUrl: https://github.com/login/oauth/access_token
+            userInfoUrl: https://api.github.com/user
+            scopes:
+              - read:user
+              - user:email
+            linkText: Login with GitHub
+            showLinkText: true
+            addShadowUserOnLogin: true
+            relyingPartyId: #@ data.values.github_client_id
+            relyingPartySecret: #@ data.values.github_client_secret
+            clientAuthInBody: true
+            skipSslValidation: false
+            attributeMappings:
+              given_name: login
+              family_name: name
+              user_name: email
+      saml:
+        activeKeyId: "saml-key"
+        disableInResponseToCheck: true
+        signMetaData: false
+        signRequest: false
+        wantAssertionSigned: false

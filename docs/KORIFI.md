@@ -8,8 +8,9 @@
 * the following CLIs/SDKs:
   * git
   * gh
-  * helm
   * kubectl
+  * kapp
+  * ytt
   * java
   * mvn
   * gradle
@@ -84,13 +85,13 @@ export ADMIN_PASSWORD=
 export GITHUB_OIDC_CLIENT_ID=
 export GITHUB_OIDC_CLIENT_SECRET=
 
-curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yaml
+curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yml
 
-sed -i "s|admin_client_secret: ADMIN_PASSWORD|admin_client_secret: \"$ADMIN_PASSWORD\"|" install-korifi-kind-w-uaa-enabled.yaml
-sed -i "s|github_client_id: GITHUB_OIDC_CLIENT_ID|github_client_id: \"$GITHUB_OIDC_CLIENT_ID\"|" install-korifi-kind-w-uaa-enabled.yaml
-sed -i "s|github_client_secret: GITHUB_OIDC_CLIENT_SECRET|github_client_secret: \"$GITHUB_OIDC_CLIENT_SECRET\"|" install-korifi-kind-w-uaa-enabled.yaml
+sed -i "s|admin_client_secret: ADMIN_PASSWORD|admin_client_secret: \"$ADMIN_PASSWORD\"|" install-korifi-kind-w-uaa-enabled.yml
+sed -i "s|github_client_id: GITHUB_OIDC_CLIENT_ID|github_client_id: \"$GITHUB_OIDC_CLIENT_ID\"|" install-korifi-kind-w-uaa-enabled.yml
+sed -i "s|github_client_secret: GITHUB_OIDC_CLIENT_SECRET|github_client_secret: \"$GITHUB_OIDC_CLIENT_SECRET\"|" install-korifi-kind-w-uaa-enabled.yml
 
-kubectl apply -f install-korifi-kind-w-uaa-enabled.yaml
+kubectl apply -f install-korifi-kind-w-uaa-enabled.yml
 ```
 
 If you want to track each job's progress, run:

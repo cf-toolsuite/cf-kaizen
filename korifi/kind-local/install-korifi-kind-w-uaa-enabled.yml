@@ -1,0 +1,254 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: uaa
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: korifi-installer
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/enforce: restricted
+  name: cf
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/enforce: restricted
+  name: korifi
+---
+apiVersion: v1
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJsb2NhbHJlZ2lzdHJ5LWRvY2tlci1yZWdpc3RyeS5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsOjMwMDUwIjp7InVzZXJuYW1lIjoidXNlciIsInBhc3N3b3JkIjoicGFzc3dvcmQiLCJhdXRoIjoiZFhObGNqcHdZWE56ZDI5eVpBPT0ifX19
+kind: Secret
+metadata:
+  name: image-registry-credentials
+  namespace: cf
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: korifi-installer
+  namespace: korifi-installer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: korifi-installer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: korifi-installer
+    namespace: korifi-installer
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: install-uaa
+  namespace: korifi-installer
+spec:
+  template:
+    metadata:
+      name: install-uaa
+    spec:
+      containers:
+        - name: install-uaa
+          image: dtzar/helm-kubectl:3.17  # Keep this image for kubectl and apk
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+
+              # Install required tools
+              apk add --no-cache ca-certificates openssl util-linux curl
+
+              # Download and install ytt
+              curl -L -o /usr/local/bin/ytt https://github.com/carvel-dev/ytt/releases/download/v0.51.1/ytt-linux-amd64
+              chmod +x /usr/local/bin/ytt
+
+              # Download and install kapp
+              curl -L -o /usr/local/bin/kapp https://github.com/carvel-dev/kapp/releases/download/v0.64.0/kapp-linux-amd64
+              chmod +x /usr/local/bin/kapp
+
+              function show_file() {
+                if [ -z "$1" ]; then
+                echo "Error: No filename provided"
+                echo "Usage: show_file <filename>"
+                return 1
+                fi
+
+                if [ ! -f "$1" ]; then
+                echo "Error: File '$1' not found"
+                return 1
+                fi
+
+                local filename="$1"
+                echo "--- Contents of $(realpath "$filename") ---"
+                echo ""
+                cat "$filename"
+                echo ""
+                echo "----------"
+                echo ""
+              }
+
+              cd /tmp
+
+              # Generate JWT keys
+              openssl genrsa -out jwt_private.pem 2048
+              openssl rsa -in jwt_private.pem -pubout -out jwt_public.pem
+
+              show_file jwt_private.pem
+              show_file jwt_public.pem
+
+              # Generate SAML keys
+              SUBJ="/C=US/ST=CA/L=San Francisco/O=Cloud Foundry/OU=UAA/CN=uaa-saml-key"
+              openssl req -x509 -newkey rsa:2048 -keyout saml_private.pem \
+                -out saml_cert.pem -days 3650 -nodes \
+                -subj "${SUBJ}" \
+                -sha256 -extensions v3_req \
+                -config <(printf "[req]\ndistinguished_name=req\n[v3_req]\nbasicConstraints=CA:FALSE\nkeyUsage=digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth,clientAuth")
+
+              show_file saml_private.pem
+
+              # Convert private key to PKCS#8 format
+              openssl pkcs8 -topk8 -inform PEM -in saml_private.pem -outform PEM -nocrypt -out saml_private_pkcs8.pem
+
+              show_file saml_private_pkcs8.pem
+
+              # Ensure certificate is in proper PEM format
+              openssl x509 -in saml_cert.pem -outform PEM -out saml_cert_formatted.pem
+
+              show_file saml_cert_formatted.pem
+
+              KAIZEN_BRANCH="main"
+              git clone https://github.com/cf-toolsuite/cf-kaizen
+              cd cf-kaizen
+              git checkout ${KAIZEN_BRANCH}
+              cd ..
+
+              # Combine values and template
+              ytt -f cf-kaizen/korifi/uaa \
+                --data-value-file jwt_private_key=jwt_private.pem \
+                --data-value-file saml_private_key=saml_private_pkcs8.pem \
+                --data-value-file saml_certificate=saml_cert_formatted.pem \
+                > uaa-rendered.yml
+
+              show_file uaa-rendered.yml
+
+              # Deploy with kapp
+              kapp deploy -a uaa -f uaa-rendered.yml -n uaa --wait-timeout=5m --yes
+
+              kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=uaa -n uaa --timeout=5m
+      restartPolicy: Never
+      serviceAccountName: korifi-installer
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: install-korifi
+  namespace: korifi-installer
+spec:
+  template:
+    metadata:
+      name: install-korifi
+    spec:
+      containers:
+        - command:
+            - bash
+            - -c
+            - |
+              set -euo pipefail
+              KORIFI_VERSION="v0.14.0"
+              mkdir -p /tmp/korifi
+              curl -sSL "https://github.com/cloudfoundry/korifi/releases/download/${KORIFI_VERSION}/install-dependencies.sh" -o /tmp/korifi/scripts/install-dependencies.sh
+              chmod +x /tmp/korifi/scripts/install-dependencies.sh
+              curl -sSL --create-dirs "https://github.com/cloudfoundry/korifi/releases/download/${KORIFI_VERSION}/tests.tar.gz" -o /tmp/korifi/tests.tar.gz
+              tar -xzf /tmp/korifi/tests.tar.gz -C /tmp/korifi/
+              rm /tmp/korifi/tests.tar.gz
+              cd /tmp/korifi
+              scripts/install-dependencies.sh --insecure-tls-metrics-server
+              helm repo add twuni https://helm.twun.io
+              helm upgrade --install localregistry twuni/docker-registry \
+                --namespace default \
+                --set service.type=NodePort,service.nodePort=30050,service.port=30050 \
+                --set persistence.enabled=true \
+                --set persistence.deleteEnabled=true \
+                --set secrets.htpasswd='user:$2y$05$Ue5dboOfmqk6Say31Sin9uVbHWTl8J1Sgq9QyAEmFQRnq1TPfP1n2'
+
+              while ! curl -o /dev/null http://localregistry-docker-registry.default.svc.cluster.local:30050/v2/_catalog 2>/dev/null; do
+                echo Waiting for the local docker registry to respond...
+                sleep 1
+              done
+
+              registry_status_code=""
+              while [[ "$registry_status_code" != "200" ]]; do
+                echo Waiting for the local docker registry to start...
+                registry_status_code=$(curl -o /dev/null -w "%{http_code}" --user user:password http://localregistry-docker-registry.default.svc.cluster.local:30050/v2/_catalog 2>/dev/null)
+                sleep 1
+              done
+
+              helm upgrade --install korifi helm/korifi \
+                --namespace korifi \
+                --set=adminUserName="kubernetes-admin" \
+                --set=defaultAppDomainName="apps-127-0-0-1.nip.io" \
+                --set=generateIngressCertificates="true" \
+                --set=logLevel="debug" \
+                --set=debug="false" \
+                --set=stagingRequirements.buildCacheMB="1024" \
+                --set=api.apiServer.url="localhost" \
+                --set=controllers.taskTTL="5s" \
+                --set=jobTaskRunner.jobTTL="5s" \
+                --set=containerRepositoryPrefix="localregistry-docker-registry.default.svc.cluster.local:30050/" \
+                --set=kpackImageBuilder.builderRepository="localregistry-docker-registry.default.svc.cluster.local:30050/kpack-builder" \
+                --set=networking.gatewayClass="contour" \
+                --set=networking.gatewayPorts.http="32080" \
+                --set=networking.gatewayPorts.https="32443" \
+                --set=experimental.managedServices.enabled="true" \
+                --set=experimental.managedServices.trustInsecureBrokers="true" \
+                --set=experimental.uaa.enabled="true" \
+                --set=experimental.uaa.url="http://uaa.uaa.svc.cluster.local:8080" \
+                --wait
+
+              kubectl wait --for=condition=ready clusterbuilder --all=true --timeout=15m
+
+              kubectl apply -f - <<EOF
+              kind: GatewayClass
+              apiVersion: gateway.networking.k8s.io/v1beta1
+              metadata:
+                name: contour
+              spec:
+                controllerName: projectcontour.io/gateway-controller
+                parametersRef:
+                  kind: ContourDeployment
+                  group: projectcontour.io
+                  name: contour-nodeport-params
+                  namespace: projectcontour
+
+              ---
+              kind: ContourDeployment
+              apiVersion: projectcontour.io/v1alpha1
+              metadata:
+                namespace: projectcontour
+                name: contour-nodeport-params
+              spec:
+                envoy:
+                  networkPublishing:
+                    type: NodePortService
+              EOF
+          image: index.docker.io/cloudfoundry/korifi-installer@sha256:b2a6711b6eeaf2d12d5018ceac6530e4ddc24294c6a16840dae1a8ac2cdba7ac
+          name: install-korifi
+      restartPolicy: Never
+      serviceAccountName: korifi-installer
