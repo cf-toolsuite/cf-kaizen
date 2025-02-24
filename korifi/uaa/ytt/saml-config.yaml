@@ -1,0 +1,19 @@
+#@ load("@ytt:data", "data")
+
+#@ def saml_keys():
+login:
+  saml:
+    serviceProviderKey: #@ data.values.login.saml.serviceProviderKey
+    serviceProviderCertificate: #@ data.values.login.saml.serviceProviderCertificate
+    activeKeyId: #@ data.values.login.saml.activeKeyId
+    keys:
+      #@ for key_id in data.values.login.saml.keys:
+      #@ key_id:
+      #@   if/end hasattr(data.values.login.saml.keys[key_id], "key"):
+      key: #@ data.values.login.saml.keys[key_id].key
+      #@   end
+      #@   if/end hasattr(data.values.login.saml.keys[key_id], "certificate"):
+      certificate: #@ data.values.login.saml.keys[key_id].certificate
+      #@   end
+      #@ end
+#@ end

@@ -1,0 +1,21 @@
+#@ load("@ytt:data", "data")
+
+#@ def jwt_policy_keys():
+jwt:
+  token:
+    policy:
+      activeKeyId: #@ data.values.jwt.policy.activeKeyId
+      keys:
+        signingAlg: #@ data.values.jwt.policy.keys.signingAlg or "RS256"
+        #@ for key_id in data.values.jwt.policy.keys:
+        #@   if key_id != "signingAlg":
+        #@     key_id:
+        #@       if/end hasattr(data.values.jwt.policy.keys[key_id], "signingKey"):
+        signingKey: #@ data.values.jwt.policy.keys[key_id].signingKey
+        #@       end
+        #@       if/end hasattr(data.values.jwt.policy.keys[key_id], "signingCert"):
+        signingCert: #@ data.values.jwt.policy.keys[key_id].signingCert
+        #@       end
+        #@   end
+        #@ end
+#@ end

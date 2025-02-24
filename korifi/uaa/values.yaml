@@ -89,6 +89,8 @@ jwt:
       CHANGE_ME:
         # And the actual signing key here
         signingKey: "CHANGE_ME"
+        # And the actual signing certificate here
+        signingCert: "CHANGE_ME"
 
 login:
   oauth:
@@ -120,6 +122,7 @@ login:
       signRequest: false
       wantAssertionSigned: false
       keys:
+        # Use the activeKeyId as the key here
         CHANGE_ME:
           key: "CHANGE_ME"
           certificate: "CHANGE_ME"

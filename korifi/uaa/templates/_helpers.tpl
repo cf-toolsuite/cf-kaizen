@@ -52,3 +52,19 @@ Selector labels
 app.kubernetes.io/name: {{ include "uaa.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Call ytt for jwt policy keys
+*/}}
+{{- define "jwt.policy.keys" -}}
+{{-   $yttOutput := shell "ytt -f ytt/jwt-config.yaml -f -" (dict "stdin" .Values | toYaml) -}}
+{{-   $yttOutput -}}
+{{- end -}}
+
+{{/*
+Call ytt for SAML keys
+*/}}
+{{- define "saml.keys" -}}
+{{-   $yttOutput := shell "ytt -f ytt/saml-config.yaml -f -" (dict "stdin" .Values | toYaml) -}}
+{{-   $yttOutput -}}
+{{- end -}}

@@ -80,81 +80,111 @@ spec:
               curl -L -o /usr/local/bin/ytt https://github.com/carvel-dev/ytt/releases/download/v0.51.1/ytt-linux-amd64
               chmod +x /usr/local/bin/ytt
 
+              function show_file() {
+                if [ -z "$1" ]; then
+                echo "Error: No filename provided"
+                echo "Usage: show_file <filename>"
+                return 1
+                fi
+                
+                if [ ! -f "$1" ]; then
+                echo "Error: File '$1' not found"
+                return 1
+                fi
+                
+                local filename="$1"
+                echo "--- Contents of $(realpath "$filename") ---"
+                echo ""
+                cat "$filename"
+                echo ""
+                echo "----------"
+                echo ""
+              }
+              
+              cd /tmp
+              
               # Generate JWT keys
-              openssl genrsa -out /tmp/jwt_private.pem 2048
-              openssl rsa -in /tmp/jwt_private.pem -pubout -out /tmp/jwt_public.pem
+              openssl genrsa -out jwt_private.pem 2048
+              openssl rsa -in jwt_private.pem -pubout -out jwt_public.pem
+              
+              show_file jwt_private.pem
+              show_file jwt_public.pem
 
               # Generate SAML keys with specific format
-              openssl req -x509 -newkey rsa:2048 -keyout /tmp/saml_private.pem \
-                -out /tmp/saml_cert.pem -days 3650 -nodes \
-                -subj "/C=US/ST=CA/L=San Francisco/O=Cloud Foundry/OU=UAA/CN=uaa-saml-key" \
+              SUBJ="/C=US/ST=CA/L=San Francisco/O=Cloud Foundry/OU=UAA/CN=uaa-saml-key"
+              openssl req -x509 -newkey rsa:2048 -keyout saml_private.pem \
+                -out saml_cert.pem -days 3650 -nodes \
+                -subj "${SUBJ}" \
                 -sha256 -extensions v3_req \
-                -config <(echo "[req]"; \
-                          echo "distinguished_name=req"; \
-                          echo "[v3_req]"; \
-                          echo "basicConstraints=CA:FALSE"; \
-                          echo "keyUsage=digitalSignature,keyEncipherment"; \
-                          echo "extendedKeyUsage=serverAuth,clientAuth")
+                -config <(printf "[req]\ndistinguished_name=req\n[v3_req]\nbasicConstraints=CA:FALSE\nkeyUsage=digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth,clientAuth")
 
+              show_file saml_private.pem
+              
               # Format certificates to ensure they're in the right format
               # Convert private key to PKCS#8 format
-              openssl pkcs8 -topk8 -inform PEM -in /tmp/saml_private.pem -outform PEM -nocrypt -out /tmp/saml_private_pkcs8.pem
+              openssl pkcs8 -topk8 -inform PEM -in saml_private.pem -outform PEM -nocrypt -out saml_private_pkcs8.pem
+              
+              show_file saml_private_pkcs8.pem
 
               # Ensure certificate is in proper PEM format
-              openssl x509 -in /tmp/saml_cert.pem -outform PEM -out /tmp/saml_cert_formatted.pem
+              openssl x509 -in saml_cert.pem -outform PEM -out saml_cert_formatted.pem
+
+              show_file saml_cert_formatted.pem
               
               PASSPHRASE=$(uuidgen)
 
               # Create data values file with properly formatted certificates
-              cat > /tmp/values.yml <<EOF
+              cat > values.yml <<EOF
               #@data/values
               ---
               passphrase: "${PASSPHRASE}"
-              jwt_private_key: "$(cat /tmp/jwt_private.pem)"
-              saml_private_key: "$(cat /tmp/saml_private_pkcs8.pem)"
-              saml_certificate: "$(cat /tmp/saml_cert_formatted.pem)"
+              admin_client_secret: ADMIN_PASSWORD
+              github_client_id: GITHUB_OIDC_CLIENT_ID
+              github_client_secret: GITHUB_OIDC_CLIENT_SECRET
+              jwt_private_key_path: "jwt_private.pem"
+              saml_private_key_path: "saml_private_pkcs8.pem"
+              saml_certificate_path: "saml_cert_formatted.pem"
               EOF
 
               # Create ytt template
-              cat > /tmp/uaa-template.yml <<'EOF'
+              cat > uaa-template.yml <<'EOF'
               #@ load("@ytt:yaml", "yaml")
               #@ load("@ytt:data", "data")
-
-              #@ def format_key(key):
-              #@   return yaml.encode(key)
-              #@ end
-
               ---
               admin:
-                client_secret: ADMIN_PASSWORD
+                client_secret: #@ data.values.admin_client_secret
               jwt:
                 policy:
                   activeKeyId: jwt-key
                   keys:
                     signingAlg: RS256
                     jwt-key:
-                      signingKey: #@ format_key(data.values.jwt_private_key)
+                      signingKey: #@ data.read(data.values.jwt_private_key_path)
               login:
                 oauth:
                   providers:
                     github:
-                      relyingPartyId: GITHUB_OIDC_CLIENT_ID
-                      relyingPartySecret: GITHUB_OIDC_CLIENT_SECRET
+                      relyingPartyId: #@ data.values.github_client_id
+                      relyingPartySecret: #@ data.values.github_client_secret
                 saml:
-                  serviceProviderKey: #@ format_key(data.values.saml_private_key)
-                  serviceProviderCertificate: #@ format_key(data.values.saml_certificate)
+                  serviceProviderKey: #@ data.read(data.values.saml_private_key_path)
+                  serviceProviderCertificate: #@ data.read(data.values.saml_certificate_path)
                   activeKeyId: "saml-key"
                   keys:
                     saml-key:
-                      key: #@ format_key(data.values.saml_private_key)
-                      certificate: #@ format_key(data.values.saml_certificate)
+                      key: #@ data.read(data.values.saml_private_key_path)
+                      certificate: #@ data.read(data.values.saml_certificate_path)
               EOF
-
+              
+              # Emit parts
+              show_file values.yml 
+              show_file uaa-template.yml
+              
               # Generate the values file using ytt
-              ytt -f /tmp/values.yml -f /tmp/uaa-template.yml > /tmp/uaa-values.yaml
+              ytt -f jwt_private.pem -f saml_private_pkcs8.pem -f saml_cert_formatted.pem -f values.yml -f uaa-template.yml > uaa-values.yaml
 
               # Emit values to be used by Helm
-              cat /tmp/uaa-values.yaml
+              show_file uaa-values.yaml
 
               # Clone repo and install using helm
               CF_KAIZEN_BRANCH="main"
