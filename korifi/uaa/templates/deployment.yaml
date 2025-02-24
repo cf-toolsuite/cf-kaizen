@@ -128,9 +128,6 @@ spec:
                 -Dstatsd.enabled=true
                 -Dservlet.session-store=database
           volumeMounts:
-            - name: uaa-spring-servlet-override
-              mountPath: /workspace/WEB-INF/spring-servlet.xml
-              subPath: spring-servlet.xml
             - name: uaa-config
               mountPath: /etc/config
             - name: smtp-credentials-file
@@ -148,6 +145,10 @@ spec:
             - name: jwt-policy-signing-keys-file
               mountPath: /etc/secrets/jwt_policy_signing_keys.yml
               subPath: jwt_policy_signing_keys.yml
+              readOnly: true
+            - name: saml-keys-file
+              mountPath: /etc/secrets/saml_keys.yml
+              subPath: saml_keys.yml
               readOnly: true
             - name: truststore-file
               mountPath: /etc/truststore
@@ -174,9 +175,6 @@ spec:
           resources:
               {{- toYaml .Values.resources.statsd_exporter | nindent 12 }}
       volumes:
-        - name: uaa-spring-servlet-override
-          configMap:
-            name: {{ .Release.Name }}-config
         - name: uaa-config
           configMap:
             name: {{ .Release.Name }}-config
@@ -191,12 +189,15 @@ spec:
         - name: admin-client-credentials-file
           secret:
             secretName: {{ .Release.Name }}-admin-client-credentials
-        - name: jwt-policy-signing-keys-file
-          secret:
-            secretName: {{ .Release.Name }}-jwt-policy-signing-keys
         - name: ca-certs-files
           secret:
             optional: true
             secretName: {{ .Release.Name }}-ca-certs
+        - name: jwt-policy-signing-keys-file
+          secret:
+            secretName: {{ .Release.Name }}-jwt-policy-signing-keys
+        - name: saml-keys-file
+          secret:
+            secretName: {{ .Release.Name }}-saml-keys
         - name: truststore-file
           emptyDir: {}

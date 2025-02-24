@@ -114,11 +114,15 @@ login:
           family_name: name # Github doesn't split 'given_name' and 'family_name'
           user_name: email
     saml:
+      activeKeyId: "CHANGE_ME"
       disableInResponseToCheck: true
       signMetaData: false
       signRequest: false
       wantAssertionSigned: false
-
+      keys:
+        CHANGE_ME:
+          key: "CHANGE_ME"
+          certificate: "CHANGE_ME"
 uaa:
   saml:
     enabled: false
