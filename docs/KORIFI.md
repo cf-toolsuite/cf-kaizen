@@ -86,9 +86,9 @@ export GITHUB_OIDC_CLIENT_SECRET=
 
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yaml
 
-sed -i "s|client_secret: ADMIN_PASSWORD|client_secret: \"$ADMIN_PASSWORD\"|" install-korifi-kind-w-uaa-enabled.yaml
-sed -i "s|relyingPartyId: GITHUB_OIDC_CLIENT_ID|relyingPartyId: \"$GITHUB_OIDC_CLIENT_ID\"|" install-korifi-kind-w-uaa-enabled.yaml
-sed -i "s|relyingPartySecret: GITHUB_OIDC_CLIENT_SECRET|relyingPartySecret: \"$GITHUB_OIDC_CLIENT_SECRET\"|" install-korifi-kind-w-uaa-enabled.yaml
+sed -i "s|admin_client_secret: ADMIN_PASSWORD|admin_client_secret: \"$ADMIN_PASSWORD\"|" install-korifi-kind-w-uaa-enabled.yaml
+sed -i "s|github_client_id: GITHUB_OIDC_CLIENT_ID|github_client_id: \"$GITHUB_OIDC_CLIENT_ID\"|" install-korifi-kind-w-uaa-enabled.yaml
+sed -i "s|github_client_secret: GITHUB_OIDC_CLIENT_SECRET|github_client_secret: \"$GITHUB_OIDC_CLIENT_SECRET\"|" install-korifi-kind-w-uaa-enabled.yaml
 
 kubectl apply -f install-korifi-kind-w-uaa-enabled.yaml
 ```

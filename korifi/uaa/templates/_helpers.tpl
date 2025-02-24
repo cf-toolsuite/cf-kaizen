@@ -52,3 +52,41 @@ Selector labels
 app.kubernetes.io/name: {{ include "uaa.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{- define "jwt.policy.keys" -}}
+jwt:
+  token:
+    policy:
+      activeKeyId: {{ .Values.jwt.policy.activeKeyId }}
+      keys:
+        signingAlg: {{ .Values.jwt.policy.keys.signingAlg | default "RS256" }}
+        {{ .Values.jwt.policy.activeKeyId }}:
+          signingKey: |-
+            {{ index .Values.jwt.policy.keys .Values.jwt.policy.activeKeyId "signingKey" }}
+{{- with index .Values.jwt.policy.keys .Values.jwt.policy.activeKeyId }}
+{{- if .signingCert }}
+          signingCert: |-
+            {{ .signingCert }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{- define "saml.keys" -}}
+login:
+  saml:
+    serviceProviderKey: |-
+      {{ .Values.login.saml.serviceProviderKey }}
+    serviceProviderCertificate: |-
+      {{ .Values.login.saml.serviceProviderCertificate }}
+    activeKeyId: {{ .Values.login.saml.activeKeyId }}
+    keys:
+      {{ .Values.login.saml.activeKeyId }}:
+        key: |-
+          {{ index .Values.login.saml.keys .Values.login.saml.activeKeyId "key" }}
+{{- with index .Values.login.saml.keys .Values.login.saml.activeKeyId }}
+{{- if .certificate }}
+        certificate: |-
+          {{ .certificate }}
+{{- end }}
+{{- end }}
+{{- end -}}
