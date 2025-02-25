@@ -1,4 +1,54 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:yaml", "yaml")
+
+#@ def uaa():
+issuer:
+  uri: #@ data.values.uaa_url
+database:
+  maxactive: 100
+  maxidle: 10
+  minidle: 0
+  removeabandoned: false
+  logabandoned: true
+  abandonedtimeout: 300
+  url: "jdbc:hsqldb:mem:uaa"
+oauth:
+  client:
+    override: true
+  clients:
+    admin:
+      authorized-grant-types: client_credentials
+      authorities: "clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write"
+login:
+  oauth:
+    providers:
+      github:
+        type: oauth2.0
+        providerDescription: Github OAuth provider, using the 'Authorization Code Grant' flow
+        authUrl: https://github.com/login/oauth/authorize
+        tokenUrl: https://github.com/login/oauth/access_token
+        userInfoUrl: https://api.github.com/user
+        scopes:
+          - read:user
+          - user:email
+        linkText: Login with GitHub
+        showLinkText: true
+        addShadowUserOnLogin: true
+        relyingPartyId: #@ data.values.github_client_id
+        relyingPartySecret: #@ data.values.github_client_secret
+        clientAuthInBody: true
+        skipSslValidation: false
+        attributeMappings:
+          given_name: login
+          family_name: name
+          user_name: email
+  saml:
+    activeKeyId: "saml-key"
+    disableInResponseToCheck: true
+    signMetaData: false
+    signRequest: false
+    wantAssertionSigned: false
+#@ end
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -38,50 +88,4 @@ data:
     logger.cfIdentity.level = info
     logger.cfIdentity.additivity = false
     logger.cfIdentity.appenderRef.uaaDefaultAppender.ref = UaaDefaultAppender
-  uaa.yml: |
-    issuer:
-      uri: #@ data.values.uaa_url
-    database:
-      maxactive: 100
-      maxidle: 10
-      minidle: 0
-      removeabandoned: false
-      logabandoned: true
-      abandonedtimeout: 300
-      url: "jdbc:hsqldb:mem:uaa"
-    oauth:
-      client:
-        override: true
-      clients:
-        admin:
-          authorized-grant-types: client_credentials
-          authorities: "clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write"
-    login:
-      oauth:
-        providers:
-          github:
-            type: oauth2.0
-            providerDescription: Github OAuth provider, using the 'Authorization Code Grant' flow
-            authUrl: https://github.com/login/oauth/authorize
-            tokenUrl: https://github.com/login/oauth/access_token
-            userInfoUrl: https://api.github.com/user
-            scopes:
-              - read:user
-              - user:email
-            linkText: Login with GitHub
-            showLinkText: true
-            addShadowUserOnLogin: true
-            relyingPartyId: #@ data.values.github_client_id
-            relyingPartySecret: #@ data.values.github_client_secret
-            clientAuthInBody: true
-            skipSslValidation: false
-            attributeMappings:
-              given_name: login
-              family_name: name
-              user_name: email
-      saml:
-        activeKeyId: "saml-key"
-        disableInResponseToCheck: true
-        signMetaData: false
-        signRequest: false
-        wantAssertionSigned: false
+  uaa.yml: #@ yaml.encode(uaa())
