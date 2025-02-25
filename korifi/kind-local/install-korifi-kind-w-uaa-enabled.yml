@@ -105,6 +105,13 @@ spec:
               }
 
               cd /tmp
+              
+              # Clone and checkout specific branch of cf-kaizen, then navigate to korifi/uaa directory
+              KAIZEN_BRANCH="main"
+              git clone https://github.com/cf-toolsuite/cf-kaizen
+              cd cf-kaizen
+              git checkout ${KAIZEN_BRANCH}
+              cd korifi/uaa
 
               # Generate JWT keys
               openssl genrsa -out jwt_private.pem 2048
@@ -132,12 +139,6 @@ spec:
               openssl x509 -in saml_cert.pem -outform PEM -out saml_cert_formatted.pem
 
               show_file saml_cert_formatted.pem
-
-              KAIZEN_BRANCH="main"
-              git clone https://github.com/cf-toolsuite/cf-kaizen
-              cd cf-kaizen
-              git checkout ${KAIZEN_BRANCH}
-              cd /tmp
               
               cat > schema.yml <<EOF
               #@data/values-schema
@@ -152,7 +153,6 @@ spec:
               EOF
                     
               cat > values.yml <<EOF
-              #@data/values
               ---
               admin_client_secret: "${ADMIN_PASSWORD}"
               github_client_id: "${GITHUB_OIDC_CLIENT_ID}"
@@ -168,13 +168,15 @@ spec:
               
               show_file values.yml
               
-              # Combine values and template
-              ytt -f schema.yml -f values.yml -f cf-kaizen/korifi/uaa > uaa-rendered.yml
+              # Combine values and templates
+              ytt -f namespace.yml -f service-account.yml -f service.yml -f deployment.yml > uaa-install.yml
+              ytt -f schema.yml -f configmap.yml -f secrets.yml --data-values-file values.yml  > uaa-config.yml
 
-              show_file uaa-rendered.yml
+              show_file uaa-config.yml
+              show_file uaa-install.yml
 
               # Deploy with kapp
-              kapp deploy -a uaa -f uaa-rendered.yml -n uaa --wait-timeout=5m --yes
+              kapp deploy -a uaa -f uaa-config.yml -f uaa-install.yml -n uaa --wait-timeout=5m --yes
 
               kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=uaa -n uaa --timeout=5m
       restartPolicy: Never
