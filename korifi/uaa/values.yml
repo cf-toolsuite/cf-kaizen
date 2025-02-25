@@ -1,6 +1,0 @@
-#@data/values
----
-admin_client_secret: ADMIN_PASSWORD
-github_client_id: GITHUB_OIDC_CLIENT_ID
-github_client_secret: GITHUB_OIDC_CLIENT_SECRET
-uaa_url: http://uaa.uaa.svc.cluster.local:8080

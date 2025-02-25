@@ -144,6 +144,10 @@ spec:
                 --data-value-file jwt_private_key=jwt_private.pem \
                 --data-value-file saml_private_key=saml_private_pkcs8.pem \
                 --data-value-file saml_certificate=saml_cert_formatted.pem \
+                --data-value admin_client_secret="${ADMIN_PASSWORD}" \
+                --data-value github_client_id="${GITHUB_OIDC_CLIENT_ID}" \
+                --data-value github_client_secret="${GITHUB_OIDC_CLIENT_SECRET}" \
+                --data-value uaa_url="${UAA_URL}" \
                 > uaa-rendered.yml
 
               show_file uaa-rendered.yml
