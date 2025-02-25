@@ -11,6 +11,9 @@ export GITHUB_OIDC_CLIENT_ID=
 # Used with login.oauth.providers.github.relyingPartySecret
 export GITHUB_OIDC_CLIENT_SECRET=
 
+# Used with issuer.uri
+export UAA_URL=http://uaa.uaa.svc.cluster.local:8080
+
 # Your Github account or organization name
 # Used with RoleBinding
 export GITHUB_USERNAME=
