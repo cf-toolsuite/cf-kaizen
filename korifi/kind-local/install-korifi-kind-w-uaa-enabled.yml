@@ -56,6 +56,16 @@ subjects:
 apiVersion: batch/v1
 kind: Job
 metadata:
+  annotations:
+    kbld.k14s.io/images: |
+      - origins:
+        - local:
+            path: /tmp/build/a625eeb5/korifi
+        - git:
+            dirty: true
+            remoteURL: https://github.com/cloudfoundry/korifi.git
+            sha: d151c84337da850edbda97d36ae4a03b341f7e16
+        url: index.docker.io/cloudfoundry/korifi-installer@sha256:b2a6711b6eeaf2d12d5018ceac6530e4ddc24294c6a16840dae1a8ac2cdba7ac
   name: install-uaa
   namespace: korifi-installer
 spec:
@@ -193,20 +203,22 @@ spec:
       name: install-korifi
     spec:
       containers:
-        - command:
+        - name: install-korifi
+          image: index.docker.io/cloudfoundry/korifi-installer@sha256:b2a6711b6eeaf2d12d5018ceac6530e4ddc24294c6a16840dae1a8ac2cdba7ac
+          command:
             - bash
             - -c
             - |
               set -euo pipefail
+              
+              cd /tmp
               KORIFI_VERSION="v0.14.0"
-              mkdir -p /tmp/korifi
-              curl -sSL "https://github.com/cloudfoundry/korifi/releases/download/${KORIFI_VERSION}/install-dependencies.sh" -o /tmp/korifi/scripts/install-dependencies.sh
-              chmod +x /tmp/korifi/scripts/install-dependencies.sh
-              curl -sSL --create-dirs "https://github.com/cloudfoundry/korifi/releases/download/${KORIFI_VERSION}/tests.tar.gz" -o /tmp/korifi/tests.tar.gz
-              tar -xzf /tmp/korifi/tests.tar.gz -C /tmp/korifi/
-              rm /tmp/korifi/tests.tar.gz
-              cd /tmp/korifi
+              git clone https://github.com/cloudfoundry/korifi.git
+              cd korifi
+              git checkout ${KORIFI_VERSION}
+              
               scripts/install-dependencies.sh --insecure-tls-metrics-server
+              
               helm repo add twuni https://helm.twun.io
               helm upgrade --install localregistry twuni/docker-registry \
                 --namespace default \
@@ -275,7 +287,5 @@ spec:
                   networkPublishing:
                     type: NodePortService
               EOF
-          image: index.docker.io/cloudfoundry/korifi-installer@sha256:b2a6711b6eeaf2d12d5018ceac6530e4ddc24294c6a16840dae1a8ac2cdba7ac
-          name: install-korifi
       restartPolicy: Never
       serviceAccountName: korifi-installer
