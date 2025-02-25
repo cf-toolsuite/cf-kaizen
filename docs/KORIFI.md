@@ -88,7 +88,7 @@ export UAA_URL=
 
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yml
 
-envsubst < install-korifi-kind-w-uaa-enabled.yml > install.yml
+envsubst '${ADMIN_PASSWORD} ${GITHUB_OIDC_CLIENT_ID} ${GITHUB_OIDC_CLIENT_SECRET} ${UAA_URL}' < install-korifi-kind-w-uaa-enabled.yml > install.yml
 kubectl apply -f install.yml
 ```
 
