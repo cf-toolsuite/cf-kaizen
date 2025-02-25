@@ -137,7 +137,7 @@ spec:
               git clone https://github.com/cf-toolsuite/cf-kaizen
               cd cf-kaizen
               git checkout ${KAIZEN_BRANCH}
-              cd ..
+              cd /tmp
 
               # Combine values and template
               ytt -f cf-kaizen/korifi/uaa \
