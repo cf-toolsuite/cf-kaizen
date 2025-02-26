@@ -1,0 +1,16 @@
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: uaa-proxy
+  namespace: uaa
+  labels:
+    app.kubernetes.io/name: uaa
+    app.kubernetes.io/component: authorization_server
+spec:
+  virtualhost:
+    fqdn: uaa.127.0.0.1.nip.io
+  routes:
+    - services:
+        - name: uaa
+          port: 8080

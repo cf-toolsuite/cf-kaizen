@@ -1,5 +1,17 @@
 # cf-kaizen
 
+* [Getting started with Korifi](#getting-started-with-korifi)
+  * [Prerequisites](#prerequisites)
+  * [Building MCP servers](#building-mcp-servers)
+  * [Installation](#installation)
+  * [Teardown](#teardown)
+  * [Authentication](#authentication)
+  * [Deployment](#deployment)
+    * [of sample application](#of-sample-application)
+    * [of infrastructure services](#of-infrastructure-services)
+    * [of cf-toolsuite applications](#of-cf-toolsuite-applications)
+  * [Configuring Claude Desktop](#configuring-claude-desktop)
+
 ## Getting started with Korifi
 
 ### Prerequisites
@@ -38,7 +50,7 @@ Fill in the required details:
 |-------------------|-------|
 | Application name  | Korifi UAA OIDC |
 | Homepage URL | https://localhost |
-| Authorization callback URL |  http://localhost:31000/uaa/login/callback/github |
+| Authorization callback URL |  http://uaa.127.0.0.1.nip.io/uaa/login/callback/github |
 
 Click **Register application**.  Then generate a new **Client Secret**.
 
@@ -84,7 +96,7 @@ Install Korifi with experimental UAA support enabled.
 export ADMIN_PASSWORD=
 export GITHUB_OIDC_CLIENT_ID=
 export GITHUB_OIDC_CLIENT_SECRET=
-export UAA_URL=
+export UAA_URL=http://uaa.127.0.0.1.nip.io
 
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yml
 
@@ -111,7 +123,7 @@ kubectl delete namespace korifi-installer
 ```
 
 Configure the Admin User Role Binding.
-
+:s:
 > [!IMPORTANT]
 > Set the value of the GITHUB_USERNAME environment variable before attempting to apply the RoleBinding
 
@@ -135,6 +147,12 @@ subjects:
   kind: User
   name: github:${GITHUB_USERNAME}
 EOF
+```
+
+### Teardown
+
+```bash
+kind delete cluster --name korifi
 ```
 
 ### Authentication

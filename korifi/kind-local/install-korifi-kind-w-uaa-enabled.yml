@@ -156,7 +156,7 @@ spec:
               admin_client_secret: ""
               github_client_id: ""
               github_client_secret: ""
-              uaa_url: ""
+              uaa_url: "http://uaa.127.0.0.1.nip.io"
               jwt_private_key: ""
               saml_private_key: ""
               saml_certificate: ""
@@ -179,7 +179,7 @@ spec:
               show_file values.yml
               
               # Combine values and templates
-              ytt -f namespace.yml -f service-account.yml -f service.yml -f deployment.yml > uaa-install.yml
+              ytt -f namespace.yml -f service-account.yml -f service.yml -f deployment.yml -f httpproxy.yml > uaa-install.yml
               ytt -f schema.yml -f configmap.yml -f secrets.yml --data-values-file values.yml  > uaa-config.yml
 
               show_file uaa-config.yml
@@ -258,7 +258,7 @@ spec:
                 --set=experimental.managedServices.enabled="true" \
                 --set=experimental.managedServices.trustInsecureBrokers="true" \
                 --set=experimental.uaa.enabled="true" \
-                --set=experimental.uaa.url="http://uaa.uaa.svc.cluster.local:8080" \
+                --set=experimental.uaa.url="${UAA_URL}" \
                 --wait
 
               kubectl wait --for=condition=ready clusterbuilder --all=true --timeout=15m

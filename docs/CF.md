@@ -1,5 +1,14 @@
 # cf-kaizen
 
+* [Getting started with Cloud Foundry](#getting-started-with-cloud-foundry)
+  * [Prerequisites](#prerequisites)
+  * [Building MCP servers](#building-mcp-servers)
+  * [Authentication](#authentication)
+  * [Deployment](#deployment)
+    * [of sample application](#of-sample-application)
+    * [of cf-toolsuite applications](#of-cf-toolsuite-applications)
+  * [Configuring Claude Desktop](#configuring-claude-desktop)
+
 ## Getting started with Cloud Foundry
 
 ### Prerequisites
@@ -23,7 +32,7 @@ cd cf-kaizen
 mvn install
 ```
 
-### Preparation
+### Authentication
 
 Target a foundation
 
