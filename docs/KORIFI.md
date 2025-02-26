@@ -96,7 +96,7 @@ Install Korifi with experimental UAA support enabled.
 export ADMIN_PASSWORD=
 export GITHUB_OIDC_CLIENT_ID=
 export GITHUB_OIDC_CLIENT_SECRET=
-export UAA_URL=http://uaa.127.0.0.1.nip.io
+export UAA_URL=https://uaa.127.0.0.1.nip.io
 
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yml
 

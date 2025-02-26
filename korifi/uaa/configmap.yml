@@ -21,6 +21,7 @@ oauth:
       authorities: "clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write"
 login:
   oauth:
+    disableIdTokenResponseType: true
     providers:
       github:
         type: oauth2.0
@@ -39,9 +40,9 @@ login:
         clientAuthInBody: true
         skipSslValidation: true
         attributeMappings:
-          given_name: login
-          family_name: name
-          user_name: email
+          given_name: name
+          family_name: login
+          user_name: login
   saml:
     activeKeyId: "saml-key"
     disableInResponseToCheck: true
