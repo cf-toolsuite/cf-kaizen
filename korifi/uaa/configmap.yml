@@ -37,7 +37,7 @@ login:
         relyingPartyId: #@ data.values.github_client_id
         relyingPartySecret: #@ data.values.github_client_secret
         clientAuthInBody: true
-        skipSslValidation: false
+        skipSslValidation: true
         attributeMappings:
           given_name: login
           family_name: name

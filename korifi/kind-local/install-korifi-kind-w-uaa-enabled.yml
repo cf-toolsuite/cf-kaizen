@@ -179,7 +179,7 @@ spec:
               show_file values.yml
               
               # Combine values and templates
-              ytt -f namespace.yml -f service-account.yml -f service.yml -f deployment.yml -f httpproxy.yml > uaa-install.yml
+              ytt -f namespace.yml -f service-account.yml -f service.yml -f deployment.yml -f clusterissuer.yml -f certificate.yml -f httpproxy.yml > uaa-install.yml
               ytt -f schema.yml -f configmap.yml -f secrets.yml --data-values-file values.yml  > uaa-config.yml
 
               show_file uaa-config.yml

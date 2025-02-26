@@ -46,11 +46,11 @@ Go to **Developer settings** &#x226B; **OAuth Apps** and click on the **New OAut
 
 Fill in the required details:
 
-| Key               | Value |
-|-------------------|-------|
-| Application name  | Korifi UAA OIDC |
-| Homepage URL | https://localhost |
-| Authorization callback URL |  http://uaa.127.0.0.1.nip.io/login/callback/github |
+| Key               | Value                                              |
+|-------------------|----------------------------------------------------|
+| Application name  | Korifi UAA OIDC                                    |
+| Homepage URL | https://localhost                                  |
+| Authorization callback URL | https://uaa.127.0.0.1.nip.io/login/callback/github |
 
 Click **Register application**.  Then generate a new **Client Secret**.
 

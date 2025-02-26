@@ -10,6 +10,8 @@ metadata:
 spec:
   virtualhost:
     fqdn: uaa.127.0.0.1.nip.io
+    tls:
+      secretName: uaa-tls-secret
   routes:
     - services:
         - name: uaa
