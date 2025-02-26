@@ -50,7 +50,7 @@ Fill in the required details:
 |-------------------|-------|
 | Application name  | Korifi UAA OIDC |
 | Homepage URL | https://localhost |
-| Authorization callback URL |  http://uaa.127.0.0.1.nip.io/uaa/login/callback/github |
+| Authorization callback URL |  http://uaa.127.0.0.1.nip.io/login/callback/github |
 
 Click **Register application**.  Then generate a new **Client Secret**.
 
@@ -125,7 +125,8 @@ kubectl delete namespace korifi-installer
 Configure the Admin User Role Binding.
 :s:
 > [!IMPORTANT]
-> Set the value of the GITHUB_USERNAME environment variable before attempting to apply the RoleBinding
+> Set the value of the GITHUB_USERNAME environment variable before attempting to apply the RoleBinding. 
+> This value needs to be your GitHub username!
 
 ```bash
 export GITHUB_USERNAME=
