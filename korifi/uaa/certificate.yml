@@ -20,7 +20,7 @@ spec:
     - server auth
     - client auth
   dnsNames:
-    - uaa.127.0.0.1.nip.io
+    - uaa-127-0-0-1.nip.io
   issuerRef:
     name: selfsigned-issuer
     kind: ClusterIssuer

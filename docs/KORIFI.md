@@ -50,7 +50,7 @@ Fill in the required details:
 |-------------------|----------------------------------------------------|
 | Application name  | Korifi UAA OIDC                                    |
 | Homepage URL | https://localhost                                  |
-| Authorization callback URL | https://uaa.127.0.0.1.nip.io/login/callback/github |
+| Authorization callback URL | https://uaa-127-0-0-1.nip.io/login/callback/github |
 
 Click **Register application**.  Then generate a new **Client Secret**.
 
@@ -96,11 +96,10 @@ Install Korifi with experimental UAA support enabled.
 export ADMIN_PASSWORD=
 export GITHUB_OIDC_CLIENT_ID=
 export GITHUB_OIDC_CLIENT_SECRET=
-export UAA_URL=https://uaa.127.0.0.1.nip.io
 
 curl -LO https://raw.githubusercontent.com/cf-toolsuite/cf-kaizen/refs/heads/main/korifi/kind-local/install-korifi-kind-w-uaa-enabled.yml
 
-envsubst '${ADMIN_PASSWORD} ${GITHUB_OIDC_CLIENT_ID} ${GITHUB_OIDC_CLIENT_SECRET} ${UAA_URL}' < install-korifi-kind-w-uaa-enabled.yml > install.yml
+envsubst '${ADMIN_PASSWORD} ${GITHUB_OIDC_CLIENT_ID} ${GITHUB_OIDC_CLIENT_SECRET}' < install-korifi-kind-w-uaa-enabled.yml > install.yml
 kubectl apply -f install.yml
 ```
 

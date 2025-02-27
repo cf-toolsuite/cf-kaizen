@@ -156,7 +156,8 @@ spec:
               admin_client_secret: ""
               github_client_id: ""
               github_client_secret: ""
-              uaa_url: "http://uaa.127.0.0.1.nip.io"
+              issuer_uri: ""
+              system_domain: ""
               jwt_private_key: ""
               saml_private_key: ""
               saml_certificate: ""
@@ -167,7 +168,8 @@ spec:
               admin_client_secret: "${ADMIN_PASSWORD}"
               github_client_id: "${GITHUB_OIDC_CLIENT_ID}"
               github_client_secret: "${GITHUB_OIDC_CLIENT_SECRET}"
-              uaa_url: "${UAA_URL}"
+              issuer_uri: "https://uaa-127-0-0-1.nip.io"
+              system_domain: "localhost"
               EOF
               echo "jwt_private_key: |" >> values.yml
               cat jwt_private.pem | sed 's/^/  /' >> values.yml
@@ -258,7 +260,7 @@ spec:
                 --set=experimental.managedServices.enabled="true" \
                 --set=experimental.managedServices.trustInsecureBrokers="true" \
                 --set=experimental.uaa.enabled="true" \
-                --set=experimental.uaa.url="${UAA_URL}" \
+                --set=experimental.uaa.url="https://uaa-127-0-0-1.nip.io" \
                 --wait
 
               kubectl wait --for=condition=ready clusterbuilder --all=true --timeout=15m

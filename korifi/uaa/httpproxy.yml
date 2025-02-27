@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/component: authorization_server
 spec:
   virtualhost:
-    fqdn: uaa.127.0.0.1.nip.io
+    fqdn: uaa-127-0-0-1.nip.io
     tls:
       secretName: uaa-tls-secret
   routes:

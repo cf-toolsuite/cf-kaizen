@@ -3,7 +3,8 @@
 
 #@ def uaa():
 issuer:
-  uri: #@ data.values.uaa_url
+  uri: #@ data.values.issuer_uri
+
 database:
   maxactive: 100
   maxidle: 10
@@ -12,6 +13,7 @@ database:
   logabandoned: true
   abandonedtimeout: 300
   url: "jdbc:hsqldb:mem:uaa"
+
 oauth:
   client:
     override: true
@@ -19,9 +21,15 @@ oauth:
     admin:
       authorized-grant-types: client_credentials
       authorities: "clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write"
+    cf:
+      override: true
+      authorized-grant-types: authorization_code,refresh_token
+      scope: openid,cloud_controller.read,cloud_controller.write
+      authorities: uaa.none
+      redirect-uri: #@ "https://{}/oauth/callback".format(data.values.system_domain)
+
 login:
   oauth:
-    disableIdTokenResponseType: true
     providers:
       github:
         type: oauth2.0
