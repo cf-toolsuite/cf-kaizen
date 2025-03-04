@@ -1,0 +1,195 @@
+spring:
+  ai:
+    mcp:
+      client:
+        enabled: true
+        name: cf-kaizen-butler-client
+        version: 1.0.0
+        request-timeout: 30s
+        type: SYNC
+        sse:
+          connections:
+            butler:
+              url: ${CF_KAIZEN_BUTLER_SERVER_URL:http://localhost:8080}
+
+  httpclient5:
+    pool:
+      default-connection-config:
+        socket-timeout: PT10M
+
+  mvc:
+    async:
+      request-timeout: ${SPRING_MVC_ASYNC_REQUEST_TIMEOUT:-1}
+
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  info:
+    build:
+      enabled: true
+    git:
+      mode: FULL
+    java:
+      enabled: true
+    os:
+      enabled: true
+  endpoint:
+    health:
+      show-details: ALWAYS
+    metrics:
+      access: unrestricted
+    prometheus:
+      access: unrestricted
+    env:
+      access: unrestricted
+      show-values: ALWAYS
+    configprops:
+      access: unrestricted
+      show-values: ALWAYS
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,scheduledtasks,loggers,prometheus,sbom
+  tracing:
+    sampling:
+      probability: 1.0
+
+server:
+  tomcat:
+    max-swallow-size: -1
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: groq-cloud
+    import: "${SPRING_CONFIG_IMPORT:optional:file:./config/creds.yml}"
+
+  ai:
+    openai:
+      base_url: ${OPENAI_BASE_URL:https://api.groq.com/openai}
+      chat:
+        options:
+          model: ${CHAT_MODEL:llama-3.3-70b-versatile}
+      embedding:
+        base_url: ${EMBEDDING_BASEURL:https://api.openai.com}
+        options:
+          model: ${EMBEDDING_MODEL:text-embedding-ada-002}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: openai
+    import: "${SPRING_CONFIG_IMPORT:optional:file:./config/creds.yml}"
+
+  ai:
+    openai:
+      audio:
+        speech:
+          options:
+            # Supported formats are: mp3, opus, aac, flac, wav, and pcm
+            response-format: mp3
+            # Available options are: alloy, echo, fable, onyx, nova, and shimmer
+            voice: nova
+            # The speed of the voice synthesis. The acceptable range is from 0.25 (slowest) to 4.0 (fastest).
+            speed: 1.0f
+        transcription:
+          options:
+            prompt: "Transcribe the audio"
+            # @see https://docs.oracle.com/javase/8/docs/api/java/util/Locale.html#getISOLanguages--
+            language: en
+            # The format of the transcript output, in one of these options: json, text, srt, verbose_json, or vtt
+            response-format: vtt
+      chat:
+        options:
+          model: ${CHAT_MODEL:gpt-4o-mini}
+      embedding:
+        options:
+          model: ${EMBEDDING_MODEL:text-embedding-ada-002}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: openrouter
+    import: "${SPRING_CONFIG_IMPORT:optional:file:./config/creds.yml}"
+
+  ai:
+    openai:
+      base_url: ${OPENAI_BASE_URL:https://openrouter.ai/api}
+      chat:
+        options:
+          model: ${CHAT_MODEL:anthropic/claude-3.7-sonnet}
+#         other models available:
+#            - google/gemini-2.0-flash-exp:free
+#            - meta-llama/llama-3.3-70b-instruct
+#            - deepseek/deepseek-chat
+#            - qwen/qvq-72b-preview
+#            - openai/gpt-4o-2024-11-20
+#            - amazon/nova-pro-v1
+#            - mistralai/mistral-large-2411
+#            - anthropic/claude-3.7-sonnet
+#            - perplexity/llama-3.1-sonar-huge-128k-online
+#            - pygmalionai/mythalion-13b
+#            - anthracite-org/magnum-v2-72b
+#            - x-ai/grok-2-1212
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: ollama
+
+  autoconfigure:
+    exclude: org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${CHAT_MODEL:mistral}
+          num-ctx: ${CHAT_MODEL_CONTEXT_LENGTH:32768}
+          truncate: false
+      embedding:
+        options:
+          model: ${EMBEDDING_MODEL:nomic-embed-text}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  ai:
+    ollama:
+      init:
+        pull-model-strategy: always
+        timeout: 15m
+        max-retries: 3
+        keep_alive: 15m
+
+debug: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    me.pacphi: TRACE
+    org.springframework: DEBUG
+    com.fasterxml.jackson: TRACE
+
+server:
+  port: 8082

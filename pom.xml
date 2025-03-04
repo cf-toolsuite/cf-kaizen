@@ -26,7 +26,8 @@
 	<modules>
 		<module>butler</module>
 		<module>hoover</module>
-	</modules>
+        <module>clients</module>
+    </modules>
 	
 	<issueManagement>
 		<url>https://github.com/cf-toolsuite/cf-kaizen/issues</url>
@@ -74,6 +75,13 @@
 		<spring-ai.version>1.0.0-M6</spring-ai.version>
 		<jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
 		<spring-doc.version>2.8.5</spring-doc.version>
+		<cfenv.version>3.3.0</cfenv.version>
+		<commons-io.version>2.18.0</commons-io.version>
+		<json-io.version>4.40.0</json-io.version>
+		<node.version>v23.4.0</node.version>
+		<npm.version>10.9.2</npm.version>
+		<spring-boot-hc5.version>1.1.1</spring-boot-hc5.version>
+		<spring-cloud-bindings.version>2.0.4</spring-cloud-bindings.version>
 		<assertj.version>3.27.3</assertj.version>
 	</properties>
 
@@ -150,6 +158,20 @@
 				<version>${spring-ai.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-starter-parent</artifactId>
+				<version>2024.0.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.pivotal.spring.cloud</groupId>
+				<artifactId>spring-cloud-services-dependencies</artifactId>
+				<version>4.2.0</version>
+				<scope>import</scope>
+				<type>pom</type>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

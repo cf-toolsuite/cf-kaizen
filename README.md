@@ -78,7 +78,7 @@ Maven
 ```maven
 <dependency>
     <groupId>org.cftoolsuite</groupId>
-    <artifactId>cf-kaizen-butler-client</artifactId>
+    <artifactId>cf-kaizen-butler-server</artifactId>
     <version>{release-version}</version>
 </dependency>
 ```
@@ -88,7 +88,7 @@ or
 ```maven
 <dependency>
     <groupId>org.cftoolsuite</groupId>
-    <artifactId>cf-kaizen-hoover-client</artifactId>
+    <artifactId>cf-kaizen-hoover-server</artifactId>
     <version>{release-version}</version>
 </dependency>
 ```
@@ -96,13 +96,13 @@ or
 Gradle
 
 ```gradle
-implementation 'org.cftoolsuite:cf-kaizen-butler-client:{release-version}'
+implementation 'org.cftoolsuite:cf-kaizen-butler-server:{release-version}'
 ```
 
 or
 
 ```gradle
-implementation 'org.cftoolsuite:cf-kaizen-hoover-client:{release-version}'
+implementation 'org.cftoolsuite:cf-kaizen-hoover-server:{release-version}'
 ```
 
 > [!IMPORTANT]
@@ -154,7 +154,7 @@ Add the following stanza(s) to a file called `claude_desktop_config.json`:
   "args": [
     "-jar",
     "-Ddefault.url=<cf-butler-application-instance-api-endpoint>",
-    "<path-to-project>/target/cf-kaizen-butler-client-0.0.1-SNAPSHOT.jar"
+    "<path-to-project>/target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar"
   ]
 }
 ```
@@ -167,7 +167,7 @@ or
   "args": [
     "-jar",
     "-Ddefault.url=<cf-hoover-application-instance-api-endpoint>",
-    "<path-to-project>/target/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar"
+    "<path-to-project>/target/cf-kaizen-hoover-server-0.0.1-SNAPSHOT.jar"
   ]
 }
 ```

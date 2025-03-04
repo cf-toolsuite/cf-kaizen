@@ -38,12 +38,12 @@ Close and re-launch Claude Desktop for the update to take effect.
 Validate that the additional tools are present before crafting and executing your next prompt.
 
 ```json
-"cf-kaizen-butler-client-n": {
+"cf-kaizen-butler-client": {
   "command": "java",
   "args": [
     "-jar",
     "-Ddefault.url=https://cf-butler.apps.dhaka.cf-app.com",
-    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-butler-client/0.0.1-SNAPSHOT/cf-kaizen-butler-client-0.0.1-SNAPSHOT.jar"
+    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-butler-server/0.0.1-SNAPSHOT/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar"
   ]
 }
 ```

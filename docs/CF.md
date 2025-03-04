@@ -8,6 +8,7 @@
     * [of sample application](#of-sample-application)
     * [of cf-toolsuite applications](#of-cf-toolsuite-applications)
   * [Configuring Claude Desktop](#configuring-claude-desktop)
+  * [In one go script](#in-one-go-script)
 
 ## Getting started with Cloud Foundry
 
@@ -153,7 +154,7 @@ Validate that the additional tools are present before crafting and executing you
   "args": [
     "-jar",
     "-Ddefault.url=https://cf-butler-dev.apps.dhaka.cf-app.com",
-    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-butler-client/0.0.1-SNAPSHOT/cf-kaizen-butler-client-0.0.1-SNAPSHOT.jar"
+    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-butler-server/0.0.1-SNAPSHOT/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar"
   ]
 },
 "cf-kaizen-hoover-client": {
@@ -161,7 +162,7 @@ Validate that the additional tools are present before crafting and executing you
   "args": [
     "-jar",
     "-Ddefault.url=https://cf-hoover.apps.dhaka.cf-app.com",
-    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-hoover-client/0.0.1-SNAPSHOT/cf-kaizen-hoover-client-0.0.1-SNAPSHOT.jar"
+    "<path-to-.m2-home>/repository/org/cftoolsuite/cfapp/cf-kaizen-hoover-server/0.0.1-SNAPSHOT/cf-kaizen-hoover-server-0.0.1-SNAPSHOT.jar"
   ]
 }
 ```
@@ -169,3 +170,32 @@ Validate that the additional tools are present before crafting and executing you
 > [!IMPORTANT]
 > Replace <path-to.m2-home> above with $HOME/.m2 when on Linux or MacOS and %USERPROFILE%\.m2 when on Windows.  Evaluate the path options mentioned and be sure to replace with an absolute path.
 > And if you're targeting different foundation(s); replace the value(s) for the default.url args above.
+
+### In one go script
+
+If you're interested in hoisting everything so that it runs on a target foundation, take a look at this [script](../scripts/deploy-on-tp4cf.sh).
+
+Let's say you already know of a Cloud Foundry API endpoint and your Platform Engineering team has setup Single Sign-On.  
+
+Well, to get rolling, you could, e.g.,
+
+```bash
+cd scripts
+export CF_API="https://api.sys.dhaka.cf-app.com"
+envsubst '$CF_API' < deploy-on-tp4cf.sh > deploy.sh
+chmod +x *.sh
+./deploy.sh authenticate
+./deploy.sh provision
+./deploy.sh clone
+./deploy.sh build Y
+./deploy.sh deploy
+```
+
+When you've completed your evaluation, you can clean up everything with, e.g.,
+
+```bash
+./deploy.sh destroy
+
+# or more aggressively 
+./deploy.sh deprovision
+```

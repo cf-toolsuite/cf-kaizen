@@ -32,3 +32,15 @@ build/
 ### VS Code ###
 .vscode/
 .history/
+
+### Sensitive configuration
+clients/**/config/
+env.sh
+deploy.sh
+install.yml
+
+### Node/NPM ###
+package-lock.json
+dist
+node
+node_modules
