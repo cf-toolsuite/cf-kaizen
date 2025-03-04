@@ -25,7 +25,7 @@ set_droplet_scanning_flag() {
   flag="${flag,,}"
 
   # Set the flag based on input
-  if [ "$flag" = "y" ]; then
+  if [ "$flag" == "y" ]; then
     ENABLE_DROPLET_SCANNING="y"
   else
     ENABLE_DROPLET_SCANNING="n"
@@ -139,7 +139,9 @@ deploy)
   ## Deploy application instance to zoolabs/dev
   echo "-- Deploying application instance to zoolabs/dev"
   cf target -o zoolabs -s dev
-  cf push primes -m 1G -p ./build/libs/primes-1.0-SNAPSHOT.jar -s cflinuxfs4 --no-start
+
+  cd /tmp/primes || exit 1
+  cf push primes -m 1G -p build/libs/primes-1.0-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars primes
   cf start primes
 
@@ -155,6 +157,7 @@ deploy)
   cf create-route apps.dhaka.cf-app.com --hostname cf-butler-dev
   cf map-route cf-butler apps.dhaka.cf-app.com --hostname cf-butler-dev
   if [ "$ENABLE_DROPLET_SCANNING" == "y" ]; then
+    echo "-- Droplet scanning will be enabled"
     cf set-env cf-butler JAVA_ARTIFACTS_FETCH_MODE list-jars-in-droplet
   fi
   cf start cf-butler
