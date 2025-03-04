@@ -18,19 +18,16 @@ GENAI_CHAT_SERVICE_NAME="kaizen-llm"
 # Whichever plan you've configured here, it must a) be available from the cf marketplace and b) have chat capability.
 GENAI_CHAT_PLAN_NAME="llama3.2"
 
-set_droplet_scanning_flag() {
-  local flag="${2:-}"
+flag="${2:-}"
+flag="${flag,,}"
 
-  # Convert to lowercase
-  flag="${flag,,}"
-
-  # Set the flag based on input
-  if [ "$flag" == "y" ]; then
-    ENABLE_DROPLET_SCANNING="y"
-  else
-    ENABLE_DROPLET_SCANNING="n"
-  fi
-}
+if [ "$flag" == "y" ]; then
+  ENABLE_DROPLET_SCANNING="y"
+  ENABLE_CLONE_REFRESH="y"
+else
+  ENABLE_DROPLET_SCANNING="n"
+  ENABLE_CLONE_REFRESH="n"
+fi
 
 get_app_url() {
   local app_name="$1"
@@ -111,6 +108,9 @@ clone)
   declare -a REPOSITORIES=( "cf-toolsuite/cf-butler" "cf-toolsuite/cf-hoover" "cf-toolsuite/cf-kaizen" )
   for repo in "${REPOSITORIES[@]}"
   do
+    if [ "$ENABLE_CLONE_REFRESH" == "y" ]; then
+        rm -Rf "/tmp/$repo"
+    fi
     gh repo clone "$repo"
   done
   gh repo clone fastnsilver/primes
@@ -197,12 +197,14 @@ deploy)
   cd /tmp/cf-kaizen/clients/butler || exit 1
   cf push cf-kaizen-butler-frontend -m 1G -k 256M -p target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-frontend
+  cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud,openai"
   cf bind-service cf-kaizen-butler-frontend $GENAI_CHAT_SERVICE_NAME
   cf start cf-kaizen-butler-frontend
 
   cd /tmp/cf-kaizen/clients/hoover || exit 1
   cf push cf-kaizen-hoover-frontend -m 1G -k 256M -p target/cf-kaizen-hoover-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-frontend
+  cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud,openai"
   cf bind-service cf-kaizen-hoover-frontend $GENAI_CHAT_SERVICE_NAME
   cf start cf-kaizen-hoover-frontend
   ;;
