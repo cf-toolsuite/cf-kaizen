@@ -20,11 +20,6 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    @PostMapping("/chat")
-    public ResponseEntity<String> chat(@RequestBody Inquiry inquiry) {
-        return ResponseEntity.ok(chatService.respondToQuestion(inquiry.question()));
-    }
-
     @PostMapping("/stream/chat")
     public ResponseEntity<Flux<String>> streamChat(@RequestBody Inquiry inquiry) {
         return ResponseEntity.ok(chatService.streamResponseToQuestion(inquiry.question()));
