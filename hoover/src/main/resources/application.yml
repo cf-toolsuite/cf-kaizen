@@ -55,6 +55,21 @@ logging:
 spring:
   config:
     activate:
+      on-profile: cloud
+
+  main:
+    banner-mode: log
+    web-application-type: servlet
+
+logging:
+  pattern:
+    console: "%style{%d{ISO8601}}{black} %highlight{%-5level }[%style{%t}{bright,blue}] %style{%c{1.}}{bright,yellow}: %msg%n%throwable"
+
+---
+
+spring:
+  config:
+    activate:
       on-profile: dev
 
 debug: true

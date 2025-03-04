@@ -57,33 +57,9 @@
         </dependency>
 
         <dependency>
-            <groupId>io.pivotal.cfenv</groupId>
-            <artifactId>java-cfenv</artifactId>
-            <version>${cfenv.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.pivotal.cfenv</groupId>
-            <artifactId>java-cfenv-boot</artifactId>
-            <version>${cfenv.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.cedarsoftware</groupId>
-            <artifactId>json-io</artifactId>
-            <version>${json-io.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-bindings</artifactId>
-            <version>${spring-cloud-bindings.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-spring-cloud-bindings</artifactId>
         </dependency>
 
         <dependency>

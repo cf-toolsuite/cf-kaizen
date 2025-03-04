@@ -183,12 +183,14 @@ deploy)
   cf push cf-kaizen-butler-server -m 1G -k 256M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-server
   cf set-env cf-kaizen-hoover-server CF_BUTLER_API_ENDPOINT "$CF_BUTLER_API_ENDPOINT"
+  cf set-env cf-kaizen-butler-server SPRING_PROFILES_ACTIVE "default,cloud"
   cf start cf-kaizen-butler-server
 
   cd /tmp/cf-kaizen/hoover || exit 1
   cf push cf-kaizen-hoover-server -m 1G -k 256M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-server
   cf set-env cf-kaizen-hoover-server CF_HOOVER_API_ENDPOINT "$CF_HOOVER_API_ENDPOINT"
+  cf set-env cf-kaizen-hoover-server SPRING_PROFILES_ACTIVE "default,cloud"
   cf start cf-kaizen-hoover-server
 
   echo "-- Readying a GenAI service instance"
