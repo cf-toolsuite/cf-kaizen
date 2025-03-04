@@ -106,7 +106,7 @@ deprovision)
 
 clone)
   ## Clone repositories
-  /cd tmp
+  cd /tmp || exit 1
   echo "-- Cloning repositories from GitHub"
   declare -a REPOSITORIES=( "cf-toolsuite/cf-butler" "cf-toolsuite/cf-hoover" "cf-toolsuite/cf-kaizen" )
   for repo in "${REPOSITORIES[@]}"
@@ -118,7 +118,7 @@ clone)
 
 build)
   ## Build projects
-  /cd tmp
+  cd /tmp || exit 1
   echo "-- Building projects"
   declare -a PROJECTS=( "cf-butler" "cf-hoover" "cf-kaizen" )
   for proj in "${PROJECTS[@]}"
