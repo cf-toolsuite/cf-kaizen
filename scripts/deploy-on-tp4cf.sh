@@ -18,6 +18,10 @@ GENAI_CHAT_SERVICE_NAME="kaizen-llm"
 # Whichever plan you've configured here, it must a) be available from the cf marketplace and b) have chat capability.
 GENAI_CHAT_PLAN_NAME="llama3.2"
 
+CF_DOMAIN="apps.dhaka.cf-app.com"
+CF_KAIZEN_BUTLER_SERVER_URL="https://cf-kaizen-butler-server.$CF_DOMAIN"
+CF_KAIZEN_HOOVER_SERVER_URL="https://cf-kaizen-hoover-server.$CF_DOMAIN"
+
 flag="${2:-}"
 flag="${flag,,}"
 
@@ -200,6 +204,7 @@ deploy)
   cf push cf-kaizen-butler-frontend -m 1G -k 256M -p target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-frontend
   cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud,openai"
+  cf set-env cf-kaizen-butler-frontend CF_KAIZEN_BUTLER_SERVER_URL $CF_KAIZEN_BUTLER_SERVER_URL
   cf bind-service cf-kaizen-butler-frontend $GENAI_CHAT_SERVICE_NAME
   cf start cf-kaizen-butler-frontend
 
@@ -207,6 +212,7 @@ deploy)
   cf push cf-kaizen-hoover-frontend -m 1G -k 256M -p target/cf-kaizen-hoover-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-frontend
   cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud,openai"
+  cf set-env cf-kaizen-hoover-frontend CF_KAIZEN_HOOVER_SERVER_URL $CF_KAIZEN_HOOVER_SERVER_URL
   cf bind-service cf-kaizen-hoover-frontend $GENAI_CHAT_SERVICE_NAME
   cf start cf-kaizen-hoover-frontend
   ;;

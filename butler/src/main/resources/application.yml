@@ -1,6 +1,6 @@
 spring:
   application:
-    name: cf-kaizen-butler-client
+    name: cf-kaizen-butler-server
 
   ai:
     mcp:

@@ -27,12 +27,6 @@ public class ChatService {
                         .build();
     }
 
-    public String respondToQuestion(String question) {
-        return constructRequest(question)
-                .call()
-                .content();
-    }
-
     public Flux<String> streamResponseToQuestion(String question) {
         return constructRequest(question)
                 .stream()

@@ -1,10 +1,10 @@
 spring:
+  application:
+    name: cf-kaizen-hoover-frontend
+
   ai:
     mcp:
       client:
-        enabled: true
-        name: cf-kaizen-hoover-client
-        version: 1.0.0
         request-timeout: 30s
         type: SYNC
         sse:

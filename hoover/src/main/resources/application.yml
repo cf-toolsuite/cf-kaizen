@@ -1,6 +1,6 @@
 spring:
   application:
-    name: cf-kaizen-hoover-client
+    name: cf-kaizen-hoover-server
 
   ai:
     mcp:
