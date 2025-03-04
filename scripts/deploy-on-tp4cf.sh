@@ -38,7 +38,7 @@ get_app_url() {
   fi
 
   # Use cf app command to get app details, then extract the routes
-  local url=$(cf app "$app_name" | grep -E "routes:" | sed -E 's/routes: (.*)/\1/')
+  local url=$(cf app "$app_name" | grep -E "routes:" | sed -E 's/routes: (.*)/\1/' | xargs)
 
   if [ -z "$url" ]; then
     echo "Error: Could not find URL for application '$app_name'" >&2
@@ -182,7 +182,7 @@ deploy)
   cd /tmp/cf-kaizen/butler || exit 1
   cf push cf-kaizen-butler-server -m 1G -k 256M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-server
-  cf set-env cf-kaizen-hoover-server CF_BUTLER_API_ENDPOINT "$CF_BUTLER_API_ENDPOINT"
+  cf set-env cf-kaizen-butler-server CF_BUTLER_API_ENDPOINT "$CF_BUTLER_API_ENDPOINT"
   cf set-env cf-kaizen-butler-server SPRING_PROFILES_ACTIVE "default,cloud"
   cf start cf-kaizen-butler-server
 
