@@ -188,7 +188,7 @@ chmod +x *.sh
 ./deploy.sh provision
 ./deploy.sh clone
 ./deploy.sh build Y
-./deploy.sh deploy
+./deploy.sh deploy Y
 ```
 
 When you've completed your evaluation, you can clean up everything with, e.g.,
