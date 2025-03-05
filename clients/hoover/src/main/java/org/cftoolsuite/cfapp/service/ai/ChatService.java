@@ -2,7 +2,6 @@ package org.cftoolsuite.cfapp.service.ai;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.RetrievalAugmentationAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
@@ -36,9 +35,6 @@ public class ChatService {
     private ChatClient.ChatClientRequestSpec constructRequest(String question) {
         return chatClient
                 .prompt()
-                .advisors(RetrievalAugmentationAdvisor
-                        .builder()
-                        .build())
                 .user(question);
     }
 }
