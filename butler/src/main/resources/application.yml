@@ -89,9 +89,6 @@ spring:
 
 debug: true
 
-default:
-  url: http://localhost:8080
-
 management:
   endpoints:
     web:
@@ -99,4 +96,4 @@ management:
         include: "*"
 
 server:
-  port: 8088
+  port: 8082

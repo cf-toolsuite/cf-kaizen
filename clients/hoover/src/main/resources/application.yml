@@ -11,7 +11,7 @@ spring:
         sse:
           connections:
             butler:
-              url: ${CF_KAIZEN_HOOVER_SERVER_URL:http://localhost:8080}
+              url: ${CF_KAIZEN_HOOVER_SERVER_URL:http://localhost:8084}
 
   httpclient5:
     pool:
@@ -192,4 +192,4 @@ logging:
     org.springframework: DEBUG
 
 server:
-  port: 8084
+  port: 8083

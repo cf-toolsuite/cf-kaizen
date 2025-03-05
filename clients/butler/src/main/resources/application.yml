@@ -11,7 +11,7 @@ spring:
         sse:
           connections:
             butler:
-              url: ${CF_KAIZEN_BUTLER_SERVER_URL:http://localhost:8080}
+              url: ${CF_KAIZEN_BUTLER_SERVER_URL:http://localhost:8082}
 
   httpclient5:
     pool:
@@ -193,4 +193,4 @@ logging:
     com.fasterxml.jackson: TRACE
 
 server:
-  port: 8082
+  port: 8081
