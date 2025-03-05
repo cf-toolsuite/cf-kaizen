@@ -5,8 +5,9 @@ spring:
   ai:
     mcp:
       client:
+        name: ${spring.application.name}
         request-timeout: 30s
-        type: SYNC
+        type: ASYNC
         sse:
           connections:
             butler:

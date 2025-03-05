@@ -5,9 +5,7 @@ spring:
   ai:
     mcp:
       server:
-        enabled: true
         name: ${spring.application.name}
-        version: 1.0.0
         stdio: true
 
   jackson:
@@ -71,6 +69,12 @@ spring:
   main:
     banner-mode: log
     web-application-type: reactive
+
+  ai:
+    mcp:
+      server:
+        stdio: false
+        type: ASYNC
 
 logging:
   pattern:
