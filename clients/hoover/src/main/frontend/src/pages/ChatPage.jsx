@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-const ChatPage = ({ onNavigate }) => {
+const ChatPage = ({ isDarkMode }) => {
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +23,7 @@ const ChatPage = ({ onNavigate }) => {
         setAnswer('');
 
         try {
-            const response = await fetch('/api/hoover/stream/chat', {
+            const response = await fetch('/api/butler/stream/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ const ChatPage = ({ onNavigate }) => {
 
     return (
         <div className="max-w-4xl mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-6">Cloud Foundry Kaizen Hoover Frontend: Chat Interface</h1>
+            <h1 className="text-2xl font-bold mb-6">Chat</h1>
 
             {alert.show && (
                 <Alert className="mb-4 bg-red-100">
@@ -73,7 +73,11 @@ const ChatPage = ({ onNavigate }) => {
 
             <div
                 ref={answerContainerRef}
-                className="bg-gray-50 p-4 rounded-lg mb-4 h-96 overflow-y-auto prose prose-slate max-w-none"
+                className={`p-4 rounded-lg mb-4 h-96 overflow-y-auto prose ${
+                    isDarkMode
+                        ? 'bg-gray-800 prose-invert max-w-none'
+                        : 'bg-gray-50 prose-slate max-w-none'
+                }`}
             >
                 {answer ? (
                     <ReactMarkdown
@@ -85,7 +89,7 @@ const ChatPage = ({ onNavigate }) => {
                                     <SyntaxHighlighter
                                         language={match[1]}
                                         PreTag="div"
-                                        style={vscDarkPlus}
+                                        style={isDarkMode ? vscDarkPlus : vs}
                                         {...props}
                                     >
                                         {String(children).replace(/\n$/, '')}
@@ -111,14 +115,22 @@ const ChatPage = ({ onNavigate }) => {
                         value={question}
                         onChange={(e) => setQuestion(e.target.value)}
                         placeholder="Enter your question..."
-                        className="w-full p-2 border rounded-md h-32"
+                        className={`w-full p-2 border rounded-md h-32 ${
+                            isDarkMode
+                                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                                : 'bg-white border-gray-300 text-gray-900'
+                        }`}
                         disabled={isLoading}
                     />
                 </div>
 
                 <button
                     type="submit"
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                    className={`px-4 py-2 rounded ${
+                        isDarkMode
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600'
+                            : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-400'
+                    }`}
                     disabled={isLoading}
                 >
                     {isLoading ? 'Processing...' : 'Submit'}

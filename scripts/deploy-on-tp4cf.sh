@@ -33,6 +33,8 @@ else
   ENABLE_CLONE_REFRESH="n"
 fi
 
+if [ -n "$CF_API" ]; then
+
 get_app_url() {
   local app_name="$1"
 
@@ -203,7 +205,7 @@ deploy)
   cd /tmp/cf-kaizen/clients/butler || exit 1
   cf push cf-kaizen-butler-frontend -m 1G -k 256M -p target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-frontend
-  cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud,openai"
+  cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-env cf-kaizen-butler-frontend CF_KAIZEN_BUTLER_SERVER_URL $CF_KAIZEN_BUTLER_SERVER_URL
   cf bind-service cf-kaizen-butler-frontend $GENAI_CHAT_SERVICE_NAME
   cf start cf-kaizen-butler-frontend
@@ -211,7 +213,7 @@ deploy)
   cd /tmp/cf-kaizen/clients/hoover || exit 1
   cf push cf-kaizen-hoover-frontend -m 1G -k 256M -p target/cf-kaizen-hoover-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-frontend
-  cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud,openai"
+  cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-env cf-kaizen-hoover-frontend CF_KAIZEN_HOOVER_SERVER_URL $CF_KAIZEN_HOOVER_SERVER_URL
   cf bind-service cf-kaizen-hoover-frontend $GENAI_CHAT_SERVICE_NAME
   cf start cf-kaizen-hoover-frontend

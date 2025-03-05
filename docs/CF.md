@@ -9,6 +9,7 @@
     * [of cf-toolsuite applications](#of-cf-toolsuite-applications)
   * [Configuring Claude Desktop](#configuring-claude-desktop)
   * [In one go script](#in-one-go-script)
+  * [Consuming models off-platform](#consuming-models-off-platform)
 
 ## Getting started with Cloud Foundry
 
@@ -198,4 +199,53 @@ When you've completed your evaluation, you can clean up everything with, e.g.,
 
 # or more aggressively 
 ./deploy.sh deprovision
+```
+
+### Consuming models off-platform
+
+You may wish to configure the MCP clients so that they can consume models provided off-platform (e.g., OpenAI, Groq, OpenRouter).
+
+To do that...
+
+**Unbind any previously bound GenAI tile service instance**
+
+```bash
+cf unbind-service cf-kaizen-butler-frontend kaizen-llm
+cf unbind-service cf-kaizen-hoover-frontend kaizen-llm
+```
+
+**Create a new Credhub instance that will hold model choice(s) and API key(s)**
+
+Create a file named `creds.json` with contents like
+
+```json
+{
+  "CHAT_MODEL": "gpt-4o-mini",
+  "EMBEDDING_MODEL": "text-embedding-ada-002",
+  "OPENAI_API_KEY": "<REDACTED>"
+}
+```
+
+> Replace `<REDACTED>` above with a valid OpenAI API key.  Consult the `application.yml` file in each MCP client to understand what properties are appropriate to define.
+
+Create the service instance
+
+```bash
+cf create-service credhub default cf-kaizen-llm-secrets -c config/creds.json
+```
+
+> Update the path to `creds.json` above as desired.  But the name of the service instance must be `cf-kaizen-llm-secrets`!
+
+**Bind the service instance to your application**
+
+```bash
+cf bind-service cf-kaizen-butler-frontend cf-kaizen-llm-secrets
+cf bind-service cf-kaizen-hoover-frontend cf-kaizen-llm-secrets
+```
+
+**Restage your application**
+
+```bash
+cf restage cf-kaizen-butler-frontend
+cf restage cf-kaizen-hoover-frontend
 ```
