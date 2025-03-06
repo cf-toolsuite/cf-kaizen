@@ -1,5 +1,6 @@
 package org.cftoolsuite.cfapp;
 
+import org.cftoolsuite.cfapp.service.ai.HooverService;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbacks;
 import org.springframework.boot.SpringApplication;

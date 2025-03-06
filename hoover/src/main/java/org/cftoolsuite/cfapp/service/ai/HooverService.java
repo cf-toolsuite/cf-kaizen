@@ -1,4 +1,4 @@
-package org.cftoolsuite.cfapp;
+package org.cftoolsuite.cfapp.service.ai;
 
 import org.cftoolsuite.cfapp.hoover.api.DefaultApiClient;
 import org.cftoolsuite.cfapp.hoover.model.AppUsageReport;

@@ -1,4 +1,4 @@
-package org.cftoolsuite.cfapp;
+package org.cftoolsuite.cfapp.service.ai;
 
 import org.cftoolsuite.cfapp.butler.api.*;
 import org.cftoolsuite.cfapp.butler.model.*;

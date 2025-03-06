@@ -23,7 +23,7 @@ const ChatPage = ({ isDarkMode }) => {
         setAnswer('');
 
         try {
-            const response = await fetch('/api/butler/stream/chat', {
+            const response = await fetch('/api/hoover/stream/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
