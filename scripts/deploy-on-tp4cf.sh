@@ -188,7 +188,7 @@ deploy)
   cf target -o kaizen -s prod
 
   cd /tmp/cf-kaizen/butler || exit 1
-  cf push cf-kaizen-butler-server -m 1G -k 256M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  cf push cf-kaizen-butler-server -m 1G -k 512M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-server
   cf set-env cf-kaizen-butler-server CF_BUTLER_API_ENDPOINT "$CF_BUTLER_API_ENDPOINT"
   cf set-env cf-kaizen-butler-server SPRING_PROFILES_ACTIVE "default,cloud"
@@ -196,7 +196,7 @@ deploy)
   cf start cf-kaizen-butler-server
 
   cd /tmp/cf-kaizen/hoover || exit 1
-  cf push cf-kaizen-hoover-server -m 1G -k 256M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  cf push cf-kaizen-hoover-server -m 1G -k 512M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-server
   cf set-env cf-kaizen-hoover-server CF_HOOVER_API_ENDPOINT "$CF_HOOVER_API_ENDPOINT"
   cf set-env cf-kaizen-hoover-server SPRING_PROFILES_ACTIVE "default,cloud"
@@ -207,7 +207,7 @@ deploy)
   cf create-service genai $GENAI_CHAT_PLAN_NAME $GENAI_CHAT_SERVICE_NAME
 
   cd /tmp/cf-kaizen/clients/butler || exit 1
-  cf push cf-kaizen-butler-frontend -m 1G -k 256M -p target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  cf push cf-kaizen-butler-frontend -m 1G -k 512M -p target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-frontend
   cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-env cf-kaizen-butler-frontend CF_KAIZEN_BUTLER_SERVER_URL $CF_KAIZEN_BUTLER_SERVER_URL
@@ -216,7 +216,7 @@ deploy)
   cf start cf-kaizen-butler-frontend
 
   cd /tmp/cf-kaizen/clients/hoover || exit 1
-  cf push cf-kaizen-hoover-frontend -m 1G -k 256M -p target/cf-kaizen-hoover-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  cf push cf-kaizen-hoover-frontend -m 1G -k 512M -p target/cf-kaizen-hoover-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-frontend
   cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-env cf-kaizen-hoover-frontend CF_KAIZEN_HOOVER_SERVER_URL $CF_KAIZEN_HOOVER_SERVER_URL
