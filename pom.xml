@@ -88,6 +88,30 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>io.github.git-commit-id</groupId>
+				<artifactId>git-commit-id-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>get-the-git-infos</id>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+						<phase>initialize</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- this is false by default, forces the plugin to generate the git.properties file -->
+					<generateGitPropertiesFile>true</generateGitPropertiesFile>
+					<!-- The path for the properties file to be generated. See Super Pom for default variable reference https://maven.apache.org/guides/introduction/introduction-to-the-pom.html -->
+					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+					<commitIdGenerationMode>full</commitIdGenerationMode>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<executions>
@@ -145,6 +169,23 @@
 				<artifactId>versions-maven-plugin</artifactId>
 				<configuration>
 					<generateBackupPoms>false</generateBackupPoms>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>ch.acanda.maven</groupId>
+				<artifactId>spring-banner-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<id>generate-spring-banner</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<info>Commit: ${git.commit.id.abbrev}, Version: ${project.version}, Active Profiles: ${spring.profiles.active:default}</info>
 				</configuration>
 			</plugin>
 		</plugins>
