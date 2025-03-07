@@ -166,7 +166,7 @@ deploy)
     echo "-- Droplet scanning will be enabled"
     cf set-env cf-butler JAVA_ARTIFACTS_FETCH_MODE list-jars-in-droplet
   fi
-  cf set-health-check cf-butler http --endpoint /actuator/health --timeout 180
+  cf set-health-check cf-butler http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-butler
   CF_BUTLER_API_ENDPOINT=$(get_app_url cf-butler)
 
@@ -179,7 +179,7 @@ deploy)
   done
   cf bind-service cf-hoover cf-hoover-config
   cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED false
-  cf set-health-check cf-hoover http --endpoint /actuator/health --timeout 180
+  cf set-health-check cf-hoover http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-hoover
   CF_HOOVER_API_ENDPOINT=$(get_app_url cf-hoover)
 
@@ -192,7 +192,7 @@ deploy)
   set_cf_env_vars cf-kaizen-butler-server
   cf set-env cf-kaizen-butler-server CF_BUTLER_API_ENDPOINT "$CF_BUTLER_API_ENDPOINT"
   cf set-env cf-kaizen-butler-server SPRING_PROFILES_ACTIVE "default,cloud"
-  cf set-health-check cf-kaizen-butler-server http --endpoint /actuator/health --timeout 180
+  cf set-health-check cf-kaizen-butler-server http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-kaizen-butler-server
 
   cd /tmp/cf-kaizen/hoover || exit 1
@@ -200,7 +200,7 @@ deploy)
   set_cf_env_vars cf-kaizen-hoover-server
   cf set-env cf-kaizen-hoover-server CF_HOOVER_API_ENDPOINT "$CF_HOOVER_API_ENDPOINT"
   cf set-env cf-kaizen-hoover-server SPRING_PROFILES_ACTIVE "default,cloud"
-  cf set-health-check cf-kaizen-hoover-server http --endpoint /actuator/health --timeout 180
+  cf set-health-check cf-kaizen-hoover-server http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-kaizen-hoover-server
 
   echo "-- Readying a GenAI service instance"
@@ -212,7 +212,7 @@ deploy)
   cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-env cf-kaizen-butler-frontend CF_KAIZEN_BUTLER_SERVER_URL $CF_KAIZEN_BUTLER_SERVER_URL
   cf bind-service cf-kaizen-butler-frontend $GENAI_CHAT_SERVICE_NAME
-  cf set-health-check cf-kaizen-butler-frontend http --endpoint /actuator/health --timeout 180
+  cf set-health-check cf-kaizen-butler-frontend http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-kaizen-butler-frontend
 
   cd /tmp/cf-kaizen/clients/hoover || exit 1
@@ -221,7 +221,7 @@ deploy)
   cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-env cf-kaizen-hoover-frontend CF_KAIZEN_HOOVER_SERVER_URL $CF_KAIZEN_HOOVER_SERVER_URL
   cf bind-service cf-kaizen-hoover-frontend $GENAI_CHAT_SERVICE_NAME
-  cf set-health-check cf-kaizen-hoover-frontend http --endpoint /actuator/health --timeout 180
+  cf set-health-check cf-kaizen-hoover-frontend http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-kaizen-hoover-frontend
   ;;
 
