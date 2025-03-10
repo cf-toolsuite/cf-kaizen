@@ -194,7 +194,7 @@ deploy)
   cf start cf-kaizen-butler-server
 
   cd /tmp/cf-kaizen/hoover || exit 1
-  cf push cf-kaizen-hoover-server -m 1G -k 512M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  cf push cf-kaizen-hoover-server -m 1G -k 512M -p target/cf-kaizen-hoover-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-server
   cf set-env cf-kaizen-hoover-server CF_HOOVER_API_ENDPOINT "$CF_HOOVER_API_ENDPOINT"
   cf set-env cf-kaizen-hoover-server SPRING_PROFILES_ACTIVE "default,cloud"
