@@ -33,8 +33,6 @@ else
   ENABLE_CLONE_REFRESH="n"
 fi
 
-if [ -n "$CF_API" ]; then
-
 get_app_url() {
   local app_name="$1"
 
