@@ -1,55 +1,96 @@
 name: Publish package to GitHub Packages
-
 on:
   release:
     types: [created]
 
 jobs:
-
-  publish:
-
+  build:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
+    strategy:
+      matrix:
+        include:
+          - module: butler
+            module-path: butler
+            model-api: openai
+          - module: butler
+            module-path: butler
+            model-api: ollama
+          - module: hoover
+            module-path: hoover
+            model-api: openai
+          - module: hoover
+            module-path: hoover
+            model-api: ollama
+          - module: butler-client
+            module-path: clients/butler
+            model-api: openai
+          - module: butler-client
+            module-path: clients/butler
+            model-api: ollama
+          - module: hoover-client
+            module-path: clients/hoover
+            model-api: openai
+          - module: hoover-client
+            module-path: clients/hoover
+            model-api: ollama
 
     steps:
-
       - uses: actions/checkout@v4
-
-      - name: Set up Java for Github Packages
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: liberica
           java-version: 21
-          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
-
-      - name: Set version in POM
-        run: ./mvnw versions:set -DnewVersion=${{ github.event.release.tag_name }}
-
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: Build artifact
-        run: ./mvnw package -B
+        run: |
+          cd ${{ matrix.module-path }}
+          ./mvnw versions:set -DnewVersion=${{ github.event.release.tag_name }} clean
+          ./mvnw package -Dmodel-api-provider=${{ matrix.model-api }} -P${{ matrix.model-api }}
 
-      - name: Publish to GitHub Packages (Apache Maven)
-        run: ./mvnw deploy -Pgithub
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          jar_final_name=$(./mvnw help:evaluate -Dexpression=project.build.finalName -q -DforceStdout)
+          jar_artifact_id=$(./mvnw help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+          repacked_jar=$(find target/ -name "${jar_final_name}-*.jar")
 
-      - name: Set up Java for Apache Maven Central
-        uses: actions/setup-java@v4
+          mv "$repacked_jar" target/cf-kaizen-${{ matrix.module }}-${{ matrix.model-api }}-${{ github.event.release.tag_name }}.jar
+
+          echo "Contents of target:"
+          ls -l target
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          distribution: liberica
-          java-version: 21
-          server-id: central
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_CENTRAL_TOKEN
+          name: ${{ matrix.module }}-${{ matrix.model-api }}
+          path: target/cf-kaizen-${{ matrix.module }}-${{ matrix.model-api }}-${{ github.event.release.tag_name }}.jar
+          if-no-files-found: error
+          retention-days: 1
 
-      - name: Publish to Apache Maven Central
-        run: ./mvnw deploy -Pmaven-central
-        env:
-          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      checks: write
+      actions: read
+      issues: read
+      packages: write
+      pull-requests: read
+      repository-projects: read
+      statuses: read
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Publish assets and generate release notes
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/cf-kaizen-*.jar
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
