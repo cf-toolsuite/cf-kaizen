@@ -6,7 +6,7 @@ spring:
     mcp:
       client:
         name: ${spring.application.name}
-        request-timeout: 30s
+        request-timeout: 120s
         type: ASYNC
         sse:
           connections:
