@@ -17,7 +17,7 @@ const ChatPage = ({ isDarkMode }) => {
     const [currentQuestion, setCurrentQuestion] = useState(''); // To display the current question
 
     const getHistoryItemColor = () => {
-        return isDarkMode ? 'bg-green-800' : 'bg-green-200';
+        return isDarkMode ? 'bg-orange-600' : 'bg-orange-500';
     };
 
     const handleSubmit = async (e) => {
@@ -119,7 +119,7 @@ const ChatPage = ({ isDarkMode }) => {
     return (
         <div className="max-w-4xl mx-auto p-6 flex flex-col">
             <div className="flex">
-                <div className="w-3/4 pr-4">
+                <div className="w-2/3 pr-4">
                     {alert.show && (
                         <Alert className="mb-4 bg-red-100">
                             <AlertDescription>{alert.message}</AlertDescription>
@@ -201,7 +201,7 @@ const ChatPage = ({ isDarkMode }) => {
                         </button>
                     </form>
                 </div>
-                <div className="w-1/4 flex flex-col justify-end"> {/* Align to bottom */}
+                <div className="w-1/3 flex flex-col justify-end"> {/* Changed from w-1/4 to w-1/3 */}
                     <div className="flex flex-col-reverse mt-auto"> {/* Reverse column for stacking effect */}
                         {chatHistory.map((item, index) => (
                             <div
@@ -221,31 +221,33 @@ const ChatPage = ({ isDarkMode }) => {
                                             isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'
                                         }`}>{item.question}</div>
                                         <div className="font-bold mt-2">Response:</div>
-                                        <ReactMarkdown
-                                            className={`prose ${isDarkMode ? 'prose-invert' : ''}`}
-                                            remarkPlugins={[remarkGfm]}
-                                            components={{
-                                                code({node, inline, className, children, ...props}) {
-                                                    const match = /language-(\w+)/.exec(className || '');
-                                                    return !inline && match ? (
-                                                        <SyntaxHighlighter
-                                                            language={match[1]}
-                                                            PreTag="div"
-                                                            style={isDarkMode ? vscDarkPlus : undefined}
-                                                            {...props}
-                                                        >
-                                                            {String(children).replace(/\n$/, '')}
-                                                        </SyntaxHighlighter>
-                                                    ) : (
-                                                        <code className={className} {...props}>
-                                                            {children}
-                                                        </code>
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            {item.answer}
-                                        </ReactMarkdown>
+                                        <div className="max-h-64 overflow-y-auto pr-1"> {/* Added fixed height with scrolling */}
+                                            <ReactMarkdown
+                                                className={`prose ${isDarkMode ? 'prose-invert' : ''}`}
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    code({node, inline, className, children, ...props}) {
+                                                        const match = /language-(\w+)/.exec(className || '');
+                                                        return !inline && match ? (
+                                                            <SyntaxHighlighter
+                                                                language={match[1]}
+                                                                PreTag="div"
+                                                                style={isDarkMode ? vscDarkPlus : undefined}
+                                                                {...props}
+                                                            >
+                                                                {String(children).replace(/\n$/, '')}
+                                                            </SyntaxHighlighter>
+                                                        ) : (
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
+                                                        );
+                                                    }
+                                                }}
+                                            >
+                                                {item.answer}
+                                            </ReactMarkdown>
+                                        </div>
                                     </div>
                                 )}
                             </div>
