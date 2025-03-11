@@ -50,16 +50,26 @@ jobs:
             ${{ runner.os }}-maven-
       - name: Build artifact
         run: |
-          cd ${{ matrix.module-path }}
-          ./mvnw versions:set -DnewVersion=${{ github.event.release.tag_name }} clean
-          ./mvnw package -Dmodel-api-provider=${{ matrix.model-api }} -P${{ matrix.model-api }}
-
-          jar_final_name=$(./mvnw help:evaluate -Dexpression=project.build.finalName -q -DforceStdout)
-          jar_artifact_id=$(./mvnw help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
-          repacked_jar=$(find target/ -name "${jar_final_name}-*.jar")
-
-          mv "$repacked_jar" target/cf-kaizen-${{ matrix.module }}-${{ matrix.model-api }}-${{ github.event.release.tag_name }}.jar
-
+          # Set version for all modules at once
+          ./mvnw versions:set -DnewVersion=${{ github.event.release.tag_name }}
+          
+          # Install all modules first (without packaging specific modules)
+          ./mvnw clean install -DskipTests
+          
+          # Now build the specific module with the model-api parameter (not as a profile)
+          ./mvnw package -pl ${{ matrix.module-path }} -Dmodel-api-provider=${{ matrix.model-api }}
+          
+          # Create the target directory if it doesn't exist
+          mkdir -p target
+          
+          # Find the main JAR (not the sources or javadoc ones)
+          MAIN_JAR=$(find ${{ matrix.module-path }}/target/ -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*-tests.jar")
+          
+          echo "Found JAR: $MAIN_JAR"
+          
+          # Copy the jar to the expected location
+          cp "$MAIN_JAR" target/cf-kaizen-${{ matrix.module }}-${{ matrix.model-api }}-${{ github.event.release.tag_name }}.jar
+          
           echo "Contents of target:"
           ls -l target
       - name: Upload artifact
