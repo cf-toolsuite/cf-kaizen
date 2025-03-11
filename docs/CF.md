@@ -176,7 +176,7 @@ Validate that the additional tools are present before crafting and executing you
 
 If you're interested in hoisting everything so that it runs on a target foundation, take a look at this [script](../scripts/deploy-on-tp4cf.sh).
 
-Let's say you already know of a Cloud Foundry API endpoint and your Platform Engineering team has setup Single Sign-On.  
+Let's say you already know of a Cloud Foundry API endpoint, and your Platform Engineering team has setup Single Sign-On.  
 
 Well, to get rolling, you could, e.g.,
 
@@ -187,9 +187,23 @@ envsubst '$CF_API' < deploy-on-tp4cf.sh > deploy.sh
 chmod +x *.sh
 ./deploy.sh authenticate
 ./deploy.sh provision
-./deploy.sh clone
+./deploy.sh clone Y
+
 ./deploy.sh build Y
-./deploy.sh deploy Y
+
+# Optional (if you choose not to build but want to consume pre-built artifacts)
+./deploy.sh download-artifacts
+
+# Optional
+./deploy.sh deploy-sample-app
+
+# Required
+./deploys.sh deploy-observability
+
+./deploy.sh deploy-kaizen
+
+# Optional (if you chose to consume pre-built artifacts, run this variant instead)
+./deploy.sh deploy-kaizen --pre-built
 ```
 
 When you've completed your evaluation, you can clean up everything with, e.g.,

@@ -33,7 +33,35 @@ else
   ENABLE_CLONE_REFRESH="n"
 fi
 
-get_app_url() {
+function determine_jar_release() {
+  local date_pattern='[0-9]{4}\.[0-9]{2}\.[0-9]{2}'
+  local date=""
+  local current_date=""
+
+  for file in target/*.jar; do
+    if [[ $file =~ $date_pattern ]]; then
+      current_date="${BASH_REMATCH[0]}"
+      if [[ -z $date ]]; then
+        date="$current_date"
+      elif [[ $date != "$current_date" ]]; then
+        echo "Varying dates found."
+        return 1
+      fi
+    else
+      echo "No matching date found in: $file"
+      return 1
+    fi
+  done
+
+  if [[ -n $date ]]; then
+    echo $date
+  else
+    echo "No files with the expected date pattern found."
+    return 1
+  fi
+}
+
+function get_app_url() {
   local app_name="$1"
 
   if [ -z "$app_name" ]; then
@@ -52,7 +80,7 @@ get_app_url() {
   echo "$url"
 }
 
-set_cf_env_vars() {
+function set_cf_env_vars() {
   local app_name="$1"
 
   if [ -z "$app_name" ]; then
@@ -139,7 +167,7 @@ build)
   ./gradlew build
   ;;
 
-deploy)
+deploy-sample-app)
   ## Deploy application instance to zoolabs/dev
   echo "-- Deploying application instance to zoolabs/dev"
   cf target -o zoolabs -s dev
@@ -148,7 +176,9 @@ deploy)
   cf push primes -m 1G -p build/libs/primes-1.0-SNAPSHOT.jar -s cflinuxfs4 --no-start
   set_cf_env_vars primes
   cf start primes
+  ;;
 
+deploy-observability)
   ## Deploy application and service instances to observability/cf-toolsuite
   echo "-- Deploying cf-butler and cf-hoover and supporting service instances to observability/cf-toolsuite"
   cf target -o observability -s cf-toolsuite
@@ -180,21 +210,43 @@ deploy)
   cf set-health-check cf-hoover http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-hoover
   CF_HOOVER_API_ENDPOINT=$(get_app_url cf-hoover)
+  ;;
 
+deploy-kaizen)
   ## Deploy application instances to kaizen/prod
   echo "-- Deploying MCP server and client application instances to kaizen/prod"
   cf target -o kaizen -s prod
 
-  cd /tmp/cf-kaizen/butler || exit 1
-  cf push cf-kaizen-butler-server -m 1G -k 512M -p target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  cd /tmp/cf-kaizen/target || exit 1
+  VERSION="0.0.1-SNAPSHOT"
+  if [ "$flag" == "--pre-built" ]; then
+    VERSION=$(determine_jar_release)
+  fi
+
+  ARTIFACT_HOME="/tmp/cf-kaizen/target"
+
+  if [ "$flag" == "--pre-built" ]; then
+    ARTIFACT_NAME="cf-kaizen-butler-openai-$VERSION.jar"
+  else
+    ARTIFACT_NAME="cf-kaizen-butler-server-$VERSION.jar"
+    ARTIFACT_HOME="/tmp/cf-kaizen/butler"
+  fi
+  cd $ARTIFACT_HOME || exit 1
+  cf push cf-kaizen-butler-server -m 1G -k 512M -p "target/$ARTIFACT_NAME" -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-server
   cf set-env cf-kaizen-butler-server CF_BUTLER_API_ENDPOINT "$CF_BUTLER_API_ENDPOINT"
   cf set-env cf-kaizen-butler-server SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-health-check cf-kaizen-butler-server http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-kaizen-butler-server
 
-  cd /tmp/cf-kaizen/hoover || exit 1
-  cf push cf-kaizen-hoover-server -m 1G -k 512M -p target/cf-kaizen-hoover-server-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  if [ "$flag" == "--pre-built" ]; then
+      ARTIFACT_NAME="cf-kaizen-hoover-openai-$VERSION.jar"
+    else
+      ARTIFACT_NAME="cf-kaizen-hoover-server-$VERSION.jar"
+      ARTIFACT_HOME="/tmp/cf-kaizen/hoover"
+    fi
+    cd $ARTIFACT_HOME || exit 1
+  cf push cf-kaizen-hoover-server -m 1G -k 512M -p "target/$ARTIFACT_NAME" -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-server
   cf set-env cf-kaizen-hoover-server CF_HOOVER_API_ENDPOINT "$CF_HOOVER_API_ENDPOINT"
   cf set-env cf-kaizen-hoover-server SPRING_PROFILES_ACTIVE "default,cloud"
@@ -204,8 +256,14 @@ deploy)
   echo "-- Readying a GenAI service instance"
   cf create-service genai $GENAI_CHAT_PLAN_NAME $GENAI_CHAT_SERVICE_NAME
 
-  cd /tmp/cf-kaizen/clients/butler || exit 1
-  cf push cf-kaizen-butler-frontend -m 1G -k 512M -p target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  if [ "$flag" == "--pre-built" ]; then
+    ARTIFACT_NAME="cf-kaizen-butler-client-openai-$VERSION.jar"
+  else
+    ARTIFACT_NAME="cf-kaizen-butler-frontend-$VERSION.jar"
+    ARTIFACT_HOME="/tmp/cf-kaizen/clients/butler"
+  fi
+  cd $ARTIFACT_HOME || exit 1
+  cf push cf-kaizen-butler-frontend -m 1G -k 512M -p "target/$ARTIFACT_NAME" -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-frontend
   cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-env cf-kaizen-butler-frontend CF_KAIZEN_BUTLER_SERVER_URL $CF_KAIZEN_BUTLER_SERVER_URL
@@ -213,8 +271,14 @@ deploy)
   cf set-health-check cf-kaizen-butler-frontend http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-kaizen-butler-frontend
 
-  cd /tmp/cf-kaizen/clients/hoover || exit 1
-  cf push cf-kaizen-hoover-frontend -m 1G -k 512M -p target/cf-kaizen-hoover-frontend-0.0.1-SNAPSHOT.jar -s cflinuxfs4 --no-start
+  if [ "$flag" == "--pre-built" ]; then
+    ARTIFACT_NAME="cf-kaizen-hoover-client-openai-$VERSION.jar"
+  else
+    ARTIFACT_NAME="cf-kaizen-hoover-frontend-$VERSION.jar"
+    ARTIFACT_HOME="/tmp/cf-kaizen/clients/hoover"
+  fi
+  cd $ARTIFACT_HOME || exit 1
+  cf push cf-kaizen-hoover-frontend -m 1G -k 512M -p "target/$ARTIFACT_NAME" -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-frontend
   cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud"
   cf set-env cf-kaizen-hoover-frontend CF_KAIZEN_HOOVER_SERVER_URL $CF_KAIZEN_HOOVER_SERVER_URL
@@ -245,7 +309,16 @@ destroy)
   cf delete primes -r -f
   ;;
 
+download-artifacts)
+  cd /tmp/cf-kaizen || exit 1
+  mkdir -p target
+  echo "-- Fetching latest available cf-kaizen artifacts from Github Packages repository"
+  gh release download --pattern '*.jar' -D target --skip-existing
+  RELEASE=$(determine_jar_release)
+  echo "-- Latest version available is $RELEASE"
+  ;;
+
 *)
-  echo && printf "\e[31m⏹  Usage: deploy-on-tp4cf.sh authenticate|provision|deprovision|clone|build|deploy|destroy \e[m\n" && echo
+  echo && printf "\e[31m⏹  Usage: deploy-on-tp4cf.sh authenticate|provision|deprovision|clone|build|deploy-sample-app|deploy-observability|deploy-kaizen|destroy|download-artifacts \e[m\n" && echo
   ;;
 esac
