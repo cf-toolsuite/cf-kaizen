@@ -196,7 +196,6 @@ deploy-observability)
   fi
   cf set-health-check cf-butler http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-butler
-  CF_BUTLER_API_ENDPOINT=$(get_app_url cf-butler)
 
   cd /tmp/cf-hoover || exit 1
   cf push cf-hoover --no-start
@@ -209,12 +208,16 @@ deploy-observability)
   cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED false
   cf set-health-check cf-hoover http --endpoint /actuator/health --invocation-timeout 180
   cf start cf-hoover
-  CF_HOOVER_API_ENDPOINT=$(get_app_url cf-hoover)
   ;;
 
 deploy-kaizen)
   ## Deploy application instances to kaizen/prod
   echo "-- Deploying MCP server and client application instances to kaizen/prod"
+
+  cf target -o observability -s cf-toolsuite
+  CF_BUTLER_API_ENDPOINT=$(get_app_url cf-butler)
+  CF_HOOVER_API_ENDPOINT=$(get_app_url cf-hoover)
+
   cf target -o kaizen -s prod
 
   cd /tmp/cf-kaizen/target || exit 1
