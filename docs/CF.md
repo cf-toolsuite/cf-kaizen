@@ -198,7 +198,7 @@ chmod +x *.sh
 ./deploy.sh deploy-sample-app
 
 # Required
-./deploys.sh deploy-observability
+./deploy.sh deploy-observability
 
 ./deploy.sh deploy-kaizen
 
