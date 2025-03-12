@@ -268,7 +268,7 @@ deploy-kaizen)
   cd $ARTIFACT_HOME || exit 1
   cf push cf-kaizen-butler-frontend -m 1G -k 512M -p "target/$ARTIFACT_NAME" -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-butler-frontend
-  cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud"
+  cf set-env cf-kaizen-butler-frontend SPRING_PROFILES_ACTIVE "default,cloud,openai"
   cf set-env cf-kaizen-butler-frontend CF_KAIZEN_BUTLER_SERVER_URL $CF_KAIZEN_BUTLER_SERVER_URL
   cf bind-service cf-kaizen-butler-frontend $GENAI_CHAT_SERVICE_NAME
   cf set-health-check cf-kaizen-butler-frontend http --endpoint /actuator/health --invocation-timeout 180
@@ -283,7 +283,7 @@ deploy-kaizen)
   cd $ARTIFACT_HOME || exit 1
   cf push cf-kaizen-hoover-frontend -m 1G -k 512M -p "target/$ARTIFACT_NAME" -s cflinuxfs4 --no-start
   set_cf_env_vars cf-kaizen-hoover-frontend
-  cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud"
+  cf set-env cf-kaizen-hoover-frontend SPRING_PROFILES_ACTIVE "default,cloud,openai"
   cf set-env cf-kaizen-hoover-frontend CF_KAIZEN_HOOVER_SERVER_URL $CF_KAIZEN_HOOVER_SERVER_URL
   cf bind-service cf-kaizen-hoover-frontend $GENAI_CHAT_SERVICE_NAME
   cf set-health-check cf-kaizen-hoover-frontend http --endpoint /actuator/health --invocation-timeout 180
