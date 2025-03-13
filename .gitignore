@@ -34,7 +34,8 @@ build/
 .history/
 
 ### Sensitive configuration
-clients/**/config/
+clients/**/config/*.yml
+clients/**/config/*.json
 env.sh
 deploy.sh
 install.yml
