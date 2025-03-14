@@ -23,12 +23,27 @@ oauth:
       authorities: "clients.read,clients.write,clients.secret,uaa.admin,scim.read,scim.write,password.write"
     cf:
       override: true
-      authorized-grant-types: authorization_code,refresh_token
+      authorized-grant-types: authorization_code,refresh_token,password
       scope: openid,cloud_controller.read,cloud_controller.write
       authorities: uaa.none
       redirect-uri: #@ "https://{}/oauth/callback".format(data.values.system_domain)
+      access_token_format: jwt
+
+jwt:
+  token:
+    signing_alg: RS256
+    verification_key: #@ data.values.jwt_private_key
+    claims:
+      exp: 43200
+
 
 login:
+  url: #@ data.values.issuer_uri
+  links:
+    home: #@ data.values.issuer_uri
+    passwd: #@ data.values.issuer_uri + "/forgot_password"
+    login: #@ data.values.issuer_uri
+    uaa: #@ data.values.issuer_uri
   oauth:
     providers:
       github:
@@ -51,6 +66,7 @@ login:
           given_name: name
           family_name: login
           user_name: login
+          email: email
   saml:
     activeKeyId: "saml-key"
     disableInResponseToCheck: true
@@ -94,7 +110,7 @@ data:
     logger.UAAAudit.appenderRef.auditEventLog.ref = UaaAuditAppender
     
     logger.cfIdentity.name = org.cloudfoundry.identity
-    logger.cfIdentity.level = info
+    logger.cfIdentity.level = debug
     logger.cfIdentity.additivity = false
     logger.cfIdentity.appenderRef.uaaDefaultAppender.ref = UaaDefaultAppender
   uaa.yml: #@ yaml.encode(uaa())
