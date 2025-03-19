@@ -18,6 +18,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
 
@@ -85,12 +87,19 @@ public class ChatService {
                         ChatResponseMetadata metadata = chatResponse.getMetadata();
                         Usage usage = metadata.getUsage();
                         
+                        // Calculate tokens per second
+                        Double tokensPerSecond = calculateTokensPerSecond(
+                                usage.getTotalTokens(), 
+                                responseDuration.toMillis()
+                        );
+                        
                         // Create metadata object
                         ChatMetadata chatMetadata = ChatMetadata.builder()
                                 .inputTokens(usage.getPromptTokens())
                                 .outputTokens(usage.getCompletionTokens())
                                 .totalTokens(usage.getTotalTokens())
                                 .responseTime(formattedTime)
+                                .tokensPerSecond(tokensPerSecond)
                                 .model(metadata.getModel())
                                 .build();
                         
@@ -107,6 +116,31 @@ public class ChatService {
                         return Mono.empty();
                     }
                 }));
+    }
+
+    /**
+     * Calculates tokens per second based on total tokens and response time in milliseconds.
+     * 
+     * @param totalTokens Total number of tokens processed
+     * @param responseTimeMs Response time in milliseconds
+     * @return Tokens per second, rounded to 2 decimal places
+     */
+    private Double calculateTokensPerSecond(Integer totalTokens, long responseTimeMs) {
+        if (totalTokens == null || totalTokens == 0 || responseTimeMs == 0) {
+            return 0.0;
+        }
+        
+        // Convert milliseconds to seconds (as a decimal)
+        double responseTimeSeconds = responseTimeMs / 1000.0;
+        
+        // Calculate tokens per second
+        double tps = totalTokens / responseTimeSeconds;
+        
+        // Round to 2 decimal places
+        BigDecimal bd = BigDecimal.valueOf(tps);
+        bd = bd.setScale(2, RoundingMode.HALF_UP);
+        
+        return bd.doubleValue();
     }
 
     /**

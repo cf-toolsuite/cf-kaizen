@@ -11,6 +11,7 @@ public record ChatMetadata(
         Integer outputTokens,
         Integer totalTokens,
         String responseTime,
+        Double tokensPerSecond,
         String model
 ) {
     public static Builder builder() {
@@ -22,6 +23,7 @@ public record ChatMetadata(
         private Integer outputTokens;
         private Integer totalTokens;
         private String responseTime;
+        private Double tokensPerSecond;
         private String model;
 
         public Builder inputTokens(Integer inputTokens) {
@@ -43,6 +45,11 @@ public record ChatMetadata(
             this.responseTime = responseTime;
             return this;
         }
+        
+        public Builder tokensPerSecond(Double tokensPerSecond) {
+            this.tokensPerSecond = tokensPerSecond;
+            return this;
+        }
 
         public Builder model(String model) {
             this.model = model;
@@ -50,7 +57,7 @@ public record ChatMetadata(
         }
 
         public ChatMetadata build() {
-            return new ChatMetadata(inputTokens, outputTokens, totalTokens, responseTime, model);
+            return new ChatMetadata(inputTokens, outputTokens, totalTokens, responseTime, tokensPerSecond, model);
         }
     }
 }

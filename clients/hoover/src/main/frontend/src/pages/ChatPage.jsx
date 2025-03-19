@@ -11,7 +11,8 @@ import {
     Target,
     PhoneIncoming,
     PhoneOutgoing,
-    Sigma
+    Sigma,
+    Gauge
 } from 'lucide-react';
 
 const ChatPage = ({ isDarkMode }) => {
@@ -170,6 +171,11 @@ const ChatPage = ({ isDarkMode }) => {
                             <Sigma size={12} /> {metadata.totalTokens}
                         </span>
                     )}
+                    {metadata.tokensPerSecond && (
+                        <span className="flex items-center gap-1">
+                            <Gauge size={12} /> {metadata.tokensPerSecond} t/s
+                        </span>
+                    )}
                 </div>
             </div>
         );
@@ -298,6 +304,11 @@ const ChatPage = ({ isDarkMode }) => {
                                             {item.metadata.totalTokens && (
                                                 <span className="flex items-center gap-1">
                                                     <Sigma size={10} /> {item.metadata.totalTokens}
+                                                </span>
+                                            )}
+                                            {item.metadata.tokensPerSecond && (
+                                                <span className="flex items-center gap-1">
+                                                    <Gauge size={10} /> {item.metadata.tokensPerSecond} t/s
                                                 </span>
                                             )}
                                         </div>
