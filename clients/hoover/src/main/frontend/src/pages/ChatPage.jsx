@@ -4,7 +4,15 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import {
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Target,
+    PhoneIncoming,
+    PhoneOutgoing,
+    Sigma
+} from 'lucide-react';
 
 const ChatPage = ({ isDarkMode }) => {
     const [question, setQuestion] = useState('');
@@ -15,6 +23,7 @@ const ChatPage = ({ isDarkMode }) => {
     const [chatHistory, setChatHistory] = useState([]);
     const [currentAnswer, setCurrentAnswer] = useState(''); // State to track the current streamed answer
     const [currentQuestion, setCurrentQuestion] = useState(''); // To display the current question
+    const [currentMetadata, setCurrentMetadata] = useState(null); // To store current response metadata
 
     const getHistoryItemColor = () => {
         return isDarkMode ? 'bg-orange-600' : 'bg-orange-500';
@@ -33,6 +42,7 @@ const ChatPage = ({ isDarkMode }) => {
         setQuestion('');
         setAnswer('');
         setCurrentAnswer(''); // Reset the current answer state
+        setCurrentMetadata(null); // Reset metadata
 
         try {
             const response = await fetch('/api/hoover/stream/chat', {
@@ -50,6 +60,7 @@ const ChatPage = ({ isDarkMode }) => {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullAnswer = '';
+            let latestMetadata = null;
 
             // Start with the robot emoji
             setAnswer('🤖 ');
@@ -60,35 +71,50 @@ const ChatPage = ({ isDarkMode }) => {
                 if (done) break;
 
                 const chunk = decoder.decode(value);
+
+                try {
+                    // Check if this is a metadata chunk (JSON object)
+                    const parsedChunk = JSON.parse(chunk);
+                    if (parsedChunk.isMetadata && parsedChunk.metadata) {
+                        latestMetadata = parsedChunk.metadata;
+                        setCurrentMetadata(latestMetadata);
+                        continue; // Skip adding this to the visible answer
+                    }
+                } catch (e) {
+                    // Not JSON, treat as normal text content
+                }
+
                 fullAnswer += chunk;
-                setCurrentAnswer((prev) => prev + chunk);
-                setAnswer((prev) => prev + chunk);
+                setCurrentAnswer(prev => prev + chunk);
+                setAnswer(prev => prev + chunk);
 
                 if (answerContainerRef.current) {
                     answerContainerRef.current.scrollTop = answerContainerRef.current.scrollHeight;
                 }
             }
 
-            // Make sure we include the robot emoji in the stored answer
-            const formattedAnswer = '🤖 ' + fullAnswer;
+            // Save to chat history AFTER streaming is complete
+            // We use a callback form of setState to ensure we're working with the latest state
             setChatHistory(prev => {
                 // Add the new history item to the beginning of the array
                 const newHistory = [{
                     question: questionText,
-                    answer: formattedAnswer,
+                    answer: '🤖 ' + fullAnswer, // Make sure we include the robot emoji
                     expanded: false,
                     // Use question index for numbering purposes
                     questionNumber: prev.length > 0 ? prev[0].questionNumber + 1 : 1,
-                    color: getHistoryItemColor()
+                    color: getHistoryItemColor(),
+                    metadata: latestMetadata // Use the captured metadata
                 }, ...prev];
 
                 // If we have more than 10 items, remove the last one
                 if (newHistory.length > 10) {
-                    newHistory.pop();
+                    return newHistory.slice(0, 10);
                 }
                 return newHistory;
             });
         } catch (error) {
+            console.error('Error processing chat request:', error);
             showAlert('Error processing chat request');
         } finally {
             setIsLoading(false);
@@ -101,12 +127,52 @@ const ChatPage = ({ isDarkMode }) => {
     };
 
     const toggleHistoryItem = (index) => {
-        setChatHistory(prev => prev.map((item, i) => {
-            if (i === index) {
-                return { ...item, expanded: !item.expanded };
-            }
-            return item;
-        }));
+        setChatHistory(prev => {
+            // Create a new array to avoid mutation issues
+            return prev.map((item, i) => {
+                if (i === index) {
+                    return { ...item, expanded: !item.expanded };
+                }
+                return item;
+            });
+        });
+    };
+
+    // Render metadata as a formatted string
+    const renderMetadata = (metadata) => {
+        if (!metadata) return null;
+
+        return (
+            <div className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <div className="flex flex-wrap gap-x-4">
+                    {metadata.model && (
+                        <span className="flex items-center gap-1">
+                            <Target size={12} /> {metadata.model}
+                        </span>
+                    )}
+                    {metadata.responseTime && (
+                        <span className="flex items-center gap-1">
+                            <Clock size={12} /> {metadata.responseTime}
+                        </span>
+                    )}
+                    {metadata.inputTokens && (
+                        <span className="flex items-center gap-1">
+                            <PhoneIncoming size={12} /> {metadata.inputTokens}
+                        </span>
+                    )}
+                    {metadata.outputTokens && (
+                        <span className="flex items-center gap-1">
+                            <PhoneOutgoing size={12} /> {metadata.outputTokens}
+                        </span>
+                    )}
+                    {metadata.totalTokens && (
+                        <span className="flex items-center gap-1">
+                            <Sigma size={12} /> {metadata.totalTokens}
+                        </span>
+                    )}
+                </div>
+            </div>
+        );
     };
 
     // Modified to auto-scroll to bottom when new content is added
@@ -114,7 +180,7 @@ const ChatPage = ({ isDarkMode }) => {
         if(answerContainerRef.current) {
             answerContainerRef.current.scrollTop = answerContainerRef.current.scrollHeight;
         }
-    },[answer]);
+    }, [answer]);
 
     return (
         <div className="max-w-4xl mx-auto p-6 flex flex-col">
@@ -144,30 +210,35 @@ const ChatPage = ({ isDarkMode }) => {
                         )}
 
                         {currentAnswer ? (
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                    code({node, inline, className, children, ...props}) {
-                                        const match = /language-(\w+)/.exec(className || '');
-                                        return !inline && match ? (
-                                            <SyntaxHighlighter
-                                                language={match[1]}
-                                                PreTag="div"
-                                                style={isDarkMode ? vscDarkPlus : undefined}
-                                                {...props}
-                                            >
-                                                {String(children).replace(/\n$/, '')}
-                                            </SyntaxHighlighter>
-                                        ) : (
-                                            <code className={className} {...props}>
-                                                {children}
-                                            </code>
-                                        );
-                                    }
-                                }}
-                            >
-                                {currentAnswer}
-                            </ReactMarkdown>
+                            <>
+                                <ReactMarkdown
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        code({node, inline, className, children, ...props}) {
+                                            const match = /language-(\w+)/.exec(className || '');
+                                            return !inline && match ? (
+                                                <SyntaxHighlighter
+                                                    language={match[1]}
+                                                    PreTag="div"
+                                                    style={isDarkMode ? vscDarkPlus : undefined}
+                                                    {...props}
+                                                >
+                                                    {String(children).replace(/\n$/, '')}
+                                                </SyntaxHighlighter>
+                                            ) : (
+                                                <code className={className} {...props}>
+                                                    {children}
+                                                </code>
+                                            );
+                                        }
+                                    }}
+                                >
+                                    {currentAnswer}
+                                </ReactMarkdown>
+
+                                {/* Show metadata below the current answer if available */}
+                                {currentMetadata && renderMetadata(currentMetadata)}
+                            </>
                         ) : (
                             'Response will appear here...'
                         )}
@@ -201,7 +272,7 @@ const ChatPage = ({ isDarkMode }) => {
                         </button>
                     </form>
                 </div>
-                <div className="w-1/3 flex flex-col justify-end"> {/* Changed from w-1/4 to w-1/3 */}
+                <div className="w-1/3 flex flex-col justify-end">
                     <div className="flex flex-col-reverse mt-auto"> {/* Reverse column for stacking effect */}
                         {chatHistory.map((item, index) => (
                             <div
@@ -212,8 +283,27 @@ const ChatPage = ({ isDarkMode }) => {
                             >
                                 <div className="flex items-center justify-between cursor-pointer" onClick={() => toggleHistoryItem(index)}>
                                     <span className="font-semibold">Question {item.questionNumber}</span>
-                                    {item.expanded ? <ChevronUp /> : <ChevronDown />}
+                                    {item.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                 </div>
+
+                                {/* Show a condensed version of metadata in collapsed state */}
+                                {!item.expanded && item.metadata && (
+                                    <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        <div className="flex gap-x-3">
+                                            {item.metadata.responseTime && (
+                                                <span className="flex items-center gap-1">
+                                                    <Clock size={10} /> {item.metadata.responseTime}
+                                                </span>
+                                            )}
+                                            {item.metadata.totalTokens && (
+                                                <span className="flex items-center gap-1">
+                                                    <Sigma size={10} /> {item.metadata.totalTokens}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {item.expanded && (
                                     <div className="mt-2">
                                         <div className="font-bold">Asked:</div>
@@ -247,6 +337,9 @@ const ChatPage = ({ isDarkMode }) => {
                                             >
                                                 {item.answer}
                                             </ReactMarkdown>
+
+                                            {/* Show metadata in expanded history items */}
+                                            {item.metadata && renderMetadata(item.metadata)}
                                         </div>
                                     </div>
                                 )}
