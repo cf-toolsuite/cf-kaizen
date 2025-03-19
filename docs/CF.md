@@ -183,7 +183,8 @@ Change the values within the _ENVIRONMENT VARIABLES_ section to suit your needs.
 ./scripts/all-in-one.sh
 ```
 
-> [!IMPORTANT] This script will only deploy the cf-kaizen applications (only the MCP servers and clients).  Application instances of cf-butler and/or cf-hoover should previously have been deployed.
+> [!IMPORTANT]
+> This script will only deploy the cf-kaizen applications (only the MCP servers and clients).  Application instances of cf-butler and/or cf-hoover should previously have been deployed.
 
 ### Deploying to Tanzu Platform for Cloud Foundry
 
