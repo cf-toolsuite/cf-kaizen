@@ -28,6 +28,34 @@ export FOUNDATION="kuhn-labs"
 # --------------------------------------------------------------------------------
 # CAUTION: DO NOT CHANGE ANYTHING BELOW UNLESS YOU KNOW WHAT YOU'RE DOING
 
+function determine_jar_release() {
+  local date_pattern='[0-9]{4}\.[0-9]{2}\.[0-9]{2}'
+  local date=""
+  local current_date=""
+
+  for file in target/*.jar; do
+    if [[ $file =~ $date_pattern ]]; then
+      current_date="${BASH_REMATCH[0]}"
+      if [[ -z $date ]]; then
+        date="$current_date"
+      elif [[ $date != "$current_date" ]]; then
+        echo "Varying dates found."
+        return 1
+      fi
+    else
+      echo "No matching date found in: $file"
+      return 1
+    fi
+  done
+
+  if [[ -n $date ]]; then
+    echo $date
+  else
+    echo "No files with the expected date pattern found."
+    return 1
+  fi
+}
+
 ORIGINAL_MANIFEST="config/manifest.default.yml"
 NEW_MANIFEST="config/manifest.$FOUNDATION.yml"
 
