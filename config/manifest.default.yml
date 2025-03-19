@@ -11,12 +11,10 @@ applications:
     health-check-http-endpoint: /actuator/health
     health-check-invocation-timeout: 180
     env:
-      JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
+      JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
       SPRING_PROFILES_ACTIVE: default,cloud
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
       CF_BUTLER_API_ENDPOINT: https://cf-butler.apps.tas.z52772e75.shepherd.lease
-    services:
-      - kaizen-chat
   - name: cf-kaizen-hoover-server
     routes:
       - route: cf-kaizen-hoover-server.apps.tas.z52772e75.shepherd.lease
@@ -29,12 +27,10 @@ applications:
     health-check-http-endpoint: /actuator/health
     health-check-invocation-timeout: 180
     env:
-      JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
+      JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
       SPRING_PROFILES_ACTIVE: default,cloud
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
       CF_HOOVER_API_ENDPOINT: https://cf-hoover.apps.tas.z52772e75.shepherd.lease
-    services:
-      - kaizen-chat
   - name: cf-kaizen-hoover-frontend
     routes:
       - route: cf-kaizen-hoover-frontend.apps.tas.z52772e75.shepherd.lease
@@ -47,7 +43,7 @@ applications:
     health-check-http-endpoint: /actuator/health
     health-check-invocation-timeout: 180
     env:
-      JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
+      JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
       SPRING_PROFILES_ACTIVE: default,cloud,openai
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
       CF_KAIZEN_HOOVER_SERVER_URL: https://cf-kaizen-hoover-server.apps.tas.z52772e75.shepherd.lease
@@ -65,7 +61,7 @@ applications:
     health-check-http-endpoint: /actuator/health
     health-check-invocation-timeout: 180
     env:
-      JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
+      JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
       SPRING_PROFILES_ACTIVE: default,cloud,openai
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
       CF_KAIZEN_BUTLER_SERVER_URL: https://cf-kaizen-butler-server.apps.tas.z52772e75.shepherd.lease
