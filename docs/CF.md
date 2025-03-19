@@ -8,7 +8,8 @@
     * [of sample application](#of-sample-application)
     * [of cf-toolsuite applications](#of-cf-toolsuite-applications)
   * [Configuring Claude Desktop](#configuring-claude-desktop)
-  * [In one go script](#in-one-go-script)
+  * [Deploying with the All-in-one script](#deploying-with-the-all-in-one-script)
+  * [Deploying to Tanzu Platform for Cloud Foundry](#deploying-to-tanzu-platform-for-cloud-foundry)
   * [Consuming models off-platform](#consuming-models-off-platform)
 
 ## Getting started with Cloud Foundry
@@ -172,13 +173,25 @@ Validate that the additional tools are present before crafting and executing you
 > Replace <path-to.m2-home> above with $HOME/.m2 when on Linux or MacOS and %USERPROFILE%\.m2 when on Windows.  Evaluate the path options mentioned and be sure to replace with an absolute path.
 > And if you're targeting different foundation(s); replace the value(s) for the default.url args above.
 
-### In one go script
+### Deploying with the All-in-one script
+
+If you're in a hurry, open the all-in-one [script](../scripts/all-in-one.sh) in your favorite editor.
+
+Change the values within the _ENVIRONMENT VARIABLES_ section to suit your needs.  Save the changes.  Open a Terminal session, then execute:
+
+```bash
+./scripts/all-in-one.sh
+```
+
+> [!IMPORTANT] This script will only deploy the cf-kaizen applications (only the MCP servers and clients).  Application instances of cf-butler and/or cf-hoover should previously have been deployed.
+
+### Deploying to Tanzu Platform for Cloud Foundry
 
 If you're interested in hoisting everything so that it runs on a target foundation, take a look at this [script](../scripts/deploy-on-tp4cf.sh).
 
 Let's say you already know of a Cloud Foundry API endpoint, and your Platform Engineering team has setup Single Sign-On.  
 
-Well, to get rolling, you could, e.g.,
+Well, to get rolling, you could open a Terminal session, then execute:
 
 ```bash
 cd scripts

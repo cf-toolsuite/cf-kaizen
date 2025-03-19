@@ -14,13 +14,21 @@
 
 COMMAND=$1
 
-GENAI_CHAT_SERVICE_NAME="kaizen-llm"
-# Whichever plan you've configured here, it must a) be available from the cf marketplace and b) have chat capability.
-GENAI_CHAT_PLAN_NAME="llama3.2"
-
+# ------------------------------
+# You are free to change these variable values
+#
+FOUNDATION="dhaka"
+OBSERVABILITY_TARGET=""
+KAIZEN_TARGET=""
 CF_DOMAIN="apps.dhaka.cf-app.com"
 CF_KAIZEN_BUTLER_SERVER_URL="https://cf-kaizen-butler-server.$CF_DOMAIN"
 CF_KAIZEN_HOOVER_SERVER_URL="https://cf-kaizen-hoover-server.$CF_DOMAIN"
+
+# Whichever plan you've configured below, it must a) be available from the cf marketplace and b) have chat capability
+GENAI_CHAT_SERVICE_NAME="kaizen-llm"
+GENAI_CHAT_PLAN_NAME="llama3.2"
+#
+# ------------------------------
 
 flag="${2:-}"
 flag="${flag,,}"
@@ -169,7 +177,7 @@ build)
 
 deploy-sample-app)
   ## Deploy application instance to zoolabs/dev
-  echo "-- Deploying application instance to zoolabs/dev"
+  echo "-- Deploying application instance"
   cf target -o zoolabs -s dev
 
   cd /tmp/primes || exit 1
@@ -180,16 +188,16 @@ deploy-sample-app)
 
 deploy-observability)
   ## Deploy application and service instances to observability/cf-toolsuite
-  echo "-- Deploying cf-butler and cf-hoover and supporting service instances to observability/cf-toolsuite"
+  echo "-- Deploying cf-butler and cf-hoover and supporting service instances"
   cf target -o observability -s cf-toolsuite
 
   cd /tmp/cf-butler || exit 1
   cf push --no-start --no-route
-  jq --arg token "$(jq -r '.RefreshToken' $HOME/.cf/config.json)" '.["CF_REFRESH-TOKEN"] = $token' /tmp/cf-kaizen/config/secrets.butler-on-dhaka.json > /tmp/cf-kaizen/config/secrets.butler-on-dhaka-updated.json
-  cf create-service credhub default cf-butler-secrets -c /tmp/cf-kaizen/config/secrets.butler-on-dhaka-updated.json
+  jq --arg token "$(jq -r '.RefreshToken' $HOME/.cf/config.json)" '.["CF_REFRESH-TOKEN"] = $token' /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION.json > /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION-updated.json
+  cf create-service credhub default cf-butler-secrets -c /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION-updated.json
   cf bind-service cf-butler cf-butler-secrets
-  cf create-route apps.dhaka.cf-app.com --hostname cf-butler-dev
-  cf map-route cf-butler apps.dhaka.cf-app.com --hostname cf-butler-dev
+  cf create-route $CF_DOMAIN --hostname cf-butler-dev
+  cf map-route cf-butler $CF_DOMAIN --hostname cf-butler-dev
   if [ "$ENABLE_DROPLET_SCANNING" == "y" ]; then
     echo "-- Droplet scanning will be enabled"
     cf set-env cf-butler JAVA_ARTIFACTS_FETCH_MODE list-jars-in-droplet
@@ -199,7 +207,7 @@ deploy-observability)
 
   cd /tmp/cf-hoover || exit 1
   cf push cf-hoover --no-start
-  cf create-service p.config-server standard cf-hoover-config -c /tmp/cf-kaizen/config/secrets.hoover-on-dhaka.json
+  cf create-service p.config-server standard cf-hoover-config -c /tmp/cf-kaizen/config/secrets.hoover-on-$FOUNDATION.json
   while [[ $(cf service cf-hoover-config) != *"succeeded"* ]]; do
     echo "cf-hoover-config is not ready yet..."
     sleep 5
@@ -212,7 +220,7 @@ deploy-observability)
 
 deploy-kaizen)
   ## Deploy application instances to kaizen/prod
-  echo "-- Deploying MCP server and client application instances to kaizen/prod"
+  echo "-- Deploying MCP server and client application instances"
 
   cf target -o observability -s cf-toolsuite
   CF_BUTLER_API_ENDPOINT=$(get_app_url cf-butler)
