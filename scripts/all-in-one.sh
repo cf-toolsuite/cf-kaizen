@@ -59,17 +59,8 @@ function determine_jar_release() {
 ORIGINAL_MANIFEST="config/manifest.default.yml"
 NEW_MANIFEST="config/manifest.$FOUNDATION.yml"
 
-# Make a copy of the original manifest
-cp "$ORIGINAL_MANIFEST" "$NEW_MANIFEST"
-
-# Replace service name
-sed -i "s/kaizen-chat/$LLM_SERVICE_NAME/g" "$NEW_MANIFEST"
-
-# Replace domain
-sed -i "s/apps.tas.z52772e75.shepherd.lease/$CF_APPS_DOMAIN/g" "$NEW_MANIFEST"
-
-# Replace version
-sed -i "s/0.0.1-SNAPSHOT/$ARTIFACT_VERSION/g" "$NEW_MANIFEST"
+# Make a copy of the original manifest and populate with correct information
+ytt -f $ORIGINAL_MANIFEST -v "llm_service_name=$LLM_SERVICE_NAME" -v "cf_apps_domain=$CF_APPS_DOMAIN" -v "artifact_version=$ARTIFACT_VERSION" > $NEW_MANIFEST
 
 echo "-- Manifest updated successfully!"
 
