@@ -10,7 +10,7 @@ spring:
         type: ASYNC
         sse:
           connections:
-            butler:
+            hoover:
               url: ${CF_KAIZEN_HOOVER_SERVER_URL:http://localhost:8084}
 
   httpclient5:
