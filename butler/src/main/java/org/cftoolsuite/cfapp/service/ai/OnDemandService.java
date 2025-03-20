@@ -26,12 +26,12 @@ public class OnDemandService {
         return onDemandApiClient.eventsIdGet(id, numberOfEvents, types).getBody();
     }
 
-    @Tool(description = "Get metadata for resources of a specific type.")
-    public Resources getMetadataByType(
-            @ToolParam(description = "Type of resource metadata to retrieve (e.g., apps, services).") String type,
-            @ToolParam(description = "Label selector to filter resources.") String labelSelector,
-            @ToolParam(description = "Page number for pagination.") Integer page,
-            @ToolParam(description = "Number of resources per page.") Integer perPage) {
-        return onDemandApiClient.metadataTypeGet(type, labelSelector, page, perPage).getBody();
-    }
+//    @Tool(description = "Get metadata for resources of a specific type.")
+//    public Resources getMetadataByType(
+//            @ToolParam(description = "Type of resource metadata to retrieve (e.g., apps, services).") String type,
+//            @ToolParam(description = "Label selector to filter resources.") String labelSelector,
+//            @ToolParam(description = "Page number for pagination.") Integer page,
+//            @ToolParam(description = "Number of resources per page.") Integer perPage) {
+//        return onDemandApiClient.metadataTypeGet(type, labelSelector, page, perPage).getBody();
+//    }
 }

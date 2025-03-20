@@ -1,7 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import '@/components/ui/markdown-styles.css';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeFormat from 'rehype-format';
+import remarkBreaks from 'remark-breaks';
+import { processMarkdown } from '@/utils/markdownProcessor';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {
@@ -23,6 +28,7 @@ const ChatPage = ({ isDarkMode }) => {
     const answerContainerRef = useRef(null);
     const [chatHistory, setChatHistory] = useState([]);
     const [currentAnswer, setCurrentAnswer] = useState(''); // State to track the current streamed answer
+    const processedAnswer = useMemo(() => processMarkdown(currentAnswer), [currentAnswer]);
     const [currentQuestion, setCurrentQuestion] = useState(''); // To display the current question
     const [currentMetadata, setCurrentMetadata] = useState(null); // To store current response metadata
 
@@ -218,7 +224,9 @@ const ChatPage = ({ isDarkMode }) => {
                         {currentAnswer ? (
                             <>
                                 <ReactMarkdown
-                                    remarkPlugins={[remarkGfm]}
+                                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                                    rehypePlugins={[rehypeRaw, rehypeFormat]}
+                                    className="markdown-content"
                                     components={{
                                         code({node, inline, className, children, ...props}) {
                                             const match = /language-(\w+)/.exec(className || '');
@@ -239,7 +247,7 @@ const ChatPage = ({ isDarkMode }) => {
                                         }
                                     }}
                                 >
-                                    {currentAnswer}
+                                    {processedAnswer}
                                 </ReactMarkdown>
 
                                 {/* Show metadata below the current answer if available */}
@@ -324,8 +332,9 @@ const ChatPage = ({ isDarkMode }) => {
                                         <div className="font-bold mt-2">Response:</div>
                                         <div className="max-h-64 overflow-y-auto pr-1"> {/* Added fixed height with scrolling */}
                                             <ReactMarkdown
-                                                className={`prose ${isDarkMode ? 'prose-invert' : ''}`}
-                                                remarkPlugins={[remarkGfm]}
+                                                className={`prose markdown-content ${isDarkMode ? 'prose-invert' : ''}`}
+                                                remarkPlugins={[remarkGfm, remarkBreaks]}
+                                                rehypePlugins={[rehypeRaw, rehypeFormat]}
                                                 components={{
                                                     code({node, inline, className, children, ...props}) {
                                                         const match = /language-(\w+)/.exec(className || '');
@@ -346,7 +355,7 @@ const ChatPage = ({ isDarkMode }) => {
                                                     }
                                                 }}
                                             >
-                                                {item.answer}
+                                            {processMarkdown(item.answer)}
                                             </ReactMarkdown>
 
                                             {/* Show metadata in expanded history items */}

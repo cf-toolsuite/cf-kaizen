@@ -1,14 +1,7 @@
 package org.cftoolsuite.cfapp.service.ai;
 
 import org.cftoolsuite.cfapp.butler.api.SnapshotApiClient;
-import org.cftoolsuite.cfapp.butler.model.Demographics;
-import org.cftoolsuite.cfapp.butler.model.Organization;
-import org.cftoolsuite.cfapp.butler.model.SnapshotDetail;
-import org.cftoolsuite.cfapp.butler.model.SnapshotSummary;
-import org.cftoolsuite.cfapp.butler.model.Space;
-import org.cftoolsuite.cfapp.butler.model.SpaceUsers;
-import org.cftoolsuite.cfapp.butler.model.UserSpaces;
-import org.cftoolsuite.cfapp.butler.model.Workloads;
+import org.cftoolsuite.cfapp.butler.model.*;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.core.io.Resource;
@@ -23,13 +16,14 @@ public class SnapshotService {
 
     private final SnapshotApiClient snapshotApiClient;
 
+
     public SnapshotService(SnapshotApiClient snapshotApiClient) {
         this.snapshotApiClient = snapshotApiClient;
     }
 
     @Tool(description = "Get the last snapshot collection date and time.")
-    public LocalDateTime getCollectionTime() {
-        return snapshotApiClient.collectGet().getBody();
+    public TimestampResponse getCollectionTime() {
+        return snapshotApiClient.collectGet("application/json").getBody();
     }
 
     @Tool(description = "Download a tarball of POM files for Java applications.")
@@ -37,7 +31,7 @@ public class SnapshotService {
         return snapshotApiClient.downloadPomfilesGet().getBody();
     }
 
-    @Tool(description = "Get demographic information about the Cloud Foundry instance.")
+    @Tool(description = "Get demographic information about the Cloud Foundry foundation.")
     public Demographics getDemographics() {
         return snapshotApiClient.snapshotDemographicsGet().getBody();
     }
