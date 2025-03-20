@@ -1,69 +1,76 @@
+#@ load("@ytt:data", "data")
+
+---
 applications:
-  - name: cf-kaizen-butler-server
-    routes:
-      - route: cf-kaizen-butler-server.apps.tas.z52772e75.shepherd.lease
-    memory: 2G
-    disk: 512M
-    stack: cflinuxfs4
-    path: butler/target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar
-    instances: 1
-    health-check-type: http
-    health-check-http-endpoint: /actuator/health
-    health-check-invocation-timeout: 180
-    env:
-      JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-      SPRING_PROFILES_ACTIVE: default,cloud
-      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
-      CF_BUTLER_API_ENDPOINT: https://cf-butler.apps.tas.z52772e75.shepherd.lease
-  - name: cf-kaizen-hoover-server
-    routes:
-      - route: cf-kaizen-hoover-server.apps.tas.z52772e75.shepherd.lease
-    memory: 2G
-    disk: 512M
-    stack: cflinuxfs4
-    path: hoover/target/cf-kaizen-hoover-server-0.0.1-SNAPSHOT.jar
-    instances: 1
-    health-check-type: http
-    health-check-http-endpoint: /actuator/health
-    health-check-invocation-timeout: 180
-    env:
-      JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-      SPRING_PROFILES_ACTIVE: default,cloud
-      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
-      CF_HOOVER_API_ENDPOINT: https://cf-hoover.apps.tas.z52772e75.shepherd.lease
-  - name: cf-kaizen-hoover-frontend
-    routes:
-      - route: cf-kaizen-hoover-frontend.apps.tas.z52772e75.shepherd.lease
-    memory: 2G
-    disk: 512M
-    stack: cflinuxfs4
-    path: clients/hoover/target/cf-kaizen-hoover-frontend-0.0.1-SNAPSHOT.jar
-    instances: 1
-    health-check-type: http
-    health-check-http-endpoint: /actuator/health
-    health-check-invocation-timeout: 180
-    env:
-      JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-      SPRING_PROFILES_ACTIVE: default,cloud,openai
-      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
-      CF_KAIZEN_HOOVER_SERVER_URL: https://cf-kaizen-hoover-server.apps.tas.z52772e75.shepherd.lease
-    services:
-      - kaizen-chat
-  - name: cf-kaizen-butler-frontend
-    routes:
-      - route: cf-kaizen-butler-frontend.apps.tas.z52772e75.shepherd.lease
-    memory: 2G
-    disk: 512M
-    stack: cflinuxfs4
-    path: clients/butler/target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar
-    instances: 1
-    health-check-type: http
-    health-check-http-endpoint: /actuator/health
-    health-check-invocation-timeout: 180
-    env:
-      JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-      SPRING_PROFILES_ACTIVE: default,cloud,openai
-      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
-      CF_KAIZEN_BUTLER_SERVER_URL: https://cf-kaizen-butler-server.apps.tas.z52772e75.shepherd.lease
-    services:
-      - kaizen-chat
+- name: cf-kaizen-butler-server
+  routes:
+    - route: #@ "cf-kaizen-butler-server." + data.values.cf_apps_domain
+  memory: 2G
+  disk: 512M
+  stack: cflinuxfs4
+  path: #@ "butler/target/cf-kaizen-butler-server-" + data.values.artifact_version + ".jar"
+  instances: 1
+  health-check-type: http
+  health-check-http-endpoint: /actuator/health
+  health-check-invocation-timeout: 180
+  env:
+    JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
+    SPRING_PROFILES_ACTIVE: default,cloud
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+    CF_BUTLER_API_ENDPOINT: #@ "https://cf-butler." + data.values.cf_apps_domain
+  services:
+  - #@ data.values.llm_service_name
+- name: cf-kaizen-hoover-server
+  routes:
+    - route: #@ "cf-kaizen-hoover-server." + data.values.cf_apps_domain
+  memory: 2G
+  disk: 512M
+  stack: cflinuxfs4
+  path: #@ "hoover/target/cf-kaizen-hoover-server-" + data.values.artifact_version + ".jar"
+  instances: 1
+  health-check-type: http
+  health-check-http-endpoint: /actuator/health
+  health-check-invocation-timeout: 180
+  env:
+    JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
+    SPRING_PROFILES_ACTIVE: default,cloud
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+    CF_HOOVER_API_ENDPOINT: #@ "https://cf-hoover." + data.values.cf_apps_domain
+  services:
+  - #@ data.values.llm_service_name
+- name: cf-kaizen-hoover-frontend
+  routes:
+    - route: #@ "cf-kaizen-hoover-frontend." + data.values.cf_apps_domain
+  memory: 2G
+  disk: 512M
+  stack: cflinuxfs4
+  path: #@ "clients/hoover/target/cf-kaizen-hoover-frontend-" + data.values.artifact_version + ".jar"
+  instances: 1
+  health-check-type: http
+  health-check-http-endpoint: /actuator/health
+  health-check-invocation-timeout: 180
+  env:
+    JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
+    SPRING_PROFILES_ACTIVE: default,cloud
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+    CF_KAIZEN_HOOVER_SERVER_URL: #@ "https://cf-kaizen-hoover-server." + data.values.cf_apps_domain
+  services:
+  - #@ data.values.llm_service_name
+- name: cf-kaizen-butler-frontend
+  routes:
+    - route: #@ "cf-kaizen-butler-frontend." + data.values.cf_apps_domain
+  memory: 2G
+  disk: 512M
+  stack: cflinuxfs4
+  path: #@ "clients/butler/target/cf-kaizen-butler-frontend-" + data.values.artifact_version + ".jar"
+  instances: 1
+  health-check-type: http
+  health-check-http-endpoint: /actuator/health
+  health-check-invocation-timeout: 180
+  env:
+    JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
+    SPRING_PROFILES_ACTIVE: default,cloud
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+    CF_KAIZEN_BUTLER_SERVER_URL: #@ "https://cf-kaizen-butler-server." + data.values.cf_apps_domain
+  services:
+  - #@ data.values.llm_service_name

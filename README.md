@@ -43,6 +43,7 @@ Start with:
 * Java SDK (21 or better)
 * Maven (3.9.9 or better)
 * Claude desktop
+* Carvel [ytt](http://carvel.dev/ytt)
 
 ## How to clone
 
