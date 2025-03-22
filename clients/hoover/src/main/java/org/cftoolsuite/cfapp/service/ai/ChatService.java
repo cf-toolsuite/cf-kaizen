@@ -12,6 +12,8 @@ import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,12 +34,14 @@ public class ChatService {
     private final ObjectMapper objectMapper;
 
     public ChatService(
+            @Value("classpath:/system-prompt.st") Resource systemPrompt,
             ChatModel chatModel,
             ChatMemory chatMemory,
             McpAsyncClientManager asyncClientManager,
             ObjectMapper objectMapper
     ) {
         this.chatClient = ChatClient.builder(chatModel)
+                .defaultSystem(systemPrompt)
                 .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory), new SimpleLoggerAdvisor())
                 .defaultAdvisors(a -> a.param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .build();

@@ -27,12 +27,12 @@ public class PoliciesService {
         return policiesApiClient.policiesEndpointIdGet(id).getBody();
     }
 
-    @Tool(description = "Trigger on-demand policy execution (profile, on-demand).")
+    @Tool(description = "Trigger on-demand policy execution.")
     public void executePolicies() {
         policiesApiClient.policiesExecutePost();
     }
 
-    @Tool(description = "List all policies.")
+    @Tool(description = "List all policies in effect.")
     public Policies getAllPolicies() {
         return policiesApiClient.policiesGet().getBody();
     }

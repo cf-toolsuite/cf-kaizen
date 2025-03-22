@@ -21,14 +21,12 @@ public class CfKaizenButlerMcpServerApplication {
 	@Bean
 	public List<ToolCallback> tools(
 			AccountingService accountingService,
-			OnDemandService onDemandService,
 			PoliciesService policiesService,
 			ProductsService productsService,
 			SnapshotService snapshotService) {
 		return List.of(
 				ToolCallbacks.from(
 						accountingService,
-						onDemandService,
 						policiesService,
 						productsService,
 						snapshotService

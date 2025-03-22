@@ -31,7 +31,11 @@ public class SnapshotService {
         return snapshotApiClient.downloadPomfilesGet().getBody();
     }
 
-    @Tool(description = "Get demographic information about the Cloud Foundry foundation.")
+    @Tool(description =
+        """
+            Get demographic information about the Cloud Foundry foundation.
+            Demographics contains counts of: organizations, spaces, user accounts, and service accounts.
+        """)
     public Demographics getDemographics() {
         return snapshotApiClient.snapshotDemographicsGet().getBody();
     }
@@ -41,7 +45,14 @@ public class SnapshotService {
         return snapshotApiClient.snapshotDetailAiSpringGet().getBody();
     }
 
-    @Tool(description = "Get dormant workloads (applications and service instances).")
+    @Tool(description =
+        """
+            Get dormant workloads. Workloads contains lists of: applications, service instances, and application relationships that are dormant.
+            An application is considered dormant when the last retained event transpired daysSinceLastUpdate
+            or longer from the time of request. A service instance is considered dormant when the last retained event
+            transpired daysSinceLastUpdate or longer from the time of request.
+            Note: audit events are retained for up to 31 days.
+        """)
     public Workloads getDormantWorkloads(@ToolParam(description = "Number of days since the last update to consider workloads dormant.") Integer daysSinceLastUpdate) {
         return snapshotApiClient.snapshotDetailDormantDaysSinceLastUpdateGet(daysSinceLastUpdate).getBody();
     }
@@ -115,17 +126,29 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSpacesGet().getBody();
     }
 
-    @Tool(description = "List all space users.")
+    @Tool(description =
+        """
+            List all space users. Each space user record includes:
+            -- Organization
+            -- Space
+            -- Lists of users with auditor, developer, and manager roles
+            -- List of distinct users among all roles
+        """)
     public List<SpaceUsers> getAllSpaceUsers() {
         return snapshotApiClient.snapshotSpacesUsersGet().getBody();
     }
 
-    @Tool(description = "Get spaces for a specific user account name.")
+    @Tool(description = "List all the organizations/spaces associated with a single user account")
     public UserSpaces getUserSpaces(@ToolParam(description = "User account name.") String name) {
         return snapshotApiClient.snapshotSpacesUsersNameGet(name).getBody();
     }
 
-    @Tool(description = "Get a summary of Spring dependency frequencies.")
+    @Tool(description =
+        """
+            Get a summary of Spring dependency frequencies for applications built with the Java buildpack.
+            Essentially a map of key-value pairs where the key is the dependency version
+            and value is the number of occurrences of that version.
+        """)
     public Map<String, Integer> getSpringDependencyFrequenciesSummary() {
         return snapshotApiClient.snapshotSummaryAiSpringGet().getBody();
     }
