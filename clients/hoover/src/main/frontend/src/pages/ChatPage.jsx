@@ -17,7 +17,9 @@ import {
     PhoneIncoming,
     PhoneOutgoing,
     Sigma,
-    Gauge
+    Gauge,
+    SidebarClose,
+    SidebarOpen
 } from 'lucide-react';
 
 const ChatPage = ({ isDarkMode }) => {
@@ -31,6 +33,8 @@ const ChatPage = ({ isDarkMode }) => {
     const processedAnswer = useMemo(() => processMarkdown(currentAnswer), [currentAnswer]);
     const [currentQuestion, setCurrentQuestion] = useState(''); // To display the current question
     const [currentMetadata, setCurrentMetadata] = useState(null); // To store current response metadata
+    const [showHistory, setShowHistory] = useState(false); // Control visibility of chat history
+    const [greeting, setGreeting] = useState(''); // To store greeting message
 
     const getHistoryItemColor = () => {
         return isDarkMode ? 'bg-orange-600' : 'bg-orange-500';
@@ -130,7 +134,7 @@ const ChatPage = ({ isDarkMode }) => {
 
     const showAlert = (message) => {
         setAlert({ show: true, message });
-        setTimeout(() => setAlert({ show: false, message: '' }), 3000);
+        setTimeout(() => setAlert({ show: false, message: '' }), 5000);
     };
 
     const toggleHistoryItem = (index) => {
@@ -193,11 +197,47 @@ const ChatPage = ({ isDarkMode }) => {
             answerContainerRef.current.scrollTop = answerContainerRef.current.scrollHeight;
         }
     }, [answer]);
+    
+    // Fetch greeting message when component mounts
+    useEffect(() => {
+        const fetchGreeting = async () => {
+            try {
+                const response = await fetch('/api/hoover/greeting');
+                if (response.ok) {
+                    const greetingText = await response.text();
+                    setGreeting(greetingText);
+                }
+            } catch (error) {
+                console.error('Error fetching greeting:', error);
+            }
+        };
+        
+        fetchGreeting();
+    }, []);
 
     return (
         <div className="max-w-4xl mx-auto p-6 flex flex-col">
+            {/* History visibility toggle button */}
+            <div className="flex justify-end mb-2">
+                <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className={`flex items-center gap-1 px-3 py-1 rounded text-sm ${isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                >
+                    {showHistory ? (
+                        <>
+                            <SidebarClose size={16} />
+                            <span>Hide History</span>
+                        </>
+                    ) : (
+                        <>
+                            <SidebarOpen size={16} />
+                            <span>Show History</span>
+                        </>
+                    )}
+                </button>
+            </div>
             <div className="flex">
-                <div className="w-2/3 pr-4">
+                <div className={showHistory ? "w-2/3 pr-4" : "w-full"}>
                     {alert.show && (
                         <Alert className="mb-4 bg-red-100">
                             <AlertDescription>{alert.message}</AlertDescription>
@@ -212,6 +252,14 @@ const ChatPage = ({ isDarkMode }) => {
                                 : 'bg-gray-50 prose-slate max-w-none'
                         }`}
                     >
+                        {/* Greeting message shown at the top */}
+                        {greeting && !currentQuestion && (
+                            <div className={`mb-4 p-3 rounded-md ${isDarkMode ? 'bg-green-900/30' : 'bg-green-100'}`}>
+                                <div className="font-bold mb-1">👋 Welcome</div>
+                                <div>{greeting}</div>
+                            </div>
+                        )}
+                        
                         {/* Show the current question in bold with light blue background */}
                         {currentQuestion && (
                             <div className={`font-bold mb-4 p-3 rounded-md ${
@@ -286,7 +334,7 @@ const ChatPage = ({ isDarkMode }) => {
                         </button>
                     </form>
                 </div>
-                <div className="w-1/3 flex flex-col justify-end">
+                {showHistory && <div className="w-1/3 flex flex-col justify-end">
                     <div className="flex flex-col-reverse mt-auto"> {/* Reverse column for stacking effect */}
                         {chatHistory.map((item, index) => (
                             <div
@@ -366,7 +414,7 @@ const ChatPage = ({ isDarkMode }) => {
                             </div>
                         ))}
                     </div>
-                </div>
+                </div>}
             </div>
         </div>
     );

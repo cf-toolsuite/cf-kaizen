@@ -1,6 +1,7 @@
 package org.cftoolsuite.cfapp.service.ai;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,11 @@ public class ChatController {
     @PostMapping("/stream/chat")
     public ResponseEntity<Flux<String>> streamChat(@RequestBody Inquiry inquiry) {
         return ResponseEntity.ok(chatService.streamResponseToQuestion(inquiry.question()));
+    }
+    
+    @GetMapping("/greeting")
+    public ResponseEntity<String> getGreeting() {
+        return ResponseEntity.ok(chatService.getGreetingMessage());
     }
 
 }

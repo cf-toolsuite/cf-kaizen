@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -32,14 +34,25 @@ public class ChatService {
     private final ChatClient chatClient;
     private final McpAsyncClientManager asyncClientManager;
     private final ObjectMapper objectMapper;
+    private final String greetingMessage;
 
     public ChatService(
             @Value("classpath:/system-prompt.st") Resource systemPrompt,
+            @Value("classpath:/greeting-prompt.st") Resource greetingPrompt,
             ChatModel chatModel,
             ChatMemory chatMemory,
             McpAsyncClientManager asyncClientManager,
             ObjectMapper objectMapper
     ) {
+        String greetingContent;
+        try {
+            greetingContent = new String(greetingPrompt.getInputStream().readAllBytes());
+        } catch (IOException e) {
+            log.warn("Failed to load greeting prompt, using default", e);
+            greetingContent = "I'm here to help you with any questions about your Cloud Foundry estate.  How can I assist you today?";
+        }
+        this.greetingMessage = greetingContent;
+        
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(systemPrompt)
                 .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory), new SimpleLoggerAdvisor())
@@ -47,6 +60,15 @@ public class ChatService {
                 .build();
         this.asyncClientManager = asyncClientManager;
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Returns the greeting message shown to users when they first visit the chat page.
+     *
+     * @return the greeting message
+     */
+    public String getGreetingMessage() {
+        return this.greetingMessage;
     }
 
     /**
