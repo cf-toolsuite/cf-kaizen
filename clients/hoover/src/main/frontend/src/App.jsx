@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ChatPage from './pages/ChatPage';
 import ThemeToggle from './components/ui/ThemeToggle';
+import { Combine } from 'lucide-react';
 
 const App = () => {
     const [isDarkMode, setIsDarkMode] = useState(
@@ -29,7 +30,7 @@ const App = () => {
             <header className="px-6 py-4 border-b">
                 <div className="max-w-4xl mx-auto flex justify-between items-center">
                     <div className="flex-1 flex justify-center">
-                        <h1 className="text-xl font-semibold mr-auto">Cloud Foundry Kaizen Hoover Frontend</h1>
+                        <h1 className="text-xl font-semibold mr-auto flex items-center"><Combine className="mr-2" size={24} /> Hoover</h1>
                     </div>
                     <div className="flex-1 flex justify-center">
                         <div className="ml-auto">

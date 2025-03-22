@@ -12,9 +12,13 @@ import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -25,24 +29,47 @@ import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvis
 
 @Service
 public class ChatService {
+
     private final Logger log = LoggerFactory.getLogger(ChatService.class);
 
     private final ChatClient chatClient;
     private final McpAsyncClientManager asyncClientManager;
     private final ObjectMapper objectMapper;
+    private final String greetingMessage;
 
     public ChatService(
+            @Value("classpath:/system-prompt.st") Resource systemPrompt,
+            @Value("classpath:/greeting-prompt.st") Resource greetingPrompt,
             ChatModel chatModel,
             ChatMemory chatMemory,
             McpAsyncClientManager asyncClientManager,
             ObjectMapper objectMapper
     ) {
+        String greetingContent;
+        try {
+            greetingContent = new String(greetingPrompt.getInputStream().readAllBytes());
+        } catch (IOException e) {
+            log.warn("Failed to load greeting prompt, using default", e);
+            greetingContent = "I'm here to help you with questions about your Cloud Foundry foundation.  How can I assist you today?";
+        }
+        this.greetingMessage = greetingContent;
+        
         this.chatClient = ChatClient.builder(chatModel)
+                .defaultSystem(systemPrompt)
                 .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory), new SimpleLoggerAdvisor())
                 .defaultAdvisors(a -> a.param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .build();
         this.asyncClientManager = asyncClientManager;
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Returns the greeting message shown to users when they first visit the chat page.
+     *
+     * @return the greeting message
+     */
+    public String getGreetingMessage() {
+        return this.greetingMessage;
     }
 
     /**

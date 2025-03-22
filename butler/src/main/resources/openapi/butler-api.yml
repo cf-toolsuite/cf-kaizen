@@ -757,14 +757,25 @@ paths:
       tags:
         - Snapshot
       summary: Get the last collection time.
+      operationId: collectGet
+      parameters:
+        - in: header
+          name: Accept
+          schema:
+            type: string
+            enum:
+              - application/json
+            default: application/json
+          description: |
+            Specify the desired response format.
+            - `application/json`: Returns the timestamp in a JSON object.
       responses:
         '200':
           description: Successful response, collection time returned
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                format: date-time
+                $ref: '#/components/schemas/TimestampResponse'
         '404':
           description: Collection time not found
 
@@ -2436,3 +2447,11 @@ components:
           items:
             type: string
           description: List of GUIDs of parent products deployed more recently.
+
+    TimestampResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: The date and time of the last collection.

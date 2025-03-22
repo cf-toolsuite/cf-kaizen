@@ -1,6 +1,6 @@
 package org.cftoolsuite.cfapp;
 
-import org.cftoolsuite.cfapp.service.ai.ButlerService;
+import org.cftoolsuite.cfapp.service.ai.*;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbacks;
 import org.springframework.boot.SpringApplication;
@@ -19,8 +19,18 @@ public class CfKaizenButlerMcpServerApplication {
 	}
 
 	@Bean
-	public List<ToolCallback> butlerTools(ButlerService butlerService) {
-		return List.of(ToolCallbacks.from(butlerService));
+	public List<ToolCallback> tools(
+			AccountingService accountingService,
+			PoliciesService policiesService,
+			ProductsService productsService,
+			SnapshotService snapshotService) {
+		return List.of(
+				ToolCallbacks.from(
+						accountingService,
+						policiesService,
+						productsService,
+						snapshotService
+				));
 	}
 
 }

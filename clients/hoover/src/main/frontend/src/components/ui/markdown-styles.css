@@ -1,0 +1,125 @@
+/* Custom markdown spacing styles - Optimized for readable streaming responses */
+
+/* General spacing for all markdown content */
+.markdown-content > * {
+  margin-bottom: 0.5rem !important;
+}
+
+/* Ensure paragraphs have moderate spacing */
+.markdown-content p {
+  margin-bottom: 0.5rem !important;
+  line-height: 1.5;
+}
+
+/* Add margin after headings */
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3, 
+.markdown-content h4, 
+.markdown-content h5, 
+.markdown-content h6 {
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Space between list items */
+.markdown-content ul, 
+.markdown-content ol {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.markdown-content li {
+  margin-bottom: 0.1rem !important;
+}
+
+/* Add space around code blocks but not too much */
+.markdown-content pre {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0.75rem !important;
+  border-radius: 0.375rem !important;
+  overflow-x: auto !important;
+}
+
+/* Style for inline code */
+.markdown-content :not(pre) > code {
+  padding: 0.1rem 0.3rem !important;
+  border-radius: 3px !important;
+  font-size: 0.9em !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Moderate blockquote styling */
+.markdown-content blockquote {
+  margin: 0.75rem 0 !important;
+  padding: 0.25rem 0 0.25rem 0.75rem !important;
+  border-left: 3px solid #e5e7eb !important;
+  font-style: italic !important;
+}
+
+/* Tables spacing and styling */
+.markdown-content table {
+  margin: 0.75rem 0 !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+.markdown-content table th,
+.markdown-content table td {
+  padding: 0.4rem !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.markdown-content table th {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Add extra spacing only between different types of elements */
+.markdown-content h1 + h2,
+.markdown-content h2 + h3,
+.markdown-content h3 + h4,
+.markdown-content h4 + h5,
+.markdown-content h5 + h6 {
+  margin-top: 0.25rem !important;
+}
+
+/* But ensure spacing between content sections */
+.markdown-content h1 + p,
+.markdown-content h2 + p,
+.markdown-content h3 + p,
+.markdown-content h4 + p,
+.markdown-content h5 + p,
+.markdown-content h6 + p {
+  margin-top: 0.4rem !important;
+}
+
+/* Horizontal rules with moderate spacing */
+.markdown-content hr {
+  margin: 1rem 0 !important;
+  border: 0 !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+/* Dark mode adjustments */
+.dark .markdown-content blockquote {
+  border-left-color: #4b5563 !important;
+}
+
+.dark .markdown-content :not(pre) > code {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .markdown-content table th,
+.dark .markdown-content table td {
+  border-color: #4b5563 !important;
+}
+
+.dark .markdown-content table th {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .markdown-content hr {
+  border-top-color: #4b5563 !important;
+}

@@ -164,9 +164,6 @@ build)
   for proj in "${PROJECTS[@]}"
   do
     cd "$proj" || exit 1
-    if [ "$ENABLE_DROPLET_SCANNING" == "y" ]  && [ "$proj" == "cf-butler" ]; then
-      git checkout memory-optimizations-for-droplet-read-processing
-    fi
     ./mvnw install
     cd /tmp || exit 1
   done
