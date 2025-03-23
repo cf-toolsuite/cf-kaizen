@@ -102,6 +102,28 @@
   border-top: 1px solid #e5e7eb !important;
 }
 
+/* Hyperlink styling to make links obviously clickable */
+.markdown-content a {
+  color: #2563eb !important; /* Bright blue color for light mode */
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  position: relative !important;
+  padding: 0 0.1rem !important;
+  border-radius: 0.125rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.markdown-content a:hover {
+  background-color: rgba(37, 99, 235, 0.1) !important;
+}
+
+.markdown-content a::before {
+  content: '\1F517 ' !important; /* Link emoji with space */
+  font-size: 0.8em !important;
+  margin-right: 0.2rem !important;
+  vertical-align: middle !important;
+}
+
 /* Dark mode adjustments */
 .dark .markdown-content blockquote {
   border-left-color: #4b5563 !important;
@@ -122,4 +144,13 @@
 
 .dark .markdown-content hr {
   border-top-color: #4b5563 !important;
+}
+
+/* Dark mode link styling */
+.dark .markdown-content a {
+  color: #3b82f6 !important; /* Slightly lighter blue for dark mode */
+}
+
+.dark .markdown-content a:hover {
+  background-color: rgba(59, 130, 246, 0.2) !important;
 }
