@@ -23,14 +23,14 @@ public class ProductsService {
         this.productsApiClient = productsApiClient;
     }
 
-    @Tool(description = "Get deployed products from Operations Manager.")
+    @Tool(name = "GetDeployedProducts", description = "(Butler) Get deployed products from Operations Manager.")
     public List<DeployedProduct> getDeployedProducts() {
         return productsApiClient.productsDeployedGet().getBody();
     }
 
-    @Tool(description =
+    @Tool(name = "GetDeployedProductInsights", description =
         """
-            Assembles lists of deployed products from Operations Manager.
+            (Butler) Assembles lists of deployed products from Operations Manager.
             Lists include: buildpacks, stemcells, and tiles.
             Each entry in each list is enhanced with release metadata from Tanzu Network.
         """)
@@ -38,27 +38,23 @@ public class ProductsService {
         return productsApiClient.productsMetricsGet().getBody();
     }
 
-    @Tool(description = "Get the version of Operations Manager.")
+    @Tool(name = "GetOperationsManagerVersion", description = "(Butler) Get the version of Operations Manager.")
     public OmInfo getOmInfo() {
         return productsApiClient.productsOmInfoGet().getBody();
     }
 
-    @Tool(description = "Get stemcell assignments from Operations Manager.")
-    public StemcellAssignments getStemcellAssignments() {
-        return productsApiClient.productsStemcellAssignmentsGet().getBody();
-    }
 
-    @Tool(description = "Get stemcell associations from Operations Manager (v2.6+).")
+    @Tool(name = "GetStemcellAssociations", description = "(Butler) Get stemcell associations from Operations Manager (v2.6+).")
     public StemcellAssociations getStemcellAssociations() {
         return productsApiClient.productsStemcellAssociationsGet().getBody();
     }
 
-    @Tool(description = "Get product catalog from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/get/.")
+    @Tool(name = "GetProductCatalog", description = "(Butler) Get product catalog from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/get/.")
     public Products getProductCatalog() {
         return productsApiClient.storeProductCatalogGet().getBody();
     }
 
-    @Tool(description = "Get product releases from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/product_slug/releases/get/.")
+    @Tool(name = "GetProductReleases", description = "(Butler) Get product releases from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/product_slug/releases/get/.")
     public List<Release> getProductReleases(@ToolParam(description = "Query option (latest, all, recent).") String q) {
         return productsApiClient.storeProductReleasesGet(q).getBody();
     }

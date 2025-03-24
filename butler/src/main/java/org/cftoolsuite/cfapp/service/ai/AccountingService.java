@@ -19,12 +19,12 @@ public class AccountingService {
         this.accountingApiClient = accountingApiClient;
     }
 
-    @Tool(description = "Get system-wide application usage report.")
+    @Tool(name = "GetApplicationUsage", description = "(Butler) Get system-wide application usage report.")
     public AppUsageReport getAccountingApplicationsReport() {
         return accountingApiClient.accountingApplicationsGet().getBody();
     }
 
-    @Tool(description = "Get application usage report for an organization within a date range.")
+    @Tool(name = "GetFilterableApplicationUsage", description = "(Butler) Get application usage report for an organization within a date range.")
     public String getAccountingApplicationsOrgReport(
             @ToolParam(description = "Organization name.") String orgName,
             @ToolParam(description = "Start date (YYYY-MM-DD).") LocalDate startDate,
@@ -32,12 +32,12 @@ public class AccountingService {
         return accountingApiClient.accountingApplicationsOrgNameStartDateEndDateGet(orgName, startDate, endDate).getBody();
     }
 
-    @Tool(description = "Get system-wide service usage report.")
+    @Tool(name = "GetServiceUsage", description = "(Butler) Get system-wide service usage report.")
     public ServiceUsageReport getAccountingServicesReport() {
         return accountingApiClient.accountingServicesGet().getBody();
     }
 
-    @Tool(description = "Get service usage report for an organization within a date range.")
+    @Tool(name = "GetFilterableServiceUsage", description = "(Butler) Get service usage report for an organization within a date range.")
     public String getAccountingServicesOrgReport(
             @ToolParam(description = "Organization name.") String orgName,
             @ToolParam(description = "Start date (YYYY-MM-DD).") LocalDate startDate,
@@ -45,12 +45,12 @@ public class AccountingService {
         return accountingApiClient.accountingServicesOrgNameStartDateEndDateGet(orgName, startDate, endDate).getBody();
     }
 
-    @Tool(description = "Get system-wide task usage report.")
+    @Tool(name = "GetTaskUsage", description = "(Butler) Get system-wide task usage report.")
     public TaskUsageReport getAccountingTasksReport() {
         return accountingApiClient.accountingTasksGet().getBody();
     }
 
-    @Tool(description = "Get task usage report for an organization within a date range.")
+    @Tool(name = "GetFilterableTaskUsage", description = "(Butler) Get task usage report for an organization within a date range.")
     public String getAccountingTasksOrgReport(
             @ToolParam(description = "Organization name.") String orgName,
             @ToolParam(description = "Start date (YYYY-MM-DD).") LocalDate startDate,

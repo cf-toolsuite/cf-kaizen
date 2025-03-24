@@ -16,6 +16,7 @@
     * mvn
     * (optionally) [sdk](https://sdkman.io/)
         * it might be the easiest way to install the Java SDK and Maven
+* [Docker Desktop](https://www.docker.com/get-started/)
 * [LibreChat](https://www.librechat.ai/docs/quick_start/local_setup)
 
 ### Building
@@ -56,7 +57,7 @@ services:
 
 #### librechat.yaml
 
-Consult [MCP Servers Object Structure](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/mcp_servers)
+Consult the documentation on [MCP Servers Object Structure](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/mcp_servers).
 
 Edit the file.  Focus on the `mcpServers` stanza and make the additions as you see below, then save your changes.
 
@@ -85,10 +86,13 @@ docker compose up -d
 
 > Replace `USERNAME` above with your GitHub account username.  And make sure you exported a valid `GITHUB_TOKEN` environment variable beforehand.  If you're unsure how to setup your token, consult this [documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
 
-The UI will be accessible on http://localhost:3080
+The UI will be accessible on http://localhost:3080.
 
-#### Configuring agents
+After signing up for a new account, you'll want to create an agent for each MCP server you registered in `librechat.yaml`.
 
-// TODO
+Consult the [Agents](https://www.librechat.ai/docs/features/agents) documentation for how to do that.
+
+> [!NOTE]
+> Here's an example of an agent named "Marsden" answering an inquiry via a Butler MCP server instance.
 
 ![Screenshot of tools enabled in LibreChat](snap-from-librechat.png)

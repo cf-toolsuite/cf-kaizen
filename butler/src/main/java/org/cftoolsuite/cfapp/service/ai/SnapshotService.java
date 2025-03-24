@@ -21,33 +21,33 @@ public class SnapshotService {
         this.snapshotApiClient = snapshotApiClient;
     }
 
-    @Tool(description = "Get the last snapshot collection date and time.")
+    @Tool(name = "GetLastSnapshotCollectionTime", description = "(Butler) Get the last snapshot collection date and time.")
     public TimestampResponse getCollectionTime() {
         return snapshotApiClient.collectGet("application/json").getBody();
     }
 
-    @Tool(description = "Download a tarball of POM files for Java applications.")
+    @Tool(name = "DownloadPOMFilesForJavaApplicationsAsTarball", description = "(Butler) Download a tarball of POM files for Java applications.")
     public Resource downloadPomFiles() {
         return snapshotApiClient.downloadPomfilesGet().getBody();
     }
 
-    @Tool(description =
+    @Tool(name = "GetFoundationDemographics", description =
         """
-            Get demographic information about the Cloud Foundry foundation.
+            (Butler) Get demographic information about the Cloud Foundry foundation.
             Demographics contains counts of: organizations, spaces, user accounts, and service accounts.
         """)
     public Demographics getDemographics() {
         return snapshotApiClient.snapshotDemographicsGet().getBody();
     }
 
-    @Tool(description = "Get details of Spring applications.")
+    @Tool(name = "GetSpringApplicationDetails", description = "(Butler) Get details of Spring applications.")
     public List<Map<String, String>> getSpringApplicationInstanceDetails() {
         return snapshotApiClient.snapshotDetailAiSpringGet().getBody();
     }
 
-    @Tool(description =
+    @Tool(name = "GetDormantWorkloads", description =
         """
-            Get dormant workloads. Workloads contains lists of: applications, service instances, and application relationships that are dormant.
+            (Butler) Get dormant workloads. Workloads contains lists of: applications, service instances, and application relationships that are dormant.
             An application is considered dormant when the last retained event transpired daysSinceLastUpdate
             or longer from the time of request. A service instance is considered dormant when the last retained event
             transpired daysSinceLastUpdate or longer from the time of request.
@@ -57,9 +57,9 @@ public class SnapshotService {
         return snapshotApiClient.snapshotDetailDormantDaysSinceLastUpdateGet(daysSinceLastUpdate).getBody();
     }
 
-    @Tool(description =
+    @Tool(name = "GetSnapshotDetail", description =
         """
-            Get snapshot detail.  This includes...
+            (Butler) Get snapshot detail.  This includes...
     
             -- Applications
                 -- Detailed information about each application, including:
@@ -92,43 +92,43 @@ public class SnapshotService {
         return snapshotApiClient.snapshotDetailGet().getBody();
     }
 
-    @Tool(description = "Get details of legacy workloads based on stacks and service offerings.")
+    @Tool(name = "GetLegacyWorkloadDetails", description = "(Butler) Get details of legacy workloads based on stacks and service offerings.")
     public Workloads getLegacyWorkloads(
             @ToolParam(description = "Comma-separated list of stacks to filter by.") String stacks,
             @ToolParam(description = "Comma-separated list of service offerings to filter by.") String serviceOfferings) {
         return snapshotApiClient.snapshotDetailLegacyGet(stacks, serviceOfferings).getBody();
     }
 
-    @Tool(description = "Get users in a specific organization and space.")
+    @Tool(name ="GetUsersInOrganizationAndSpace", description = "(Butler) Get users in a specific organization and space.")
     public SpaceUsers getSpaceUsers(
             @ToolParam(description = "Organization name.") String organization,
             @ToolParam(description = "Space name.") String space) {
         return snapshotApiClient.snapshotOrganizationSpaceUsersGet(organization, space).getBody();
     }
 
-    @Tool(description = "Get the count of organizations.")
+    @Tool(name = "TotalNumberOfOrganizations", description = "(Butler) Get the count of organizations.")
     public Long getOrganizationsCount() {
         return snapshotApiClient.snapshotOrganizationsCountGet().getBody();
     }
 
-    @Tool(description = "List all organizations.")
+    @Tool(name = "ListAllOrganizations", description = "(Butler) List all organizations.")
     public List<Organization> getAllOrganizations() {
         return snapshotApiClient.snapshotOrganizationsGet().getBody();
     }
 
-    @Tool(description = "Get the count of spaces.")
+    @Tool(name = "TotalNumberOfSpaces", description = "(Butler) Get the count of spaces.")
     public Long getSpacesCount() {
         return snapshotApiClient.snapshotSpacesCountGet().getBody();
     }
 
-    @Tool(description = "List all spaces.")
+    @Tool(name = "ListAllSpaces", description = "(Butler) List all spaces.")
     public List<Space> getAllSpaces() {
         return snapshotApiClient.snapshotSpacesGet().getBody();
     }
 
-    @Tool(description =
+    @Tool(name = "ForEachOrganizationAndSpaceListAllUsersBySpaceRoles", description =
         """
-            List all space users. Each space user record includes:
+            (Butler) List all space users. Each space user record includes:
             -- Organization
             -- Space
             -- Lists of users with auditor, developer, and manager roles
@@ -138,14 +138,14 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSpacesUsersGet().getBody();
     }
 
-    @Tool(description = "List all the organizations/spaces associated with a single user account")
+    @Tool(name = "ListAllSpacesAssociatedWithUserAccount", description = "(Butler) List all the organizations/spaces associated with a single user account")
     public UserSpaces getUserSpaces(@ToolParam(description = "User account name.") String name) {
         return snapshotApiClient.snapshotSpacesUsersNameGet(name).getBody();
     }
 
-    @Tool(description =
+    @Tool(name = "GetSpringDependencyFrequenciesSummary", description =
         """
-            Get a summary of Spring dependency frequencies for applications built with the Java buildpack.
+            (Butler) Get a summary of Spring dependency frequencies for applications built with the Java buildpack.
             Essentially a map of key-value pairs where the key is the dependency version
             and value is the number of occurrences of that version.
         """)
@@ -153,9 +153,9 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSummaryAiSpringGet().getBody();
     }
 
-    @Tool(description =
+    @Tool(name = "GetSnapshotSummary", description =
         """
-           Get snapshot summary.  This includes:
+           (Butler) Get snapshot summary.  This includes:
            -- Application Counts - Total number of applications, running instances, stopped instances, crashed instances, and total instances.
            -- Application Groupings - Counts of applications grouped by organization, buildpack, stack, Docker image, and application status (e.g., started, stopped, crashed).
            -- Application Resource Usage - Total memory and disk space used by applications (in gigabytes).
@@ -170,12 +170,12 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSummaryGet().getBody();
     }
 
-    @Tool(description = "Get the total count of user accounts.")
+    @Tool(name = "TotalNumberOfUserAccounts", description = "(Butler) Get the total count of user accounts.")
     public Long getUsersCount() {
         return snapshotApiClient.snapshotUsersCountGet().getBody();
     }
 
-    @Tool(description = "List all account names.")
+    @Tool(name = "ListAllUserAccounts", description = "(Butler) List all account names.")
     public List<String> getAllUserAccountNames() {
         return snapshotApiClient.snapshotUsersGet().getBody();
     }
