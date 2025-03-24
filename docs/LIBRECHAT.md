@@ -79,8 +79,11 @@ mcpServers:
 Then start the UI
 
 ```bash
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 docker compose up -d
 ```
+
+> Replace `USERNAME` above with your GitHub account username.  And make sure you exported a valid `GITHUB_TOKEN` environment variable beforehand.  If you're unsure how to setup your token, consult this [documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
 
 The UI will be accessible on http://localhost:3080
 
