@@ -25,6 +25,7 @@
   * gradle
   * (optionally) [sdk](https://sdkman.io/)
     * it might be the easiest way to install the Java SDK, Maven and Gradle
+  * [ytt](http://carvel.dev/ytt)
 
 ### Building MCP servers
 

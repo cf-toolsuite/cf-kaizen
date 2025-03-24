@@ -12,10 +12,12 @@ It also includes two MCP servers and MCP client configuration for use with Claud
     * [Clone](#how-to-clone)
     * [Build](#how-to-build)
     * [Consume](#how-to-consume)
-    * [Run](#how-to-run)
     * Integrate w/ cf-butler and cf-hoover hosted on
       * [Cloud Foundry](docs/CF.md)
       * [Korifi](docs/KORIFI.md) (under development)
+    * Run with
+      * [Claude Desktop](docs/CLAUDE.md)
+      * [LibreChat](docs/LIBRECHAT.md)
 
 ## Background
 
@@ -43,7 +45,6 @@ Start with:
 * Java SDK (21 or better)
 * Maven (3.9.9 or better)
 * Claude desktop
-* Carvel [ytt](http://carvel.dev/ytt)
 
 ## How to clone
 
@@ -138,46 +139,3 @@ or
 default:
   url: ${CF_HOOVER_API_ENDPOINT:}
 ```
-
-## How to run
-
-You're going to need to know of one or more API endpoints for cf-butler and/or cf-hoover application instance(s).
-
-Then you'll want to integrate one or multiple clients with Claude desktop via MCP client configuration that will consume an MCP server implementation.
-
-Follow these instructions.
-
-Add the following stanza(s) to a file called `claude_desktop_config.json`:
-
-```json
-"cf-kaizen-butler-client": {
-  "command": "java",
-  "args": [
-    "-jar",
-    "-Ddefault.url=<cf-butler-application-instance-api-endpoint>",
-    "<path-to-project>/target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar"
-  ]
-}
-```
-
-or 
-
-```json
-"cf-kaizen-hoover-client": {
-  "command": "java",
-  "args": [
-    "-jar",
-    "-Ddefault.url=<cf-hoover-application-instance-api-endpoint>",
-    "<path-to-project>/target/cf-kaizen-hoover-server-0.0.1-SNAPSHOT.jar"
-  ]
-}
-```
-
-> [!IMPORTANT]
-> Replace occurrences of `<path-to-project>` and `<cf-kaizen-*-application-instance-api-endpoint>` above with appropriate values
-
-Restart Claude Desktop instance.
-Verify that you have a new set of tool calls available.
-Chat with Claude.
-
-![Screenshot of tools enabled in Claude Desktop](docs/snap-from-claude-desktop.png)

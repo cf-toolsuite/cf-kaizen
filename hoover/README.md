@@ -14,7 +14,10 @@ Facilitates read-only operations via a cf-hoover instance installed on a target 
   * mvn
   * (optionally) [sdk](https://sdkman.io/)
     * it might be the easiest way to install the Java SDK and Maven
-
+* Claude Desktop
+  * [Windows and Mac](https://claude.ai/download)
+  * [Linux](https://github.com/wankdanker/claude-desktop-linux-bash)
+  
 ### Building
 
 ```bash

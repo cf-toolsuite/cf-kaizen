@@ -14,6 +14,9 @@ Facilitates read-and-write operations via one of more cf-butler instance(s) inst
   * mvn
   * (optionally) [sdk](https://sdkman.io/)
     * it might be the easiest way to install the Java SDK and Maven
+* Claude Desktop
+  * [Windows and Mac](https://claude.ai/download)
+  * [Linux](https://github.com/wankdanker/claude-desktop-linux-bash)
 
 ### Building
 
