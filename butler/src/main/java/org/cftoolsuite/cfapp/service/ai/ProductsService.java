@@ -1,18 +1,17 @@
 package org.cftoolsuite.cfapp.service.ai;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cftoolsuite.cfapp.butler.api.ProductsApiClient;
-import org.cftoolsuite.cfapp.butler.model.DeployedProduct;
-import org.cftoolsuite.cfapp.butler.model.OmInfo;
-import org.cftoolsuite.cfapp.butler.model.ProductMetrics;
-import org.cftoolsuite.cfapp.butler.model.Products;
-import org.cftoolsuite.cfapp.butler.model.Release;
-import org.cftoolsuite.cfapp.butler.model.StemcellAssignments;
-import org.cftoolsuite.cfapp.butler.model.StemcellAssociations;
+import org.cftoolsuite.cfapp.butler.model.*;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductsService {
@@ -49,13 +48,48 @@ public class ProductsService {
         return productsApiClient.productsStemcellAssociationsGet().getBody();
     }
 
-    @Tool(name = "GetProductCatalog", description = "(Butler) Get product catalog from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/get/.")
-    public Products getProductCatalog() {
-        return productsApiClient.storeProductCatalogGet().getBody();
+    @Tool(name = "GetProductInfoByName", description = "(Butler) Get product information by name from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/get/.")
+    public Product getProductByName(@ToolParam (description = "Product name pattern") String namePattern) {
+        return Optional.ofNullable(productsApiClient.storeProductCatalogGet())
+                .map(HttpEntity::getBody)
+                .map(Products::getProducts)
+                .flatMap(products -> products.stream()
+                        .filter(product -> StringUtils.isNotBlank(product.getName()) &&
+                                product.getName().toLowerCase().contains(namePattern.toLowerCase()))
+                        .findFirst())
+                .orElse(null);
     }
 
-    @Tool(name = "GetProductReleases", description = "(Butler) Get product releases from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/product_slug/releases/get/.")
-    public List<Release> getProductReleases(@ToolParam(description = "Query option (latest, all, recent).") String q) {
-        return productsApiClient.storeProductReleasesGet(q).getBody();
+    @Tool(name = "GetLatestProductReleaseBySlug", description = "(Butler) Get latest product release by slug from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/product_slug/releases/get/.")
+    public Release getLatestProductReleaseBySlug(@ToolParam (description = "Product slug pattern") String slugPattern) {
+        return Optional.ofNullable(productsApiClient.storeProductReleasesGet("latest"))
+                .map(HttpEntity::getBody)
+                .flatMap(releases -> releases.stream()
+                        .filter(release -> StringUtils.isNotBlank(release.getSlug()) &&
+                                release.getSlug().toLowerCase().contains(slugPattern.toLowerCase()))
+                        .findFirst())
+                .orElse(null);
+    }
+
+    @Tool(name = "GetRecentProductReleaseBySlug", description = "(Butler) Get recent product release by slug from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/product_slug/releases/get/.")
+    public Release getRecentProductReleaseBySlug(@ToolParam (description = "Product slug pattern") String slugPattern) {
+        return Optional.ofNullable(productsApiClient.storeProductReleasesGet("recent"))
+                .map(HttpEntity::getBody)
+                .flatMap(releases -> releases.stream()
+                        .filter(release -> StringUtils.isNotBlank(release.getSlug()) &&
+                                release.getSlug().toLowerCase().contains(slugPattern.toLowerCase()))
+                        .findFirst())
+                .orElse(null);
+    }
+
+    @Tool(name = "GetAllProductReleasesBySlug", description = "(Butler) Get all product releases by slug from Tanzu Network.  Source: https://developer.broadcom.com/xapis/tanzu-api/latest/api/v2/products/product_slug/releases/get/.")
+    public List<Release> getAllProductReleasesBySlug(@ToolParam(description = "Product slug pattern") String slugPattern) {
+        return Optional.ofNullable(productsApiClient.storeProductReleasesGet("all"))
+                .map(HttpEntity::getBody)
+                .map(releases -> releases.stream()
+                        .filter(release -> StringUtils.isNotBlank(release.getSlug()) &&
+                                release.getSlug().toLowerCase().contains(slugPattern.toLowerCase()))
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 }
