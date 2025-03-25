@@ -53,13 +53,52 @@ management:
     web:
       exposure:
         include: info,health,metrics,scheduledtasks,loggers,prometheus,sbom
-  tracing:
-    sampling:
-      probability: 1.0
 
 server:
   tomcat:
     max-swallow-size: -1
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: arize-phoenix
+
+  docker:
+    compose:
+      file:
+        - ../docker/docker-compose.observability.yml
+      lifecycle-management: start-and-stop
+      stop:
+        command: down
+        arguments: -v
+      timeout: 1m
+
+arize:
+  phoenix:
+    base_url: ${ARIZE_PHOENIX_BASE_URL:http://localhost:6006}/v1
+
+management:
+  metrics:
+    enable:
+      all: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 5s
+  otlp:
+    metrics:
+      export:
+        url: ${arize.phoenix.base_url}/metrics
+        step: 10s
+    tracing:
+      endpoint: ${arize.phoenix.base_url}/traces
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
 
 ---
 

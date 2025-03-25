@@ -1,0 +1,61 @@
+services:
+  phoenix:
+    image: arizephoenix/phoenix:version-8.19.0
+    depends_on:
+      - arize_db
+    ports:
+      - 6006:6006
+      - 4317:4317
+    environment:
+      - PHOENIX_SQL_DATABASE_URL=postgresql://arize:arize@arize_db:5432/phoenix
+
+  arize_db:
+    image: postgres:17
+    restart: always
+    environment:
+      - POSTGRES_USER=arize
+      - POSTGRES_PASSWORD=arize
+      - POSTGRES_DB=phoenix
+    labels:
+      org.springframework.boot.ignore: true
+    expose:
+      - 5432
+    volumes:
+      - arize-db-data:/var/lib/postgresql/data
+
+  zipkin:
+    image: openzipkin/zipkin-slim:3
+    container_name: zipkin
+    environment:
+      - STORAGE_TYPE=mem
+    ports:
+      - 9411:9411
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana:11.5.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/ai-metrics-dashboard.json
+    depends_on:
+      - prometheus
+
+volumes:
+  arize-db-data: {}
+  grafana-storage: {}
