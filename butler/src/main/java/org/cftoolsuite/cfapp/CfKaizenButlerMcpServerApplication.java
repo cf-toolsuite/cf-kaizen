@@ -23,12 +23,14 @@ public class CfKaizenButlerMcpServerApplication {
 			AccountingService accountingService,
 			PoliciesService policiesService,
 			ProductsService productsService,
+			PageableSnapshotService pageableSnapshotService,
 			SnapshotService snapshotService) {
 		return List.of(
 				ToolCallbacks.from(
 						accountingService,
 						policiesService,
 						productsService,
+						pageableSnapshotService,
 						snapshotService
 				));
 	}

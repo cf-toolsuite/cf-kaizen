@@ -2,6 +2,7 @@ package org.cftoolsuite.cfapp.service.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.modelcontextprotocol.client.McpAsyncClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -12,9 +13,12 @@ import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
+
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -24,6 +28,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
 
@@ -75,21 +82,32 @@ public class ChatService {
     /**
      * Streams a response to a question, including both content chunks and metadata.
      * 
-     * @param question The user's question
+     * @param inquiry The user's inquiry containing question and selected tools
      * @return A stream of response chunks, with metadata appended at the end
      */
-    public Flux<String> streamResponseToQuestion(String question) {
-        AsyncMcpToolCallbackProvider provider =
-                new AsyncMcpToolCallbackProvider(
-                        asyncClientManager.newMcpAsyncClients()
-                );
+    public Flux<String> streamResponseToQuestion(Inquiry inquiry) {
+        List<McpAsyncClient> clients = asyncClientManager.newMcpAsyncClients();
+        AsyncMcpToolCallbackProvider provider = new AsyncMcpToolCallbackProvider(clients);
+        
+        // Filter tools if specified in the inquiry
+        ToolCallback[] toolCallbacks = provider.getToolCallbacks();
+        
+        if (!CollectionUtils.isEmpty(inquiry.tools())) {
+            // Filter tool callbacks based on selected tools
+            List<String> selectedTools = inquiry.tools();
+            toolCallbacks = Arrays.stream(toolCallbacks)
+                .filter(callback -> selectedTools.contains(callback.getToolDefinition().name()))
+                .toArray(ToolCallback[]::new);
+            
+            log.info("Filtered tools to {} selected tools: {}", toolCallbacks.length, selectedTools);
+        }
 
         // Record start time for response time calculation
         Instant startTime = Instant.now();
         
         // Get a reference to the ChatClient stream response spec
-        var streamSpec = constructRequest(question)
-                .tools(provider.getToolCallbacks())
+        var streamSpec = constructRequest(inquiry.question())
+                .tools(toolCallbacks)
                 .stream();
         
         // First, stream the content chunks
@@ -107,7 +125,7 @@ public class ChatService {
                         // Use a synchronous call to get full metadata after streaming is done
                         var chatResponse = chatClient
                                 .prompt()
-                                .user(question)
+                                .user(inquiry.question())
                                 .call()
                                 .chatResponse();
                         

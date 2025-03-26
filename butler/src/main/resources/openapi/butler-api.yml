@@ -93,18 +93,19 @@ paths:
     get:
       tags:
         - Snapshot
-      summary: Get details of Spring applications.
+      summary: Retrieve details of Spring Boot applications.
+      description: Fetches detailed information about Spring Boot applications deployed on the Cloud Foundry foundation.
       responses:
         '200':
-          description: Successful response
+          description: Successful response with a list of Spring Boot application details.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties:
-                    type: string
+                  $ref: '#/components/schemas/JavaAppDetail'
+        '404':
+          description: Spring Boot application details not found.
 
   /snapshot/summary/ai/spring:
     get:
@@ -975,6 +976,31 @@ components:
           type: integer
           format: int64
           description: Total number of service accounts.
+
+    JavaAppDetail:
+      type: object
+      properties:
+        organization:
+          type: string
+          description: Organization name.
+        space:
+          type: string
+          description: Space name.
+        appId:
+          type: string
+          description: Application ID.
+        appName:
+          type: string
+          description: Application name.
+        dropletId:
+          type: string
+          description: Droplet ID.
+        pomContents:
+          type: string
+          description: POM file contents.
+        springDependencies:
+          type: string
+          description: Spring dependencies.
 
     Workloads:
       type: object
