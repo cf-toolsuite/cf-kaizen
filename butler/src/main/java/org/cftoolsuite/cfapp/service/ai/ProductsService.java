@@ -20,18 +20,17 @@ public class ProductsService {
         this.productsApiClient = productsApiClient;
     }
 
-    @Tool(name = "Product/GetDeployedProducts", description =
+    @Tool(name = "ProductGetDeployedProducts", description =
             """
             Retrieves a comprehensive list of all currently deployed products from Operations Manager.
             Use this tool when you need verify what products are installed.
-            Display in tabular format with columns for product guid, type, name, label, version, and is service broker.
             """
     )
     public List<DeployedProduct> getDeployedProducts() {
         return productsApiClient.productsDeployedGet().getBody();
     }
 
-    @Tool(name = "Product/GetDeployedProductInsights", description =
+    @Tool(name = "ProductGetDeployedProductInsights", description =
             """
             Provides detailed insights on deployed products in Operations Manager, including:
             - Complete buildpacks inventory with versions and update status
@@ -45,7 +44,7 @@ public class ProductsService {
         return productsApiClient.productsMetricsGet().getBody();
     }
 
-    @Tool(name = "Product/GetOperationsManagerVersion", description =
+    @Tool(name = "ProductGetOperationsManagerVersion", description =
             """
             Retrieves the specific version of Operations Manager currently running.
             Use this when troubleshooting compatibility issues or planning upgrades.
@@ -56,7 +55,7 @@ public class ProductsService {
     }
 
 
-    @Tool(name = "Product/GetStemcellAssociations", description =
+    @Tool(name = "ProductGetStemcellAssociations", description =
             """
             Retrieves detailed stemcell associations from Operations Manager (when the version detected is 2.6 or later)
             Maps the relationships between products and their required stemcells.
@@ -67,7 +66,7 @@ public class ProductsService {
         return productsApiClient.productsStemcellAssociationsGet().getBody();
     }
 
-    @Tool(name = "Product/GetProductInfoByName", description =
+    @Tool(name = "ProductGetProductInfoByName", description =
             """
             Searches for and retrieves detailed product information from Tanzu Network by name pattern.
             Provides minimal details about the matched product including name, slug, and documentation links.
@@ -86,7 +85,7 @@ public class ProductsService {
                 .orElse(null);
     }
 
-    @Tool(name = "Product/GetLatestProductReleaseBySlug", description =
+    @Tool(name = "ProductGetLatestProductReleaseBySlug", description =
             """
             Retrieves the absolute latest release of a product by its slug identifier from Tanzu Network.
             Returns comprehensive details about the latest release including version, release date, and download links.

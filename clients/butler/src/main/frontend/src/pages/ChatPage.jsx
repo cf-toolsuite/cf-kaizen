@@ -1,14 +1,14 @@
-import React, {useState, useRef, useEffect, useMemo} from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import '@/components/ui/markdown-styles.css';
-import {Alert, AlertDescription} from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeFormat from 'rehype-format';
 import remarkBreaks from 'remark-breaks';
-import {processMarkdown} from '@/utils/markdownProcessor';
-import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
-import {vscDarkPlus} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { processMarkdown } from '@/utils/markdownProcessor';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {
     ChevronDown,
     ChevronUp,
@@ -21,14 +21,14 @@ import {
     SidebarClose,
     SidebarOpen,
     Wrench,
-    Info
+    Info,
 } from 'lucide-react';
 
-const ChatPage = ({isDarkMode}) => {
+const ChatPage = ({ isDarkMode }) => {
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [alert, setAlert] = useState({show: false, message: ''});
+    const [alert, setAlert] = useState({ show: false, message: '' });
     const answerContainerRef = useRef(null);
     const chatContainerRef = useRef(null);
     const historyButtonRef = useRef(null);
@@ -46,9 +46,14 @@ const ChatPage = ({isDarkMode}) => {
     const [tooltipText, setTooltipText] = useState(''); // To store the tooltip content
     const [showTooltip, setShowTooltip] = useState(false); // To control tooltip visibility
     const [hoveredToolKey, setHoveredToolKey] = useState(null); // Track which tool is being hovered
+    const [tooltipAnchor, setTooltipAnchor] = useState(null); // Store the element to anchor the tooltip to.
 
     const getHistoryItemColor = () => {
         return isDarkMode ? 'bg-orange-600' : 'bg-orange-500';
+    };
+
+    const getHistoryItemTitleColor = () => {
+        return isDarkMode ? 'bg-orange-700' : 'bg-orange-600';
     };
 
     // Fetch available tools and process them to remove prefixes
@@ -59,14 +64,14 @@ const ChatPage = ({isDarkMode}) => {
                 if (response.ok) {
                     const toolsData = await response.json();
 
-                    // Process tool names to remove any prefixes like "cf-kaizen-butler-frontend"
+                    // Process tool names to remove any prefixes
                     const cleanedTools = {};
                     Object.entries(toolsData).forEach(([name, description]) => {
                         // Extract just the last part of the tool name if it contains a prefix
-                        const cleanName = name.includes('-') ? name.split('-').pop() : name;
+                        const cleanName = name.includes('_') ? name.split('_').pop() : name;
                         cleanedTools[name] = {
                             displayName: cleanName,
-                            description: description
+                            description: description,
                         };
                     });
 
@@ -84,10 +89,10 @@ const ChatPage = ({isDarkMode}) => {
     }, []);
 
     const handleToolSelect = (toolName) => {
-        setSelectedTools(prev => {
+        setSelectedTools((prev) => {
             // If tool is already selected, remove it, otherwise add it
             if (prev.includes(toolName)) {
-                return prev.filter(tool => tool !== toolName);
+                return prev.filter((tool) => tool !== toolName);
             } else {
                 return [...prev, toolName];
             }
@@ -104,15 +109,17 @@ const ChatPage = ({isDarkMode}) => {
         setSelectedTools([]);
     };
 
-    const handleTooltipMouseEnter = (key, description) => {
+    const handleTooltipMouseEnter = (key, description, event) => {
         setTooltipText(description);
         setHoveredToolKey(key);
         setShowTooltip(true);
+        setTooltipAnchor(event.currentTarget); // Set the anchor element
     };
 
     const handleTooltipMouseLeave = () => {
         setShowTooltip(false);
         setHoveredToolKey(null);
+        setTooltipAnchor(null);
     };
 
     const handleSubmit = async (e) => {
@@ -143,7 +150,7 @@ const ChatPage = ({isDarkMode}) => {
                 },
                 body: JSON.stringify({
                     question: questionText,
-                    tools: selectedTools
+                    tools: selectedTools,
                 }),
             });
 
@@ -159,7 +166,7 @@ const ChatPage = ({isDarkMode}) => {
             setCurrentAnswer('🤖 ');
 
             while (true) {
-                const {done, value} = await reader.read();
+                const { done, value } = await reader.read();
                 if (done) break;
 
                 const chunk = decoder.decode(value);
@@ -177,8 +184,8 @@ const ChatPage = ({isDarkMode}) => {
                 }
 
                 fullAnswer += chunk;
-                setCurrentAnswer(prev => prev + chunk);
-                setAnswer(prev => prev + chunk);
+                setCurrentAnswer((prev) => prev + chunk);
+                setAnswer((prev) => prev + chunk);
 
                 if (answerContainerRef.current) {
                     answerContainerRef.current.scrollTop = answerContainerRef.current.scrollHeight;
@@ -187,18 +194,22 @@ const ChatPage = ({isDarkMode}) => {
 
             // Save to chat history AFTER streaming is complete
             // We use a callback form of setState to ensure we're working with the latest state
-            setChatHistory(prev => {
+            setChatHistory((prev) => {
                 // Add the new history item to the beginning of the array
-                const newHistory = [{
-                    question: questionText,
-                    answer: '🤖 ' + fullAnswer, // Make sure we include the robot emoji
-                    expanded: false,
-                    // Use question index for numbering purposes
-                    questionNumber: prev.length > 0 ? prev[0].questionNumber + 1 : 1,
-                    color: getHistoryItemColor(),
-                    metadata: latestMetadata, // Use the captured metadata
-                    tools: selectedTools.length > 0 ? [...selectedTools] : [] // Save selected tools in history
-                }, ...prev];
+                const newHistory = [
+                    {
+                        question: questionText,
+                        answer: '🤖 ' + fullAnswer, // Make sure we include the robot emoji
+                        expanded: false,
+                        // Use question index for numbering purposes
+                        questionNumber: prev.length > 0 ? prev[0].questionNumber + 1 : 1,
+                        color: getHistoryItemColor(),
+                        titleColor: getHistoryItemTitleColor(),
+                        metadata: latestMetadata, // Use the captured metadata
+                        tools: selectedTools.length > 0 ? [...selectedTools] : [], // Save selected tools in history
+                    },
+                    ...prev,
+                ];
 
                 // If we have more than 10 items, remove the last one
                 if (newHistory.length > 10) {
@@ -215,19 +226,28 @@ const ChatPage = ({isDarkMode}) => {
     };
 
     const showAlert = (message) => {
-        setAlert({show: true, message});
-        setTimeout(() => setAlert({show: false, message: ''}), 5000);
+        setAlert({ show: true, message });
+        setTimeout(() => setAlert({ show: false, message: '' }), 5000);
     };
 
+    // Modified to ensure only one history item can be expanded at a time
     const toggleHistoryItem = (index) => {
-        setChatHistory(prev => {
-            // Create a new array to avoid mutation issues
-            return prev.map((item, i) => {
-                if (i === index) {
-                    return {...item, expanded: !item.expanded};
-                }
-                return item;
-            });
+        setChatHistory((prev) => {
+            // Create a new array with all items collapsed first
+            const updatedHistory = prev.map((item) => ({
+                ...item,
+                expanded: false,
+            }));
+
+            // Only toggle the expansion state of the clicked item
+            // If it was already expanded (which is now false after the map above),
+            // it will remain collapsed. Otherwise, it will be expanded.
+            updatedHistory[index] = {
+                ...updatedHistory[index],
+                expanded: !prev[index].expanded,
+            };
+
+            return updatedHistory;
         });
     };
 
@@ -240,33 +260,33 @@ const ChatPage = ({isDarkMode}) => {
                 <div className="flex flex-wrap gap-x-4">
                     {metadata.model && (
                         <span className="flex items-center gap-1">
-                            <Target size={12}/> {metadata.model}
-                        </span>
+              <Target size={12} /> {metadata.model}
+            </span>
                     )}
                     {metadata.responseTime && (
                         <span className="flex items-center gap-1">
-                            <Clock size={12}/> {metadata.responseTime}
-                        </span>
+              <Clock size={12} /> {metadata.responseTime}
+            </span>
                     )}
                     {metadata.inputTokens && (
                         <span className="flex items-center gap-1">
-                            <PhoneIncoming size={12}/> {metadata.inputTokens}
-                        </span>
+              <PhoneIncoming size={12} /> {metadata.inputTokens}
+            </span>
                     )}
                     {metadata.outputTokens && (
                         <span className="flex items-center gap-1">
-                            <PhoneOutgoing size={12}/> {metadata.outputTokens}
-                        </span>
+              <PhoneOutgoing size={12} /> {metadata.outputTokens}
+            </span>
                     )}
                     {metadata.totalTokens && (
                         <span className="flex items-center gap-1">
-                            <Sigma size={12}/> {metadata.totalTokens}
-                        </span>
+              <Sigma size={12} /> {metadata.totalTokens}
+            </span>
                     )}
                     {metadata.tokensPerSecond && (
                         <span className="flex items-center gap-1">
-                            <Gauge size={12}/> {metadata.tokensPerSecond} t/s
-                        </span>
+              <Gauge size={12} /> {metadata.tokensPerSecond} t/s
+            </span>
                     )}
                 </div>
             </div>
@@ -276,7 +296,8 @@ const ChatPage = ({isDarkMode}) => {
     // Tool selection component with tooltips
     const ToolSelector = () => {
         // Check if all tools are selected
-        const allToolsSelected = Object.keys(availableTools).length > 0 &&
+        const allToolsSelected =
+            Object.keys(availableTools).length > 0 &&
             Object.keys(availableTools).length === selectedTools.length;
 
         // Check if no tools are selected
@@ -293,9 +314,9 @@ const ChatPage = ({isDarkMode}) => {
                     } ${selectedTools.length > 0 ? 'border-2 border-blue-500' : ''}`}
                     title={`${selectedTools.length} tools selected`}
                 >
-                    <Wrench size={16}/>
+                    <Wrench size={16} />
                     <span>Tools{selectedTools.length > 0 ? ` (${selectedTools.length})` : ''}</span>
-                    <ChevronDown size={14}/>
+                    <ChevronDown size={14} />
                 </button>
 
                 {showToolsMenu && (
@@ -303,23 +324,28 @@ const ChatPage = ({isDarkMode}) => {
                         className={`absolute left-0 mt-1 rounded-md shadow-lg z-10 ${
                             isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
                         } border max-h-64 overflow-y-auto`}
-                        style={{width: (historyButtonRef?.current?.offsetWidth || 150) * 5}} // Quintuple the width
+                        style={{ width: (historyButtonRef?.current?.offsetWidth || 150) * 5 }} // Quintuple the width
                     >
                         {/* Fixed header */}
                         <div
-                            className="sticky top-0 p-2 border-b font-semibold flex justify-between items-center bg-inherit z-10">
+                            className="sticky top-0 p-2 border-b font-semibold flex justify-between items-center bg-inherit z-10"
+                        >
                             <span>Available Tools</span>
                             <div className="flex gap-3">
                                 <button
                                     onClick={handleSelectAll}
-                                    className={`text-xs text-blue-500 hover:text-blue-700 ${allToolsSelected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`text-xs text-blue-500 hover:text-blue-700 ${
+                                        allToolsSelected ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
                                     disabled={allToolsSelected}
                                 >
                                     Select All
                                 </button>
                                 <button
                                     onClick={handleClearAll}
-                                    className={`text-xs text-blue-500 hover:text-blue-700 ${noToolsSelected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`text-xs text-blue-500 hover:text-blue-700 ${
+                                        noToolsSelected ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
                                     disabled={noToolsSelected}
                                 >
                                     Clear All
@@ -343,16 +369,22 @@ const ChatPage = ({isDarkMode}) => {
                                         <div className="flex-grow">
                                             <label
                                                 htmlFor={`tool-${key}`}
-                                                className="font-medium cursor-pointer flex items-center"
+                                                className="font-medium cursor-pointer flex items-center group relative"  // Make label relative for tooltip positioning
                                             >
-                                                {value.displayName}
+                        <span
+                            className="hover:underline"
+                            onMouseEnter={(e) => handleTooltipMouseEnter(key, value.description, e)}
+                            onMouseLeave={handleTooltipMouseLeave}
+                        >
+                          {value.displayName}
+                        </span>
                                                 <span
-                                                    className="ml-1 text-gray-400 hover:text-gray-600 cursor-help"
-                                                    onMouseEnter={() => handleTooltipMouseEnter(key, value.description)}
+                                                    className="ml-1 text-gray-400 hover:text-gray-600 cursor-help tooltip-icon"
+                                                    onMouseEnter={(e) => handleTooltipMouseEnter(key, value.description, e)}
                                                     onMouseLeave={handleTooltipMouseLeave}
                                                 >
-                                                    <Info size={14}/>
-                                                </span>
+                          <Info size={14} />
+                        </span>
                                             </label>
                                         </div>
                                     </div>
@@ -361,8 +393,8 @@ const ChatPage = ({isDarkMode}) => {
                     </div>
                 )}
 
-                {/* Tooltip positioned to the right of the dropdown */}
-                {showTooltip && tooltipText && (
+                {/* Tooltip positioned relative to the anchor element */}
+                {showTooltip && tooltipText && tooltipAnchor && (
                     <div
                         ref={tooltipRef}
                         className={`fixed p-3 rounded-md shadow-lg z-20 max-w-xs ${
@@ -370,8 +402,11 @@ const ChatPage = ({isDarkMode}) => {
                         } border`}
                         style={{
                             maxHeight: '30vh',
-                            overflow: 'auto'
+                            overflow: 'auto',
+                            top: `${tooltipAnchor.getBoundingClientRect().bottom + window.scrollY + 5}px`, // Position below the anchor
+                            left: `${tooltipAnchor.getBoundingClientRect().left + window.scrollX}px`, // Align with the left edge of the anchor
                         }}
+                        onClick={(e) => e.stopPropagation()}
                     >
                         {tooltipText}
                     </div>
@@ -408,8 +443,10 @@ const ChatPage = ({isDarkMode}) => {
     useEffect(() => {
         const handleClickOutside = (event) => {
             // If the tools menu is open and the click is outside, close it
-            if (showToolsMenu && !event.target.closest('.tools-menu-container') && !event.target.closest('.tooltip-container')) {
+            if (showToolsMenu && !event.target.closest('.tools-menu-container') && !event.target.closest('.tooltip-container') && !event.target.closest('.tooltip-icon')) {
                 setShowToolsMenu(false);
+                setShowTooltip(false);
+            } else if (showTooltip && !event.target.closest('.tooltip-container') && !event.target.closest('.tooltip-icon')) {
                 setShowTooltip(false);
             }
         };
@@ -419,19 +456,7 @@ const ChatPage = ({isDarkMode}) => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [showToolsMenu]);
-
-    // Update tooltip position when it's shown
-    useEffect(() => {
-        if (showTooltip && tooltipRef.current) {
-            const toolsList = document.querySelector('.tools-menu-container .absolute');
-            if (toolsList) {
-                const toolsRect = toolsList.getBoundingClientRect();
-                tooltipRef.current.style.top = `${toolsRect.top}px`;
-                tooltipRef.current.style.left = `${toolsRect.right + 20}px`;
-            }
-        }
-    }, [showTooltip, tooltipText]);
+    }, [showToolsMenu, showTooltip]); // Include showTooltip in the dependency array
 
     // Check if submit should be disabled - recalculate on each render
     const isSubmitDisabled = isLoading || !question.trim() || selectedTools.length === 0;
@@ -443,23 +468,25 @@ const ChatPage = ({isDarkMode}) => {
                 <button
                     ref={historyButtonRef}
                     onClick={() => setShowHistory(!showHistory)}
-                    className={`flex items-center gap-1 px-3 py-1 rounded text-sm ${isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                    className={`flex items-center gap-1 px-3 py-1 rounded text-sm ${
+                        isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                    }`}
                 >
                     {showHistory ? (
                         <>
-                            <SidebarClose size={16}/>
+                            <SidebarClose size={16} />
                             <span>Hide History</span>
                         </>
                     ) : (
                         <>
-                            <SidebarOpen size={16}/>
+                            <SidebarOpen size={16} />
                             <span>Show History</span>
                         </>
                     )}
                 </button>
             </div>
             <div className="flex">
-                <div ref={chatContainerRef} className={showHistory ? "w-2/3 pr-4" : "w-full"}>
+                <div ref={chatContainerRef} className={showHistory ? 'w-2/3 pr-4' : 'w-full'}>
                     {alert.show && (
                         <Alert className="mb-4 bg-red-100">
                             <AlertDescription>{alert.message}</AlertDescription>
@@ -469,9 +496,7 @@ const ChatPage = ({isDarkMode}) => {
                     <div
                         ref={answerContainerRef}
                         className={`p-4 rounded-lg mb-4 h-96 overflow-y-auto relative ${
-                            isDarkMode
-                                ? 'bg-gray-800 prose-invert max-w-none'
-                                : 'bg-gray-50 prose-slate max-w-none'
+                            isDarkMode ? 'bg-gray-800 prose-invert max-w-none' : 'bg-gray-50 prose-slate max-w-none'
                         }`}
                     >
                         {/* Greeting message shown at the top */}
@@ -480,17 +505,16 @@ const ChatPage = ({isDarkMode}) => {
                                 <div className="font-bold mb-1">👋 Welcome</div>
                                 <div>{greeting}</div>
                                 <div className="mt-3 text-sm font-semibold">
-                                    All tools are selected by default. You may customize which tools to use for your
-                                    question.
+                                    All tools are selected by default. You may customize which tools to use for your question.
                                 </div>
                             </div>
                         )}
 
                         {/* Show the current question in bold with light blue background */}
                         {currentQuestion && (
-                            <div className={`font-bold mb-4 p-3 rounded-md ${
-                                isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'
-                            }`}>
+                            <div
+                                className={`font-bold mb-4 p-3 rounded-md ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}
+                            >
                                 {currentQuestion}
                             </div>
                         )}
@@ -502,7 +526,7 @@ const ChatPage = ({isDarkMode}) => {
                                     rehypePlugins={[rehypeRaw, rehypeFormat]}
                                     className="markdown-content"
                                     components={{
-                                        code({node, inline, className, children, ...props}) {
+                                        code({ node, inline, className, children, ...props }) {
                                             const match = /language-(\w+)/.exec(className || '');
                                             return !inline && match ? (
                                                 <SyntaxHighlighter
@@ -518,7 +542,7 @@ const ChatPage = ({isDarkMode}) => {
                                                     {children}
                                                 </code>
                                             );
-                                        }
+                                        },
                                     }}
                                 >
                                     {processedAnswer}
@@ -542,17 +566,17 @@ const ChatPage = ({isDarkMode}) => {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <textarea
-                                value={question}
-                                onChange={(e) => setQuestion(e.target.value)}
-                                placeholder="Enter your question..."
-                                className={`w-full p-2 border rounded-md h-32 ${
-                                    isDarkMode
-                                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                                        : 'bg-white border-gray-300 text-gray-900'
-                                }`}
-                                disabled={isLoading}
-                            />
+              <textarea
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="Enter your question..."
+                  className={`w-full p-2 border rounded-md h-32 ${
+                      isDarkMode
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                          : 'bg-white border-gray-300 text-gray-900'
+                  }`}
+                  disabled={isLoading}
+              />
                         </div>
 
                         <div className="flex items-stretch">
@@ -564,133 +588,120 @@ const ChatPage = ({isDarkMode}) => {
                                         : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-400'
                                 } ${isSubmitDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 disabled={isSubmitDisabled}
-                                title={selectedTools.length === 0 ? "Please select at least one tool" : ""}
+                                title={selectedTools.length === 0 ? 'Please select at least one tool' : ''}
                             >
                                 {isLoading ? 'Processing...' : 'Submit'}
                             </button>
 
                             {/* Tool selector button */}
-                            <div className="ml-2 flex-grow" style={{maxWidth: '150px'}}>
-                                <ToolSelector/>
+                            <div className="ml-2 flex-grow" style={{ maxWidth: '150px' }}>
+                                <ToolSelector />
                             </div>
                         </div>
                     </form>
                 </div>
-                {showHistory && <div className="w-1/3 flex flex-col justify-end">
-                    <div className="flex flex-col-reverse mt-auto"> {/* Reverse column for stacking effect */}
-                        {chatHistory.map((item, index) => (
-                            <div
-                                key={index}
-                                className={`mb-2 border rounded p-2 ${item.color} ${
-                                    isDarkMode ? 'text-white' : 'text-gray-900'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between cursor-pointer"
-                                     onClick={() => toggleHistoryItem(index)}>
-                                    <span className="font-semibold">Question {item.questionNumber}</span>
-                                    {item.expanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-                                </div>
-
-                                {/* Show a condensed version of metadata in collapsed state */}
-                                {!item.expanded && item.metadata && (
-                                    <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                        <div className="flex gap-x-3">
-                                            {item.metadata.responseTime && (
-                                                <span className="flex items-center gap-1">
-                                                    <Clock size={10}/> {item.metadata.responseTime}
-                                                </span>
-                                            )}
-                                            {item.metadata.totalTokens && (
-                                                <span className="flex items-center gap-1">
-                                                    <Sigma size={10}/> {item.metadata.totalTokens}
-                                                </span>
-                                            )}
-                                            {item.metadata.tokensPerSecond && (
-                                                <span className="flex items-center gap-1">
-                                                    <Gauge size={10}/> {item.metadata.tokensPerSecond} t/s
-                                                </span>
-                                            )}
-                                        </div>
+                {showHistory && (
+                    <div className="w-1/3 flex flex-col justify-end">
+                        <div className="flex flex-col-reverse mt-auto">
+                            {' '}
+                            {/* Reverse column for stacking effect */}
+                            {chatHistory.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className={`mb-2 border rounded p-2 ${item.color} ${
+                                        isDarkMode ? 'text-white' : 'text-gray-900'
+                                    }`}
+                                >
+                                    <div
+                                        className="flex items-center justify-between cursor-pointer"
+                                        onClick={() => toggleHistoryItem(index)}
+                                    >
+                    <span
+                        className={`font-semibold truncate pr-2 py-1 px-2 rounded ${item.titleColor || ''}`}
+                    >
+                      {item.question}
+                    </span>
+                                        {item.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                     </div>
-                                )}
 
-                                {/* Show selected tools in the history item */}
-                                {!item.expanded && item.tools && item.tools.length > 0 && (
-                                    <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                        <div className="flex items-center gap-1">
-                                            <Wrench size={10}/>
-                                            <span>{item.tools.length} tool{item.tools.length > 1 ? 's' : ''}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {item.expanded && (
-                                    <div className="mt-2">
-                                        <div className="font-bold">Asked:</div>
-                                        <div className={`p-2 mt-1 mb-3 rounded-md ${
-                                            isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'
-                                        }`}>{item.question}</div>
-
-                                        {/* Display selected tools when expanded */}
-                                        {item.tools && item.tools.length > 0 && (
-                                            <div className="mb-3">
-                                                <div className="font-bold">Tools used:</div>
-                                                <div className={`p-2 mt-1 rounded-md ${
-                                                    isDarkMode ? 'bg-purple-900/30' : 'bg-purple-100'
-                                                }`}>
-                                                    {item.tools.map((tool, i) => {
-                                                        // Get display name for the tool if available
-                                                        const displayName = availableTools[tool]?.displayName || tool;
-                                                        return (
-                                                            <span key={i}
-                                                                  className="inline-block mr-2 mb-1 px-2 py-1 rounded bg-opacity-80 text-xs">
-                                                                {displayName}
-                                                            </span>
-                                                        );
-                                                    })}
-                                                </div>
+                                    {/* Show a condensed version of metadata in collapsed state */}
+                                    {!item.expanded && item.metadata && (
+                                        <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <div className="flex gap-x-3">
+                                                {item.metadata.responseTime && (
+                                                    <span className="flex items-center gap-1">
+                            <Clock size={10} /> {item.metadata.responseTime}
+                          </span>
+                                                )}
+                                                {item.metadata.totalTokens && (
+                                                    <span className="flex items-center gap-1">
+                            <Sigma size={10} /> {item.metadata.totalTokens}
+                          </span>
+                                                )}
+                                                {item.metadata.tokensPerSecond && (
+                                                    <span className="flex items-center gap-1">
+                            <Gauge size={10} /> {item.metadata.tokensPerSecond} t/s
+                          </span>
+                                                )}
                                             </div>
-                                        )}
-
-                                        <div className="font-bold mt-2">Response:</div>
-                                        <div
-                                            className="max-h-64 overflow-y-auto pr-1"> {/* Added fixed height with scrolling */}
-                                            <ReactMarkdown
-                                                className={`prose markdown-content ${isDarkMode ? 'prose-invert' : ''}`}
-                                                remarkPlugins={[remarkGfm, remarkBreaks]}
-                                                rehypePlugins={[rehypeRaw, rehypeFormat]}
-                                                components={{
-                                                    code({node, inline, className, children, ...props}) {
-                                                        const match = /language-(\w+)/.exec(className || '');
-                                                        return !inline && match ? (
-                                                            <SyntaxHighlighter
-                                                                language={match[1]}
-                                                                PreTag="div"
-                                                                style={isDarkMode ? vscDarkPlus : undefined}
-                                                                {...props}
-                                                            >
-                                                                {String(children).replace(/\n$/, '')}
-                                                            </SyntaxHighlighter>
-                                                        ) : (
-                                                            <code className={className} {...props}>
-                                                                {children}
-                                                            </code>
-                                                        );
-                                                    }
-                                                }}
-                                            >
-                                                {processMarkdown(item.answer)}
-                                            </ReactMarkdown>
-
-                                            {/* Show metadata in expanded history items */}
-                                            {item.metadata && renderMetadata(item.metadata)}
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                                    )}
+
+                                    {/* Show selected tools in the history item */}
+                                    {!item.expanded && item.tools && item.tools.length > 0 && (
+                                        <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <div className="flex items-center gap-1">
+                                                <Wrench size={10} />
+                                                <span>{item.tools.length} tool{item.tools.length > 1 ? 's were' : ' was'} active</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {item.expanded && (
+                                        <div className="mt-2">
+                                            <div className="font-bold mt-2">Response:</div>
+                                            <div
+                                                className="max-h-64 overflow-y-auto pr-1"
+                                            >
+                                                {' '}
+                                                {/* Added fixed height with scrolling */}
+                                                <ReactMarkdown
+                                                    className={`prose markdown-content ${isDarkMode ? 'prose-invert' : ''}`}
+                                                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                                                    rehypePlugins={[rehypeRaw, rehypeFormat]}
+                                                    components={{
+                                                        code({ node, inline, className, children, ...props }) {
+                                                            const match = /language-(\w+)/.exec(className || '');
+                                                            return !inline && match ? (
+                                                                <SyntaxHighlighter
+                                                                    language={match[1]}
+                                                                    PreTag="div"
+                                                                    style={isDarkMode ? vscDarkPlus : undefined}
+                                                                    {...props}
+                                                                >
+                                                                    {String(children).replace(/\n$/, '')}
+                                                                </SyntaxHighlighter>
+                                                            ) : (
+                                                                <code className={className} {...props}>
+                                                                    {children}
+                                                                </code>
+                                                            );
+                                                        },
+                                                    }}
+                                                >
+                                                    {processMarkdown(item.answer)}
+                                                </ReactMarkdown>
+
+                                                {/* Show metadata in expanded history items */}
+                                                {item.metadata && renderMetadata(item.metadata)}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>}
+                )}
             </div>
         </div>
     );

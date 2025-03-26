@@ -19,7 +19,7 @@ public class AccountingService {
         this.accountingApiClient = accountingApiClient;
     }
 
-    @Tool(name = "Accounting/GetApplicationUsage", description =
+    @Tool(name = "AccountingGetApplicationUsage", description =
             """
             Retrieves historical system-wide application usage metrics for a foundation.
             Two variations of reports are available:
@@ -30,14 +30,13 @@ public class AccountingService {
               - This report contains columns for year, month, average number of application instances, maximum (or peak)
                 number of application instances, and total application instance hours.
             Use this to analyze platform-wide resource utilization trends, or generate billing reports for chargeback purposes.
-            Display each in tabular format.
             """
     )
     public AppUsageReport getAccountingApplicationsReport() {
         return accountingApiClient.accountingApplicationsGet().getBody();
     }
 
-    @Tool(name = "Accounting/GetFilterableApplicationUsage", description =
+    @Tool(name = "AccountingGetFilterableApplicationUsage", description =
             """
             Retrieves targeted application usage report for a specific organization within a custom date range.
             Returns detailed consumption metrics including:
@@ -62,7 +61,7 @@ public class AccountingService {
         return accountingApiClient.accountingApplicationsOrgNameStartDateEndDateGet(orgName, startDate, endDate).getBody();
     }
 
-    @Tool(name = "Accounting/GetServiceUsage", description =
+    @Tool(name = "AccountingGetServiceUsage", description =
             """
             Retrieves historical system-wide service instance usage metrics for a foundation.
             Two variations of reports are available:
@@ -79,14 +78,13 @@ public class AccountingService {
                 - By Plan, which includes: service plan guid, service plan name, year, duration (in hours), average number
                   of service instances, maximum (or peak) number or service instances
             Use this to analyze service adoption patterns, manage service quotas, or monitor marketplace utilization.
-            Display each in tabular format.
             """
     )
     public ServiceUsageReport getAccountingServicesReport() {
         return accountingApiClient.accountingServicesGet().getBody();
     }
 
-    @Tool(name = "Accounting/GetFilterableServiceUsage", description =
+    @Tool(name = "AccountingGetFilterableServiceUsage", description =
             """
             Retrieves targeted service usage report for a specific organization within a custom date range.
             Returns detailed consumption metrics including:
@@ -116,7 +114,7 @@ public class AccountingService {
         return accountingApiClient.accountingServicesOrgNameStartDateEndDateGet(orgName, startDate, endDate).getBody();
     }
 
-    @Tool(name = "Accounting/GetTaskUsage", description =
+    @Tool(name = "AccountingGetTaskUsage", description =
             """
             Retrieves historical system-wide task usage metrics for a foundation.
             Two variations of reports are available:
@@ -125,14 +123,13 @@ public class AccountingService {
             - Monthly Task Usage
               - This report contains columns for year, month, total task runs, maximum (or peak) concurrent tasks, and task hours
             Use this to analyze platform-wide resource utilization trends, or generate billing reports for chargeback purposes.
-            Display each in tabular format.
             """
     )
     public TaskUsageReport getAccountingTasksReport() {
         return accountingApiClient.accountingTasksGet().getBody();
     }
 
-    @Tool(name = "Accounting/GetFilterableTaskUsage", description =
+    @Tool(name = "AccountingGetFilterableTaskUsage", description =
             """
             Retrieves targeted task usage metrics for a specific organization within a custom date range.
             Returns detailed consumption metrics including:

@@ -1,16 +1,21 @@
 package org.cftoolsuite.cfapp.service.ai;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 import org.cftoolsuite.cfapp.butler.api.PoliciesApiClient;
-import org.cftoolsuite.cfapp.butler.model.*;
+import org.cftoolsuite.cfapp.butler.model.ApplicationPolicy;
+import org.cftoolsuite.cfapp.butler.model.EndpointPolicy;
+import org.cftoolsuite.cfapp.butler.model.HygienePolicy;
+import org.cftoolsuite.cfapp.butler.model.LegacyPolicy;
+import org.cftoolsuite.cfapp.butler.model.Policies;
+import org.cftoolsuite.cfapp.butler.model.QueryPolicy;
+import org.cftoolsuite.cfapp.butler.model.ServiceInstancePolicy;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PoliciesService {
@@ -22,7 +27,7 @@ public class PoliciesService {
     }
 
     @Tool(
-        name = "Policy/GetApplicationPolicyById",
+        name = "PolicyGetApplicationPolicyById",
         description =
         """
         Get a specific application policy by ID.
@@ -40,7 +45,7 @@ public class PoliciesService {
     }
 
     @Tool(
-        name = "Policy/GetEndpointPolicyById",
+        name = "PolicyGetEndpointPolicyById",
         description =
         """
         Get a specific endpoint policy by ID.
@@ -57,13 +62,13 @@ public class PoliciesService {
                 .orElse(null);
     }
 
-    @Tool(name = "Policy/TriggerPolicyExecution", description = "Trigger policy execution.")
+    @Tool(name = "PolicyTriggerPolicyExecution", description = "Trigger policy execution.")
     public void executePolicies() {
         policiesApiClient.policiesExecutePost();
     }
 
     @Tool(
-        name = "Policy/ListAllPolicies",
+        name = "PolicyListAllPolicies",
         description =
         """
         List all policies in effect.  All policy configuration is returned.  Group each set of policies by policy type.
@@ -74,7 +79,7 @@ public class PoliciesService {
     }
 
     @Tool(
-        name = "Policy/GetHygienePolicyById",
+        name = "PolicyGetHygienePolicyById",
         description =
         """
         Get a specific hygiene policy by ID.
@@ -95,7 +100,7 @@ public class PoliciesService {
     }
 
     @Tool(
-        name = "Policy/GetLegacyPolicyById",
+        name = "PolicyGetLegacyPolicyById",
         description =
         """
         Get a specific legacy policy by ID.
@@ -114,7 +119,7 @@ public class PoliciesService {
     }
 
     @Tool(
-        name = "Policy/GetQueryPolicyById",
+        name = "PolicyGetQueryPolicyById",
         description =
         """
         Get a specific query policy by ID.
@@ -131,12 +136,12 @@ public class PoliciesService {
                 .orElse(null);
     }
 
-    @Tool(name = "Policy/RefreshPolicies", description = "Refresh policies from Git repository.")
+    @Tool(name = "PolicyRefreshPolicies", description = "Refresh policies from Git repository.")
     public void refreshPolicies() {
         policiesApiClient.policiesRefreshPost();
     }
 
-    @Tool(name = "Policy/GetHistoricalReportOfPolicyExecutions", description = "Generate a historical report of policy executions.")
+    @Tool(name = "PolicyGetHistoricalReportOfPolicyExecutions", description = "Generate a historical report of policy executions.")
     public String getPoliciesReport(
             @ToolParam(description = "Start date for the report (YYYY-MM-DD).") LocalDate start,
             @ToolParam(description = "End date for the report (YYYY-MM-DD).") LocalDate end) {
@@ -144,7 +149,7 @@ public class PoliciesService {
     }
 
     @Tool(
-        name = "Policy/GetServiceInstancePolicyById",
+        name = "PolicyGetServiceInstancePolicyById",
         description =
         """
         Get a specific service instance policy by ID.

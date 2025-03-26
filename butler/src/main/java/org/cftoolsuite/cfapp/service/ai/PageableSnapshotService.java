@@ -29,7 +29,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of Spring application instance details.
          */
-        @Tool(name = "Snapshot/GetPageableSpringApplicationDetails", description = """
+        @Tool(name = "SnapshotGetPageableSpringApplicationDetails", description = """
                         Retrieve SPRING APPLICATION details in paginated format. Specifically for SPRING apps, NOT for general application queries.
                         ONLY returns details of applications using Spring dependencies.
                         Use for queries like 'Show me Spring Boot applications' or 'List all Spring applications'.
@@ -45,7 +45,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of dormant workload applications.
          */
-        @Tool(name = "Snapshot/GetPageableDormantApplications", description = """
+        @Tool(name = "SnapshotGetPageableDormantApplications", description = """
                         Retrieve INACTIVE applications not updated within specified days. REQUIRES
                         days parameter and ONLY returns dormant/inactive applications. Use for queries
                         like 'List applications not updated in 90 days'. NOT for listing active applications.
@@ -65,7 +65,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of dormant workload service instances.
          */
-        @Tool(name = "Snapshot/GetPageableDormantServiceInstances", description = """
+        @Tool(name = "SnapshotGetPageableDormantServiceInstances", description = """
                         Retrieve INACTIVE service instances not updated within specified days.
                         REQUIRES days parameter and ONLY returns dormant/inactive services. Use for
                         queries like 'List services not used in 90 days'. NOT for listing active services.
@@ -86,7 +86,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of dormant workload relationships.
          */
-        @Tool(name = "Snapshot/GetPageableDormantRelationships", description = """
+        @Tool(name = "SnapshotGetPageableDormantRelationships", description = """
                         Retrieve INACTIVE application-service bindings not updated within specified
                         days. REQUIRES days parameter and ONLY returns dormant relationships. Use for
                         queries about stale connections, NOT for listing active app-service bindings.
@@ -107,7 +107,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of applications from the snapshot.
          */
-        @Tool(name = "Snapshot/GetPageableApplications", description = """
+        @Tool(name = "SnapshotGetPageableApplications", description = """
                         Retrieve ALL applications without filtering, in paginated format. Use for
                         broad application listing queries like 'Show me all applications' or 'List
                         all apps'. When specific filtering is needed, use GetPageableFilteredApplications
@@ -126,7 +126,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of service instances from the snapshot.
          */
-        @Tool(name = "Snapshot/GetPageableServiceInstances", description = """
+        @Tool(name = "SnapshotGetPageableServiceInstances", description = """
                         Retrieve ALL service instances without filtering, in paginated format. Use
                         for broad service listing queries like 'Show me all services' or 'List all
                         service instances'. When specific filtering is needed, use
@@ -146,7 +146,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of application-service relationships from the snapshot.
          */
-        @Tool(name = "Snapshot/GetPageableRelationships", description = """
+        @Tool(name = "SnapshotGetPageableRelationships", description = """
                         Retrieve ALL application-service binding relationships without filtering, in
                         paginated format. Use for queries like 'Show all app-service connections'.
                         When filtering is needed, use GetPageableFilteredRelationships instead.
@@ -165,7 +165,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of user accounts from the snapshot.
          */
-        @Tool(name = "Snapshot/GetPageableUserAccounts", description = """
+        @Tool(name = "SnapshotGetPageableUserAccounts", description = """
                         Retrieve ALL USER accounts (not service accounts) in paginated format. Use
                         for queries like 'List all users' or 'Show me all user accounts'. For service
                         accounts, use GetPageableServiceAccounts instead.
@@ -183,7 +183,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of service accounts from the snapshot.
          */
-        @Tool(name = "Snapshot/GetPageableServiceAccounts", description = """
+        @Tool(name = "SnapshotGetPageableServiceAccounts", description = """
                         Retrieve ALL SERVICE accounts (not user accounts) in paginated format. Use
                         for queries like 'List all service accounts'. For regular user accounts, use
                         GetPageableUserAccounts instead.
@@ -201,7 +201,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of applications with a legacy stack.
          */
-        @Tool(name = "Snapshot/GetPageableApplicationsWithLegacyStack", description = """
+        @Tool(name = "SnapshotGetPageableApplicationsWithLegacyStack", description = """
                         Retrieve applications using SPECIFIED LEGACY STACKS only. REQUIRES stack names
                         parameter. Use for queries like 'Show applications using cflinuxfs2 stack'.
                         NOT for querying all applications or those using current stacks.
@@ -220,7 +220,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of service instances with a legacy service offering.
          */
-        @Tool(name = "Snapshot/GetPageableServiceInstancesWithLegacyServiceOffering", description = """
+        @Tool(name = "SnapshotGetPageableServiceInstancesWithLegacyServiceOffering", description = """
                         Retrieve services using SPECIFIED LEGACY OFFERINGS only. REQUIRES service
                         offering names parameter. Use for queries like 'Show services using MySQL 5.7'.
                         NOT for querying all services or those using current offerings.
@@ -240,7 +240,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of organizations.
          */
-        @Tool(name = "Snapshot/GetPageableOrganizations", description = """
+        @Tool(name = "SnapshotGetPageableOrganizations", description = """
                         Retrieve ALL organizations without filtering, in paginated format. Use for
                         broad queries like 'List all organizations'. When organization name filtering
                         is needed, use GetPageableFilteredOrganizations instead.
@@ -256,7 +256,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of spaces.
          */
-        @Tool(name = "Snapshot/GetPageableSpaces", description = """
+        @Tool(name = "SnapshotGetPageableSpaces", description = """
                         Retrieve ALL spaces across all organizations, in paginated format. Use for broad queries like 'List all spaces'.
                         When organization or space name filtering is needed, use GetPageableFilteredSpaces instead.
                         """)
@@ -271,7 +271,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable filtered list of organizations by name pattern.
          */
-        @Tool(name = "Snapshot/GetPageableFilteredOrganizations", description = """
+        @Tool(name = "SnapshotGetPageableFilteredOrganizations", description = """
                         Retrieve organizations FILTERED BY NAME PATTERN only. REQUIRES name pattern parameter.
                         Use for queries like 'Find organizations with names containing kaizen'. NOT for listing all organizations.
                         """)
@@ -297,7 +297,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable filtered list of spaces by organization and/or name pattern.
          */
-        @Tool(name = "Snapshot/GetPageableFilteredSpaces", description = """
+        @Tool(name = "SnapshotGetPageableFilteredSpaces", description = """
                         Retrieve spaces filtered by ORGANIZATION NAME and/or SPACE NAME PATTERN.
                         Use for queries like 'List spaces in the kaizen organization' or 'Find spaces with dev in their name'.
                         NOT for listing all spaces.
@@ -333,7 +333,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of filtered applications based on various criteria.
          */
-        @Tool(name = "Snapshot/GetPageableFilteredApplications", description = """
+        @Tool(name = "SnapshotGetPageableFilteredApplications", description = """
                         Retrieve applications with MULTI-CRITERIA FILTERING. REQUIRES at least organization name parameter,
                         with optional space, name pattern, buildpack, or stack filters.
                         Use for queries like 'Show applications in the kaizen organization' or 'List Java apps in production space'.
@@ -392,7 +392,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of filtered service instances based on various criteria.
          */
-        @Tool(name = "Snapshot/GetPageableFilteredServiceInstances", description = """
+        @Tool(name = "SnapshotGetPageableFilteredServiceInstances", description = """
                         Retrieve service instances with MULTI-CRITERIA FILTERING. REQUIRES at least organization name parameter,
                         with optional space, name pattern, service offering, or plan filters.
                         Use for queries like 'Show services in the kaizen organization' or 'List MySQL databases in production space'.
@@ -453,7 +453,7 @@ public class PageableSnapshotService {
          * Get a pageable list of application relationships filtered by application
          * name.
          */
-        @Tool(name = "Snapshot/GetPageableFilteredRelationships", description = """
+        @Tool(name = "SnapshotGetPageableFilteredRelationships", description = """
                         Retrieve application-service bindings FILTERED BY APPLICATION NAME only. REQUIRES application name parameter.
                         Use for queries like 'What services does the inventory app use?'
                         NOT for listing all relationships or filtering by service.
@@ -483,7 +483,7 @@ public class PageableSnapshotService {
         /**
          * Get a pageable list of filtered user accounts by name pattern.
          */
-        @Tool(name = "Snapshot/GetPageableFilteredUserAccounts", description = """
+        @Tool(name = "SnapshotGetPageableFilteredUserAccounts", description = """
                         Retrieve user accounts FILTERED BY NAME PATTERN only. REQUIRES name pattern parameter.
                         Use for queries like 'Find users with john in their name' or 'Search for users with gmail addresses'.
                         NOT for listing all users.

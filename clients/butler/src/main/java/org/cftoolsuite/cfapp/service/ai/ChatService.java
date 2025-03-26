@@ -13,7 +13,6 @@ import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
-
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -23,13 +22,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-
 import java.time.Duration;
 import java.time.Instant;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
@@ -119,7 +116,7 @@ public class ChatService {
                         // Calculate response time
                         Instant endTime = Instant.now();
                         Duration responseDuration = Duration.between(startTime, endTime);
-                        String formattedTime = formatResponseTime(responseDuration);
+                        String formattedTime = MetricUtils.formatResponseTime(responseDuration);
                         
                         // Get the last metadata from the response
                         // Use a synchronous call to get full metadata after streaming is done
@@ -133,7 +130,7 @@ public class ChatService {
                         Usage usage = metadata.getUsage();
                         
                         // Calculate tokens per second
-                        Double tokensPerSecond = calculateTokensPerSecond(
+                        Double tokensPerSecond = MetricUtils.calculateTokensPerSecond(
                                 usage.getTotalTokens(), 
                                 responseDuration.toMillis()
                         );
@@ -163,44 +160,17 @@ public class ChatService {
                 }));
     }
 
-    /**
-     * Calculates tokens per second based on total tokens and response time in milliseconds.
-     * 
-     * @param totalTokens Total number of tokens processed
-     * @param responseTimeMs Response time in milliseconds
-     * @return Tokens per second, rounded to 2 decimal places
-     */
-    private Double calculateTokensPerSecond(Integer totalTokens, long responseTimeMs) {
-        if (totalTokens == null || totalTokens == 0 || responseTimeMs == 0) {
-            return 0.0;
-        }
-        
-        // Convert milliseconds to seconds (as a decimal)
-        double responseTimeSeconds = responseTimeMs / 1000.0;
-        
-        // Calculate tokens per second
-        double tps = totalTokens / responseTimeSeconds;
-        
-        // Round to 2 decimal places
-        BigDecimal bd = BigDecimal.valueOf(tps);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        
-        return bd.doubleValue();
-    }
-
-    /**
-     * Formats a duration into a human-readable string (e.g., "1m30s")
-     */
-    private String formatResponseTime(Duration duration) {
-        long totalSeconds = duration.getSeconds();
-        long minutes = totalSeconds / 60;
-        long seconds = totalSeconds % 60;
-        
-        if (minutes > 0) {
-            return String.format("%dm%ds", minutes, seconds);
-        } else {
-            return String.format("%ds", seconds);
-        }
+    public Map<String, String> listTools() {
+        List<McpAsyncClient> clients = asyncClientManager.newMcpAsyncClients();
+        AsyncMcpToolCallbackProvider provider = new AsyncMcpToolCallbackProvider(clients);
+        return
+                Arrays
+                        .stream(provider.getToolCallbacks())
+                        .collect(
+                                Collectors
+                                        .toMap(k -> k.getToolDefinition().name(),
+                                                v -> v.getToolDefinition().description())
+                        );
     }
 
     /**

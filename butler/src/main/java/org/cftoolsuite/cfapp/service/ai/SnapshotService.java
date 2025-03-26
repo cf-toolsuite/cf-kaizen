@@ -1,18 +1,18 @@
 package org.cftoolsuite.cfapp.service.ai;
 
-import org.cftoolsuite.cfapp.butler.api.SnapshotApiClient;
-import org.cftoolsuite.cfapp.butler.model.*;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.cftoolsuite.cfapp.butler.api.SnapshotApiClient;
+import org.cftoolsuite.cfapp.butler.model.Demographics;
+import org.cftoolsuite.cfapp.butler.model.SnapshotSummary;
+import org.cftoolsuite.cfapp.butler.model.SpaceUsers;
+import org.cftoolsuite.cfapp.butler.model.TimestampResponse;
+import org.cftoolsuite.cfapp.butler.model.UserSpaces;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 @Service
 public class SnapshotService {
@@ -23,7 +23,7 @@ public class SnapshotService {
         this.snapshotApiClient = snapshotApiClient;
     }
 
-    @Tool(name = "Snapshot/GetLastSnapshotCollectionTime", description =
+    @Tool(name = "SnapshotGetLastSnapshotCollectionTime", description =
         """
             Retrieve the most recent timestamp when snapshot data was collected from the Cloud Foundry foundation.
             Use this ONLY for checking data collection status and freshness, NOT for retrieving actual foundation data.
@@ -32,7 +32,7 @@ public class SnapshotService {
         return snapshotApiClient.collectGet("application/json").getBody();
     }
 
-    @Tool(name = "Snapshot/GetFoundationDemographics", description =
+    @Tool(name = "SnapshotGetFoundationDemographics", description =
         """
             Retrieve aggregate statistics and counts for the entire Cloud Foundry foundation.
             Use for high-level infrastructure overview queries like:
@@ -43,7 +43,7 @@ public class SnapshotService {
         return snapshotApiClient.snapshotDemographicsGet().getBody();
     }
 
-    @Tool(name ="Snapshot/GetUsersInOrganizationAndSpace", description =
+    @Tool(name ="SnapshotGetUsersInOrganizationAndSpace", description =
         """
             Retrieve the complete user roster for a SPECIFIC organization and space combination. REQUIRES both
             organization name AND space name parameters. NOT for listing users across multiple spaces or for
@@ -55,7 +55,7 @@ public class SnapshotService {
         return snapshotApiClient.snapshotOrganizationSpaceUsersGet(organization, space).getBody();
     }
 
-    @Tool(name = "Snapshot/TotalNumberOfOrganizations", description =
+    @Tool(name = "SnapshotTotalNumberOfOrganizations", description =
         """
             Retrieve ONLY the total COUNT of organizations as a single number. Use for queries like 'How many
             organizations exist?' or 'What is the organization count?'. NOT for listing organization names or details -
@@ -65,7 +65,7 @@ public class SnapshotService {
         return snapshotApiClient.snapshotOrganizationsCountGet().getBody();
     }
 
-    @Tool(name = "Snapshot/TotalNumberOfSpaces", description =
+    @Tool(name = "SnapshotTotalNumberOfSpaces", description =
         """
             Retrieve ONLY the total COUNT of spaces as a single number. Use for queries like 'How many spaces exist?'
             or 'What is the total space count?'. NOT for listing space names or details - use GetPageableSpaces for that.
@@ -74,7 +74,7 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSpacesCountGet().getBody();
     }
 
-    @Tool(name = "Snapshot/ListAllUsersBySpaceRolesInAnOrganizationAndSpace", description =
+    @Tool(name = "SnapshotListAllUsersBySpaceRolesInAnOrganizationAndSpace", description =
         """
             Retrieve users with DETAILED ROLE INFORMATION (auditor, developer, manager) for a specific organization and space.
             REQUIRES both organization name AND space name parameters.
@@ -98,7 +98,7 @@ public class SnapshotService {
                 .orElse(null);
     }
 
-    @Tool(name = "Snapshot/ListAllSpacesAssociatedWithUserAccount", description =
+    @Tool(name = "SnapshotListAllSpacesAssociatedWithUserAccount", description =
         """
             List all spaces a SPECIFIC USER has access to across all organizations. REQUIRES user account name parameter.
             Use for user-centric queries like 'What spaces can john.doe@example.com access?' NOT for listing users in a space.
@@ -107,7 +107,7 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSpacesUsersNameGet(name).getBody();
     }
 
-    @Tool(name = "Snapshot/GetSpringDependencyFrequenciesSummary", description =
+    @Tool(name = "SnapshotGetSpringDependencyFrequenciesSummary", description =
         """
             Analyze Spring dependency version statistics across Java applications. Returns frequency distribution data
             ONLY, not details about specific applications.
@@ -119,7 +119,7 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSummaryAiSpringGet().getBody();
     }
 
-    @Tool(name = "Snapshot/GetSnapshotSummary", description =
+    @Tool(name = "SnapshotGetSnapshotSummary", description =
         """
            Retrieve a comprehensive AGGREGATED SUMMARY of the entire foundation, including counts, metrics, and statistics.
            Use for broad overview queries like 'Give me a summary of the foundation'. NOT for listing specific applications, services, or users.
@@ -138,7 +138,7 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSummaryGet().getBody();
     }
 
-    @Tool(name = "Snapshot/TotalNumberOfUserAccounts", description =
+    @Tool(name = "SnapshotTotalNumberOfUserAccounts", description =
         """
             Retrieve ONLY the total COUNT of user accounts as a single number. Use for queries like 'How many users exist?'
             or 'What is the user count?'. NOT for listing user names or details - use GetPageableUserAccounts for that.
