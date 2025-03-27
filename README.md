@@ -27,8 +27,8 @@ cf-kaizen follows a modular architecture with several components working togethe
 ### Core Components
 
 1. **MCP Servers**
-    - Butler Server: Provides API access to Cloud Foundry foundation resources (organizations, spaces, applications, etc.)
-    - Hoover Server: Provides API access to Cloud Foundry BOSH-related resources (deployed products, stemcells, metrics, etc.)
+    - Butler Server: Provides API access to Cloud Foundry foundation resources (organizations, spaces, applications, service instances, etc.)
+    - Hoover Server: Provides aggregated API access to Cloud Foundry foundations' resources
 
 2. **MCP Clients**
     - Butler Frontend: A reactive web application that serves as the chat UI for interacting with Butler server
