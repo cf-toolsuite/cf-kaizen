@@ -14,11 +14,11 @@ export const ChatProvider = ({ children, isDarkMode }) => {
   const tooltipRef = useRef(null);
 
   const getHistoryItemColor = () => {
-    return isDarkMode ? 'bg-orange-600' : 'bg-orange-500';
+    return isDarkMode ? 'bg-teal-800' : 'bg-gray-50';
   };
 
   const getHistoryItemTitleColor = () => {
-    return isDarkMode ? 'bg-orange-700' : 'bg-orange-600';
+    return isDarkMode ? 'bg-teal-900' : 'bg-blue-100';
   };
 
   // Initialize all our hooks
@@ -106,6 +106,7 @@ export const ChatProvider = ({ children, isDarkMode }) => {
     ...chatState,
     ...toolState,
     ...alertState,
+    hideAlert: alertState.hideAlert,
     ...tooltipState,
 
     // History visibility state

@@ -26,7 +26,8 @@ const ToolSelector = () => {
   return (
     <div className="relative tools-menu-container h-full">
       <button
-        onClick={toggleToolsMenu}
+        onClick={(e) => toggleToolsMenu(e)}
+        type="button"
         className={`flex items-center justify-center gap-1 px-4 py-2 h-full rounded text-sm ${
           isDarkMode
             ? 'bg-gray-700 text-white hover:bg-gray-600'
@@ -54,6 +55,7 @@ const ToolSelector = () => {
             <div className="flex gap-3">
               <button
                 onClick={handleSelectAll}
+                type="button"
                 className={`text-xs text-blue-500 hover:text-blue-700 ${
                   allToolsSelected ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
@@ -63,6 +65,7 @@ const ToolSelector = () => {
               </button>
               <button
                 onClick={handleClearAll}
+                type="button"
                 className={`text-xs text-blue-500 hover:text-blue-700 ${
                   noToolsSelected ? 'opacity-50 cursor-not-allowed' : ''
                 }`}

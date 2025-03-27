@@ -54,7 +54,9 @@ export const useToolSelection = () => {
     setSelectedTools([]);
   }, []);
   
-  const toggleToolsMenu = useCallback(() => {
+  const toggleToolsMenu = useCallback((e) => {
+    // Prevent the event from propagating to the form
+    if (e) e.preventDefault();
     setShowToolsMenu(prev => !prev);
   }, []);
   

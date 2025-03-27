@@ -31,20 +31,22 @@ const ChatHistory = () => {
       {chatHistory.map((item, index) => (
         <div
           key={index}
-          className={`mb-2 border rounded p-2 ${item.color} ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}
+          className={`mb-2 border rounded p-2 ${isDarkMode ? item.color : 'bg-gray-50'} ${
+            isDarkMode ? 'text-gray-100' : 'text-gray-900'
+          } shadow-sm`}
         >
           <div
-            className="flex items-center justify-between cursor-pointer"
+            className="flex items-center justify-between cursor-pointer py-1 px-1 rounded hover:bg-opacity-20 hover:bg-gray-200 transition-colors"
             onClick={() => toggleHistoryItem(index)}
           >
             <span
-              className={`font-semibold truncate pr-2 py-1 px-2 rounded ${item.titleColor || ''}`}
+              className={`font-semibold truncate pr-2 py-1 px-2 rounded ${isDarkMode ? item.titleColor : 'bg-blue-100'} ${isDarkMode ? 'text-teal-50' : 'text-blue-800'}`}
             >
               {item.question}
             </span>
-            {item.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <div className="flex items-center justify-center w-6 h-6 min-w-6 min-h-6">
+              {item.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </div>
           </div>
 
           {/* Show a condensed version of metadata in collapsed state */}
@@ -71,7 +73,7 @@ const ChatHistory = () => {
               <div className="font-bold mt-2">Response:</div>
               <div className="max-h-64 overflow-y-auto pr-1">
                 <ReactMarkdown
-                  className={`prose markdown-content ${isDarkMode ? 'prose-invert' : ''}`}
+                  className={`prose markdown-content ${isDarkMode ? 'prose-invert prose-a:text-blue-300' : 'prose-a:text-blue-600'}`}
                   remarkPlugins={[remarkGfm, remarkBreaks]}
                   rehypePlugins={[rehypeRaw, rehypeFormat]}
                   components={{

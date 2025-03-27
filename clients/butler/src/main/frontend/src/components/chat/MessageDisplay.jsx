@@ -78,7 +78,7 @@ const MessageDisplay = () => {
           </ReactMarkdown>
 
           {/* Show metadata below the current answer if available */}
-          {currentMetadata && <MetadataDisplay metadata={currentMetadata} isDarkMode={isDarkMode} />}
+          {currentMetadata && <MetadataDisplay metadata={currentMetadata} isDarkMode={isDarkMode} isResponseTile={true} />}
         </>
       ) : (
         <div>
