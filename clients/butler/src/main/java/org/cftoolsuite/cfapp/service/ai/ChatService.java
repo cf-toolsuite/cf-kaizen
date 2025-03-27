@@ -57,7 +57,7 @@ public class ChatService {
             greetingContent = "I'm here to help you with questions about your Cloud Foundry foundation.  How can I assist you today?";
         }
         this.greetingMessage = greetingContent;
-        
+
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(systemPrompt)
                 .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory), new SimpleLoggerAdvisor())
@@ -78,35 +78,35 @@ public class ChatService {
 
     /**
      * Streams a response to a question, including both content chunks and metadata.
-     * 
+     *
      * @param inquiry The user's inquiry containing question and selected tools
      * @return A stream of response chunks, with metadata appended at the end
      */
     public Flux<String> streamResponseToQuestion(Inquiry inquiry) {
         List<McpAsyncClient> clients = asyncClientManager.newMcpAsyncClients();
         AsyncMcpToolCallbackProvider provider = new AsyncMcpToolCallbackProvider(clients);
-        
+
         // Filter tools if specified in the inquiry
         ToolCallback[] toolCallbacks = provider.getToolCallbacks();
-        
+
         if (!CollectionUtils.isEmpty(inquiry.tools())) {
             // Filter tool callbacks based on selected tools
             List<String> selectedTools = inquiry.tools();
             toolCallbacks = Arrays.stream(toolCallbacks)
                 .filter(callback -> selectedTools.contains(callback.getToolDefinition().name()))
                 .toArray(ToolCallback[]::new);
-            
+
             log.info("Filtered tools to {} selected tools: {}", toolCallbacks.length, selectedTools);
         }
 
         // Record start time for response time calculation
         Instant startTime = Instant.now();
-        
+
         // Get a reference to the ChatClient stream response spec
         var streamSpec = constructRequest(inquiry.question())
                 .tools(toolCallbacks)
                 .stream();
-        
+
         // First, stream the content chunks
         return streamSpec
                 .content()
@@ -117,7 +117,7 @@ public class ChatService {
                         Instant endTime = Instant.now();
                         Duration responseDuration = Duration.between(startTime, endTime);
                         String formattedTime = MetricUtils.formatResponseTime(responseDuration);
-                        
+
                         // Get the last metadata from the response
                         // Use a synchronous call to get full metadata after streaming is done
                         var chatResponse = chatClient
@@ -125,16 +125,16 @@ public class ChatService {
                                 .user(inquiry.question())
                                 .call()
                                 .chatResponse();
-                        
+
                         ChatResponseMetadata metadata = chatResponse.getMetadata();
                         Usage usage = metadata.getUsage();
-                        
+
                         // Calculate tokens per second
                         Double tokensPerSecond = MetricUtils.calculateTokensPerSecond(
-                                usage.getTotalTokens(), 
+                                usage.getTotalTokens(),
                                 responseDuration.toMillis()
                         );
-                        
+
                         // Create metadata object
                         ChatMetadata chatMetadata = ChatMetadata.builder()
                                 .inputTokens(usage.getPromptTokens())
@@ -144,11 +144,11 @@ public class ChatService {
                                 .tokensPerSecond(tokensPerSecond)
                                 .model(metadata.getModel())
                                 .build();
-                        
+
                         // Create and serialize a metadata response
                         ChatResponse metadataResponse = ChatResponse.metadataChunk(chatMetadata);
                         return Mono.just(objectMapper.writeValueAsString(metadataResponse));
-                    } 
+                    }
                     catch (JsonProcessingException e) {
                         log.error("Error serializing metadata: ", e);
                         return Mono.empty();

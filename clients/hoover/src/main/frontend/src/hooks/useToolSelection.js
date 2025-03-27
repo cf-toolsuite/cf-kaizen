@@ -8,7 +8,7 @@ export const useToolSelection = () => {
   // Fetch available tools and process them
   const fetchTools = useCallback(async () => {
     try {
-      const response = await fetch('/api/butler/tools');
+      const response = await fetch('/api/hoover/tools');
       if (response.ok) {
         const toolsData = await response.json();
 

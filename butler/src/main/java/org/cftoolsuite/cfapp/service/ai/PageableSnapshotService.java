@@ -34,12 +34,12 @@ public class PageableSnapshotService {
                         ONLY returns details of applications using Spring dependencies.
                         Use for queries like 'Show me Spring Boot applications' or 'List all Spring applications'.
                         """)
-        public List<JavaAppDetail> getPageableSpringApplicationInstanceDetails(
+        public Page<JavaAppDetail> getPageableSpringApplicationInstanceDetails(
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
 
                 List<JavaAppDetail> allDetails = snapshotApiClient.snapshotDetailAiSpringGet().getBody();
-                return createPage(allDetails, pageNumber, pageSize).getContent();
+                return createPage(allDetails, pageNumber, pageSize);
         }
 
         /**
@@ -50,7 +50,7 @@ public class PageableSnapshotService {
                         days parameter and ONLY returns dormant/inactive applications. Use for queries
                         like 'List applications not updated in 90 days'. NOT for listing active applications.
                         """)
-        public List<AppDetail> getPageableDormantApplications(
+        public Page<AppDetail> getPageableDormantApplications(
                         @ToolParam(description = "Number of days since the last update to consider workloads dormant.") Integer daysSinceLastUpdate,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
@@ -59,7 +59,7 @@ public class PageableSnapshotService {
                                 .snapshotDetailDormantDaysSinceLastUpdateGet(daysSinceLastUpdate).getBody();
                 List<AppDetail> applications = dormantWorkloads != null ? dormantWorkloads.getApplications()
                                 : Collections.emptyList();
-                return createPage(applications, pageNumber, pageSize).getContent();
+                return createPage(applications, pageNumber, pageSize);
         }
 
         /**
@@ -70,7 +70,7 @@ public class PageableSnapshotService {
                         REQUIRES days parameter and ONLY returns dormant/inactive services. Use for
                         queries like 'List services not used in 90 days'. NOT for listing active services.
                         """)
-        public List<ServiceInstanceDetail> getPageableDormantServiceInstances(
+        public Page<ServiceInstanceDetail> getPageableDormantServiceInstances(
                         @ToolParam(description = "Number of days since the last update to consider workloads dormant.") Integer daysSinceLastUpdate,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
@@ -80,7 +80,7 @@ public class PageableSnapshotService {
                 List<ServiceInstanceDetail> serviceInstances = dormantWorkloads != null
                                 ? dormantWorkloads.getServiceInstances()
                                 : Collections.emptyList();
-                return createPage(serviceInstances, pageNumber, pageSize).getContent();
+                return createPage(serviceInstances, pageNumber, pageSize);
         }
 
         /**
@@ -91,7 +91,7 @@ public class PageableSnapshotService {
                         days. REQUIRES days parameter and ONLY returns dormant relationships. Use for
                         queries about stale connections, NOT for listing active app-service bindings.
                         """)
-        public List<AppRelationship> getPageableDormantRelationships(
+        public Page<AppRelationship> getPageableDormantRelationships(
                         @ToolParam(description = "Number of days since the last update to consider workloads dormant.") Integer daysSinceLastUpdate,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
@@ -101,7 +101,7 @@ public class PageableSnapshotService {
                 List<AppRelationship> relationships = dormantWorkloads != null
                                 ? dormantWorkloads.getApplicationRelationships()
                                 : Collections.emptyList();
-                return createPage(relationships, pageNumber, pageSize).getContent();
+                return createPage(relationships, pageNumber, pageSize);
         }
 
         /**
@@ -113,14 +113,14 @@ public class PageableSnapshotService {
                         all apps'. When specific filtering is needed, use GetPageableFilteredApplications
                         instead.
                         """)
-        public List<AppDetail> getPageableApplications(
+        public Page<AppDetail> getPageableApplications(
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
 
                 SnapshotDetail snapshotDetail = snapshotApiClient.snapshotDetailGet().getBody();
                 List<AppDetail> applications = snapshotDetail != null ? snapshotDetail.getApplications()
                                 : Collections.emptyList();
-                return createPage(applications, pageNumber, pageSize).getContent();
+                return createPage(applications, pageNumber, pageSize);
         }
 
         /**
@@ -132,7 +132,7 @@ public class PageableSnapshotService {
                         service instances'. When specific filtering is needed, use
                         GetPageableFilteredServiceInstances instead.
                         """)
-        public List<ServiceInstanceDetail> getPageableServiceInstances(
+        public Page<ServiceInstanceDetail> getPageableServiceInstances(
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
 
@@ -140,7 +140,7 @@ public class PageableSnapshotService {
                 List<ServiceInstanceDetail> serviceInstances = snapshotDetail != null
                                 ? snapshotDetail.getServiceInstances()
                                 : Collections.emptyList();
-                return createPage(serviceInstances, pageNumber, pageSize).getContent();
+                return createPage(serviceInstances, pageNumber, pageSize);
         }
 
         /**
@@ -151,7 +151,7 @@ public class PageableSnapshotService {
                         paginated format. Use for queries like 'Show all app-service connections'.
                         When filtering is needed, use GetPageableFilteredRelationships instead.
                         """)
-        public List<AppRelationship> getPageableRelationships(
+        public Page<AppRelationship> getPageableRelationships(
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
 
@@ -159,7 +159,7 @@ public class PageableSnapshotService {
                 List<AppRelationship> relationships = snapshotDetail != null
                                 ? snapshotDetail.getApplicationRelationships()
                                 : Collections.emptyList();
-                return createPage(relationships, pageNumber, pageSize).getContent();
+                return createPage(relationships, pageNumber, pageSize);
         }
 
         /**
@@ -170,14 +170,14 @@ public class PageableSnapshotService {
                         for queries like 'List all users' or 'Show me all user accounts'. For service
                         accounts, use GetPageableServiceAccounts instead.
                         """)
-        public List<String> getPageableUserAccounts(
+        public Page<String> getPageableUserAccounts(
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
 
                 SnapshotDetail snapshotDetail = snapshotApiClient.snapshotDetailGet().getBody();
                 List<String> userAccounts = snapshotDetail != null ? snapshotDetail.getUserAccounts()
                                 : Collections.emptyList();
-                return createPage(userAccounts, pageNumber, pageSize).getContent();
+                return createPage(userAccounts, pageNumber, pageSize);
         }
 
         /**
@@ -188,14 +188,14 @@ public class PageableSnapshotService {
                         for queries like 'List all service accounts'. For regular user accounts, use
                         GetPageableUserAccounts instead.
                         """)
-        public List<String> getPageableServiceAccounts(
+        public Page<String> getPageableServiceAccounts(
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
 
                 SnapshotDetail snapshotDetail = snapshotApiClient.snapshotDetailGet().getBody();
                 List<String> serviceAccounts = snapshotDetail != null ? snapshotDetail.getServiceAccounts()
                                 : Collections.emptyList();
-                return createPage(serviceAccounts, pageNumber, pageSize).getContent();
+                return createPage(serviceAccounts, pageNumber, pageSize);
         }
 
         /**
@@ -206,7 +206,7 @@ public class PageableSnapshotService {
                         parameter. Use for queries like 'Show applications using cflinuxfs2 stack'.
                         NOT for querying all applications or those using current stacks.
                         """)
-        public List<AppDetail> getPageableApplicationsWithLegacyStack(
+        public Page<AppDetail> getPageableApplicationsWithLegacyStack(
                         @ToolParam(description = "Comma-separated list of stacks to filter by.") String stacks,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
@@ -214,7 +214,7 @@ public class PageableSnapshotService {
                 Workloads legacyWorkloads = snapshotApiClient.snapshotDetailLegacyGet(stacks, "").getBody();
                 List<AppDetail> applications = legacyWorkloads != null ? legacyWorkloads.getApplications()
                                 : Collections.emptyList();
-                return createPage(applications, pageNumber, pageSize).getContent();
+                return createPage(applications, pageNumber, pageSize);
         }
 
         /**
@@ -225,7 +225,7 @@ public class PageableSnapshotService {
                         offering names parameter. Use for queries like 'Show services using MySQL 5.7'.
                         NOT for querying all services or those using current offerings.
                         """)
-        public List<ServiceInstanceDetail> getPageableServiceInstancesWithLegacyServiceOffering(
+        public Page<ServiceInstanceDetail> getPageableServiceInstancesWithLegacyServiceOffering(
                         @ToolParam(description = "Comma-separated list of service offerings to filter by.") String serviceOfferings,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
@@ -234,7 +234,7 @@ public class PageableSnapshotService {
                 List<ServiceInstanceDetail> serviceInstances = legacyWorkloads != null
                                 ? legacyWorkloads.getServiceInstances()
                                 : Collections.emptyList();
-                return createPage(serviceInstances, pageNumber, pageSize).getContent();
+                return createPage(serviceInstances, pageNumber, pageSize);
         }
 
         /**
@@ -245,12 +245,12 @@ public class PageableSnapshotService {
                         broad queries like 'List all organizations'. When organization name filtering
                         is needed, use GetPageableFilteredOrganizations instead.
                         """)
-        public List<Organization> getPageableOrganizations(
+        public Page<Organization> getPageableOrganizations(
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
 
                 List<Organization> organizations = snapshotApiClient.snapshotOrganizationsGet().getBody();
-                return createPage(organizations, pageNumber, pageSize).getContent();
+                return createPage(organizations, pageNumber, pageSize);
         }
 
         /**
@@ -260,12 +260,12 @@ public class PageableSnapshotService {
                         Retrieve ALL spaces across all organizations, in paginated format. Use for broad queries like 'List all spaces'.
                         When organization or space name filtering is needed, use GetPageableFilteredSpaces instead.
                         """)
-        public List<Space> getPageableSpaces(
+        public Page<Space> getPageableSpaces(
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
 
                 List<Space> spaces = snapshotApiClient.snapshotSpacesGet().getBody();
-                return createPage(spaces, pageNumber, pageSize).getContent();
+                return createPage(spaces, pageNumber, pageSize);
         }
 
         /**
@@ -275,7 +275,7 @@ public class PageableSnapshotService {
                         Retrieve organizations FILTERED BY NAME PATTERN only. REQUIRES name pattern parameter.
                         Use for queries like 'Find organizations with names containing kaizen'. NOT for listing all organizations.
                         """)
-        public List<Organization> getPageableFilteredOrganizations(
+        public Page<Organization> getPageableFilteredOrganizations(
                         @ToolParam(description = "Organization name pattern to filter by (case-insensitive).") String namePattern,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
@@ -291,7 +291,7 @@ public class PageableSnapshotService {
                                         .collect(Collectors.toList());
                 }
 
-                return createPage(allOrganizations, pageNumber, pageSize).getContent();
+                return createPage(allOrganizations, pageNumber, pageSize);
         }
 
         /**
@@ -302,7 +302,7 @@ public class PageableSnapshotService {
                         Use for queries like 'List spaces in the kaizen organization' or 'Find spaces with dev in their name'.
                         NOT for listing all spaces.
                         """)
-        public List<Space> getPageableFilteredSpaces(
+        public Page<Space> getPageableFilteredSpaces(
                         @ToolParam(required = false, description = "Organization name to filter by.") String organization,
                         @ToolParam(description = "Space name pattern to filter by (case-insensitive).") String namePattern,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
@@ -327,7 +327,7 @@ public class PageableSnapshotService {
                         }
                 }
 
-                return createPage(allSpaces, pageNumber, pageSize).getContent();
+                return createPage(allSpaces, pageNumber, pageSize);
         }
 
         /**
@@ -338,7 +338,7 @@ public class PageableSnapshotService {
                         with optional space, name pattern, buildpack, or stack filters.
                         Use for queries like 'Show applications in the kaizen organization' or 'List Java apps in production space'.
                         """)
-        public List<AppDetail> getPageableFilteredApplications(
+        public Page<AppDetail> getPageableFilteredApplications(
                         @ToolParam(description = "Organization name to filter by.") String organization,
                         @ToolParam(required = false, description = "Space name to filter by.") String space,
                         @ToolParam(required = false, description = "Application name pattern to filter by (case-insensitive).") String namePattern,
@@ -386,7 +386,7 @@ public class PageableSnapshotService {
                         }
                 }
 
-                return createPage(applications, pageNumber, pageSize).getContent();
+                return createPage(applications, pageNumber, pageSize);
         }
 
         /**
@@ -397,7 +397,7 @@ public class PageableSnapshotService {
                         with optional space, name pattern, service offering, or plan filters.
                         Use for queries like 'Show services in the kaizen organization' or 'List MySQL databases in production space'.
                         """)
-        public List<ServiceInstanceDetail> getPageableFilteredServiceInstances(
+        public Page<ServiceInstanceDetail> getPageableFilteredServiceInstances(
                         @ToolParam(description = "Organization name to filter by.") String organization,
                         @ToolParam(required = false, description = "Space name to filter by.") String space,
                         @ToolParam(required = false, description = "Service instance name pattern to filter by (case-insensitive).") String namePattern,
@@ -446,7 +446,7 @@ public class PageableSnapshotService {
                         }
                 }
 
-                return createPage(serviceInstances, pageNumber, pageSize).getContent();
+                return createPage(serviceInstances, pageNumber, pageSize);
         }
 
         /**
@@ -458,7 +458,7 @@ public class PageableSnapshotService {
                         Use for queries like 'What services does the inventory app use?'
                         NOT for listing all relationships or filtering by service.
                         """)
-        public List<AppRelationship> getPageableFilteredRelationships(
+        public Page<AppRelationship> getPageableFilteredRelationships(
                         @ToolParam(description = "Application name to filter by.") String applicationName,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
@@ -477,7 +477,7 @@ public class PageableSnapshotService {
                         }
                 }
 
-                return createPage(relationships, pageNumber, pageSize).getContent();
+                return createPage(relationships, pageNumber, pageSize);
         }
 
         /**
@@ -488,7 +488,7 @@ public class PageableSnapshotService {
                         Use for queries like 'Find users with john in their name' or 'Search for users with gmail addresses'.
                         NOT for listing all users.
                         """)
-        public List<String> getPageableFilteredUserAccounts(
+        public Page<String> getPageableFilteredUserAccounts(
                         @ToolParam(description = "User account name pattern to filter by (case-insensitive).") String namePattern,
                         @ToolParam(required = false, description = "Page number (zero-based).") Integer pageNumber,
                         @ToolParam(required = false, description = "Page size (default is 10).") Integer pageSize) {
@@ -505,7 +505,7 @@ public class PageableSnapshotService {
                                         .collect(Collectors.toList());
                 }
 
-                return createPage(userAccounts, pageNumber, pageSize).getContent();
+                return createPage(userAccounts, pageNumber, pageSize);
         }
 
         /**

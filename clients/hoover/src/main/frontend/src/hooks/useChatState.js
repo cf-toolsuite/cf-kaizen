@@ -69,7 +69,7 @@ export const useChatState = () => {
   // Fetch greeting message on first load
   const fetchGreeting = useCallback(async () => {
     try {
-      const response = await fetch('/api/butler/greeting');
+      const response = await fetch('/api/hoover/greeting');
       if (response.ok) {
         const greetingText = await response.text();
         setGreeting(greetingText);

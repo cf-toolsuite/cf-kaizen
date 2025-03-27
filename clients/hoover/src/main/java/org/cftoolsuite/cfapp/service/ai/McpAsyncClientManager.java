@@ -9,6 +9,7 @@ import org.springframework.ai.mcp.client.autoconfigure.NamedClientMcpTransport;
 import org.springframework.ai.mcp.client.autoconfigure.configurer.McpAsyncClientConfigurer;
 import org.springframework.ai.mcp.client.autoconfigure.properties.McpClientCommonProperties;
 import org.springframework.ai.mcp.client.autoconfigure.properties.McpSseClientProperties;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,26 +24,29 @@ public class McpAsyncClientManager {
     private final McpAsyncClientConfigurer mcpSyncClientConfigurer;
     private final McpClientCommonProperties mcpClientCommonProperties;
     private final McpSseClientProperties mcpSseClientProperties;
-    private final WebClient.Builder webClientBuilderTemplate;
-    private final ObjectMapper objectMapper;
+    private final ObjectProvider<WebClient.Builder> webClientBuilderProvider;
+    private final ObjectProvider<ObjectMapper> objectMapperProvider;
 
     public McpAsyncClientManager(McpAsyncClientConfigurer mcpSyncClientConfigurer,
                                  McpClientCommonProperties mcpClientCommonProperties,
                                  McpSseClientProperties mcpSseClientProperties,
-                                 WebClient.Builder webClientBuilderTemplate,
-                                 ObjectMapper objectMapper
+                                 ObjectProvider<WebClient.Builder> webClientBuilderProvider,
+                                 ObjectProvider<ObjectMapper> objectMapperProvider
                                 ) {
 
         this.mcpSyncClientConfigurer = mcpSyncClientConfigurer;
         this.mcpClientCommonProperties = mcpClientCommonProperties;
         this.mcpSseClientProperties = mcpSseClientProperties;
-        this.webClientBuilderTemplate = webClientBuilderTemplate;
-        this.objectMapper = objectMapper;
+        this.webClientBuilderProvider = webClientBuilderProvider;
+        this.objectMapperProvider = objectMapperProvider;
     }
 
     public List<McpAsyncClient> newMcpAsyncClients() {
 
         List<NamedClientMcpTransport> namedTransports = new ArrayList<>();
+
+        var webClientBuilderTemplate = webClientBuilderProvider.getIfAvailable(WebClient::builder);
+        var objectMapper = objectMapperProvider.getIfAvailable(ObjectMapper::new);
 
         for (Map.Entry<String, McpSseClientProperties.SseParameters> serverParameters : mcpSseClientProperties.getConnections().entrySet()) {
             var webClientBuilder = webClientBuilderTemplate.clone().baseUrl(serverParameters.getValue().url());
@@ -55,7 +59,8 @@ public class McpAsyncClientManager {
         if (!CollectionUtils.isEmpty(namedTransports)) {
             for (NamedClientMcpTransport namedTransport : namedTransports) {
 
-                McpSchema.Implementation clientInfo = new McpSchema.Implementation(mcpClientCommonProperties.getName(),
+                McpSchema.Implementation clientInfo = new McpSchema.Implementation(
+                        connectedClientName(mcpClientCommonProperties.getName(), namedTransport.name()),
                         mcpClientCommonProperties.getVersion());
 
                 McpClient.AsyncSpec syncSpec = McpClient.async(namedTransport.transport())
@@ -75,6 +80,10 @@ public class McpAsyncClientManager {
         }
 
         return mcpAsyncClients;
+    }
+
+    private String connectedClientName(String clientName, String serverConnectionName) {
+        return clientName + " - " + serverConnectionName;
     }
 
 }
