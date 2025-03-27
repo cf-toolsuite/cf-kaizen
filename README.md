@@ -2,16 +2,17 @@
 
 [![GA](https://img.shields.io/badge/Release-Alpha-darkred)](https://img.shields.io/badge/Release-Alpha-darkred) ![Github Action CI Workflow Status](https://github.com/cf-toolsuite/cf-kaizen/actions/workflows/ci.yml/badge.svg) [![Known Vulnerabilities](https://snyk.io/test/github/cf-toolsuite/cf-kaizen/badge.svg?style=plastic)](https://snyk.io/test/github/cf-toolsuite/cf-kaizen) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This multi-module project hosts clients code-generated from an OpenAPI derivative of the [cf-butler](https://github.com/cf-toolsuite/cf-butler/blob/main/docs/ENDPOINTS.md) and [cf-hoover](https://github.com/cf-toolsuite/cf-hoover/blob/main/docs/ENDPOINTS.md) APIs combined with a Spring AI implementation.
-It also includes two MCP servers and MCP client configuration for use with Claude desktop.
+## Introduction
 
-* [Background](#background)
-* [Getting started](#getting-started)
-* [Prerequisites](#prerequisites)
+cf-kaizen is a multi-module Spring Boot project that leverages Spring AI to provide a natural language interface for interacting with Cloud Foundry foundations. The project hosts clients generated from OpenAPI derivatives of [cf-butler](https://github.com/cf-toolsuite/cf-butler) and [cf-hoover](https://github.com/cf-toolsuite/cf-hoover) APIs, combined with Spring AI implementation to enable conversational interaction with Cloud Foundry resources.
+
+The primary use case is to allow users to interact with one or more Cloud Foundry foundations using natural language without explicitly having to be aware of the Cloud Foundry APIs.
+
+* [Architecture](#architecture)
+* [Tech stack](#tec)
 * How to
-    * [Clone](#how-to-clone)
     * [Build](#how-to-build)
-    * [Consume](#how-to-consume)
+    * [Run](#how-to-run)
     * Integrate w/ cf-butler and cf-hoover hosted on
       * [Cloud Foundry](docs/CF.md)
       * [Korifi](docs/KORIFI.md) (under development)
@@ -19,123 +20,254 @@ It also includes two MCP servers and MCP client configuration for use with Claud
       * [Claude Desktop](docs/CLAUDE.md)
       * [LibreChat](docs/LIBRECHAT.md)
 
-## Background
+## Architecture
 
-As a Spring Boot and Spring AI developer, I want
-to consume libraries that make it convenient to add capabilities to my application(s)
-as for the following
+cf-kaizen follows a modular architecture with several components working together:
 
-Use-case:
+### Core Components
 
-* Imagine a natural language interaction with one or more Cloud Foundry foundations without explicitly having to be aware of the Cloud Foundry APIs
+1. **MCP Servers**
+    - Butler Server: Provides API access to Cloud Foundry foundation resources (organizations, spaces, applications, etc.)
+    - Hoover Server: Provides API access to Cloud Foundry BOSH-related resources (deployed products, stemcells, metrics, etc.)
 
-## Getting started
+2. **MCP Clients**
+    - Butler Frontend: A reactive web application that serves as the chat UI for interacting with Butler server
+    - Hoover Frontend: A reactive web application that serves as the chat UI for interacting with Hoover server
 
-Start with:
+3. **Model Context Protocol (MCP) Integration**
+    - Enables the clients to connect to AI models like Claude Desktop through standardized protocol
+    - Allows AI models to access tools and resources defined in cf-kaizen
 
-* A Github [account](https://github.com/signup)
-* API endpoints for
-  * one or more application instances of cf-butler
-  * an application instance of cf-hoover
+### Architectural Diagram
 
-## Prerequisites
+```
+                     ┌───────────────────┐
+                     │                   │
+                 ┌───┤  Claude Desktop   │
+                 │   │  or LibreChat     │
+                 │   │                   │
+                 │   └───────────────────┘
+                 ▼
+┌─────────────────┐     ┌───────────────────┐
+│                 │     │                   │
+│  cf-kaizen      │◄────┤  Spring AI MCP    │
+│  MCP Servers    │     │  Client           │
+│                 │     │                   │
+└────────┬────────┘     └───────────────────┘
+         │
+         ▼
+┌─────────────────┐     ┌───────────────────┐
+│                 │     │                   │
+│  cf-butler and  │     │  Cloud Foundry    │
+│  cf-hoover APIs │◄────┤  Foundation       │
+│                 │     │                   │
+└─────────────────┘     └───────────────────┘
+```
 
-* Git CLI (2.43.0 or better)
-* Github CLI (2.65.0 or better)
-* Java SDK (21 or better)
-* Maven (3.9.9 or better)
-* Claude desktop
+## Technology Stack
 
-## How to clone
+### Backend
 
-with Git CLI
+- **Java 21**: Base programming language
+- **Spring Boot 3.4.x+**: Primary application framework
+- **Spring WebFlux**: Reactive web framework
+- **Spring AI**: Framework for AI model integration
+- **Model Context Protocol (MCP)**: Protocol for AI model interaction with external tools
+- **Spring Cloud**: For Cloud Foundry integration
+- **Caffeine**: In-memory caching
+- **Resilience4j**: Fault tolerance library
+
+### Frontend
+
+- **React 18**: JavaScript library for building UI
+- **Vite**: Build tool and development server
+- **TailwindCSS**: Utility-first CSS framework
+- **Radix UI**: Unstyled, accessible components
+- **React Markdown**: Markdown rendering
+
+### Build Tools
+
+- **Maven 3.9.x+**: Primary build tool
+- **frontend-maven-plugin**: For integrating frontend build with Maven
+- **Node.js v23.4.0**: JavaScript runtime for frontend build
+- **npm 10.9.2**: Package manager for JavaScript dependencies
+
+## How to Build
+
+### Prerequisites
+
+- Git CLI (2.43.0 or better)
+- GitHub CLI (2.65.0 or better)
+- Java SDK (21 or better)
+- Maven (3.9.9 or better)
+
+### Building the Project
+
+1. Clone the repository:
 
 ```bash
 git clone https://github.com/cf-toolsuite/cf-kaizen
 ```
 
-with Github CLI
-
-```bash
-gh repo clone cf-toolsuite/cf-kaizen
-```
-
-## How to build
-
-Open a terminal shell, then execute:
+2. Navigate to the project directory:
 
 ```bash
 cd cf-kaizen
-./mvnw clean install
 ```
 
-## How to consume
+3. Build with Maven:
 
-If you want to incorporate any of the starters as dependencies in your own projects, you would:
-
-### Add dependency
-
-Maven
-
-```maven
-<dependency>
-    <groupId>org.cftoolsuite</groupId>
-    <artifactId>cf-kaizen-butler-server</artifactId>
-    <version>{release-version}</version>
-</dependency>
+```bash
+mvn clean install
 ```
 
-or
+This will:
+- Build the Java backend components
+- Download and install Node.js and npm (via frontend-maven-plugin)
+- Install JavaScript dependencies
+- Build the React frontend applications
+- Package everything into executable JARs
 
-```maven
-<dependency>
-    <groupId>org.cftoolsuite</groupId>
-    <artifactId>cf-kaizen-hoover-server</artifactId>
-    <version>{release-version}</version>
-</dependency>
+## How to Run
+
+### Running with JDK/JRE and Maven
+
+1. Start Butler:
+
+```bash
+# Open a terminal session
+# Target root of cf-kaizen project source, then...
+cd butler
+# Replace the application domain below with your own
+export CF_APP_DOMAIN=apps.dhaka.cf-app.com
+# If the name of the cf-butler instance on the foundation 
+# you are targeting is named differently, be sure to update the value
+export CF_BUTLER_API_ENDPOINT=https://cf-butler.${CF_APP_DOMAIN}
+mvn spring-boot:run -Dspring-boot.run.profiles=cloud,dev
+# Open a separate terminal session, target the root of cf-kaizen project source, then...
+cd clients/butler
+mvn spring-boot:run -Dspring-boot.run.profiles=openai,dev
 ```
 
-Gradle
+2. Start Hoover:
 
-```gradle
-implementation 'org.cftoolsuite:cf-kaizen-butler-server:{release-version}'
+```bash
+# Open a terminal session
+# Target root of cf-kaizen project source, then...
+cd hoover
+# Replace the application domain below with your own
+export CF_APP_DOMAIN=apps.dhaka.cf-app.com
+# If the name of the cf-hoover instance on the foundation 
+# you are targeting is named differently, be sure to update the value
+export CF_BUTLER_API_ENDPOINT=https://cf-hoover.${CF_APP_DOMAIN}
+# Open a separate terminal session, target the root of cf-kaizen project source, then...
+cd clients/hoover
+mvn spring-boot:run -Dspring-boot.run.profiles=openai,dev
 ```
 
-or
+3. Access the applications in your browser:
+    - Butler frontend: http://localhost:8081
+    - Hoover frontend: http://localhost:8083
 
-```gradle
-implementation 'org.cftoolsuite:cf-kaizen-hoover-server:{release-version}'
+### Integration with Claude Desktop
+
+1. Install Claude Desktop
+2. Create a configuration file:
+
+```json
+"cf-kaizen-butler-client": {
+  "command": "java",
+  "args": [
+    "-jar",
+    "-Ddefault.url=<cf-butler-application-instance-api-endpoint>",
+    "<path-to-project>/target/cf-kaizen-butler-server-0.0.1-SNAPSHOT.jar"
+  ]
+}
 ```
 
-> [!IMPORTANT]
-> Replace occurrences of {release-version} above with a valid artifact release version number
+3. Replace placeholders with appropriate values
+4. Restart Claude Desktop
+5. Verify that new tool calls are available in Claude
 
-### Add configuration
+## Configuration Options
 
-Following Spring Boot conventions, you would add a stanza like this to your:
+cf-kaizen supports multiple configuration profiles:
 
-application.properties
+### Spring AI Configuration
 
-```properties
-default.url=${CF_BUTLER_API_ENDPOINT:}
-```
+The application can be configured to use different AI model providers:
 
-or
+- **OpenAI** (default)
+- **Groq Cloud**
+- **Ollama** (local models)
+- **OpenRouter**
 
-```properties
-default.url=${CF_HOOVER_API_ENDPOINT:}
-```
+Configuration is specified in `application.yml` and can be overridden with environment variables or command-line arguments.
 
-application.yml
+### Sample Configuration
 
 ```yaml
-default:
-  url: ${CF_BUTLER_API_ENDPOINT:}
+spring:
+  application:
+    name: cf-kaizen-butler-frontend
+
+  ai:
+    mcp:
+      client:
+        name: ${MCP_CLIENT_NAME:butler}
+        request-timeout: 120s
+        type: ASYNC
+        sse:
+          connections:
+            butler:
+              url: ${CF_KAIZEN_BUTLER_SERVER_URL:http://localhost:8082}
+              
+  # Additional configuration options...
 ```
 
-or
+## Cloud Foundry Deployment
 
-```yaml
-default:
-  url: ${CF_HOOVER_API_ENDPOINT:}
+cf-kaizen can be deployed to Cloud Foundry using standard cf CLI commands:
+
+E.g., 
+
+```bash
+cf push cf-kaizen-butler-frontend -m 1G -p ./target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar
 ```
+
+Consult the [documentation](https://github.com/cf-toolsuite/cf-kaizen/blob/main/docs/CF.md) for detailed deployment instructions on Cloud Foundry.
+
+## Development
+
+### Project Structure
+
+```
+cf-kaizen/
+├── butler/               # Butler MCP server
+├── clients/              # Frontend clients
+│   ├── butler/           # Butler client frontend
+│   ├── hoover/           # Hoover client frontend
+│   └── docker/           # Docker configurations
+├── config/               # Configuration files
+├── docs/                 # Documentation
+├── hoover/               # Hoover MCP server
+└── scripts/              # Helper scripts
+```
+
+### Adding Features
+
+1. Create a new tool in the appropriate MCP server
+2. Implement the tool functionality
+3. Configure the MCP client to discover and use the tool
+4. Update the system prompt if needed
+
+## Conclusion
+
+cf-kaizen provides a powerful, AI-driven interface to Cloud Foundry foundations, enabling natural language interactions with Cloud Foundry resources. By leveraging Spring AI and the Model Context Protocol, it offers a standardized way to connect AI models with Cloud Foundry data and operations.
+
+## Resources
+
+- [cf-butler](https://github.com/cf-toolsuite/cf-butler)
+- [cf-hoover](https://github.com/cf-toolsuite/cf-hoover)
+- [Spring AI Documentation](https://docs.spring.io/spring-ai/reference/index.html)
+- [Model Context Protocol](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html)

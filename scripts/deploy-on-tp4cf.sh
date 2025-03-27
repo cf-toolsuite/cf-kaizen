@@ -18,8 +18,6 @@ COMMAND=$1
 # You are free to change these variable values
 #
 FOUNDATION="dhaka"
-OBSERVABILITY_TARGET=""
-KAIZEN_TARGET=""
 CF_DOMAIN="apps.dhaka.cf-app.com"
 CF_KAIZEN_BUTLER_SERVER_URL="https://cf-kaizen-butler-server.$CF_DOMAIN"
 CF_KAIZEN_HOOVER_SERVER_URL="https://cf-kaizen-hoover-server.$CF_DOMAIN"
