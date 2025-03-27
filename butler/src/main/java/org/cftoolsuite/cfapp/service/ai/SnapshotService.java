@@ -1,163 +1,131 @@
 package org.cftoolsuite.cfapp.service.ai;
 
+import java.util.Map;
+import java.util.Optional;
+
 import org.cftoolsuite.cfapp.butler.api.SnapshotApiClient;
-import org.cftoolsuite.cfapp.butler.model.*;
+import org.cftoolsuite.cfapp.butler.model.Demographics;
+import org.cftoolsuite.cfapp.butler.model.SnapshotSummary;
+import org.cftoolsuite.cfapp.butler.model.SpaceUsers;
+import org.cftoolsuite.cfapp.butler.model.TimestampResponse;
+import org.cftoolsuite.cfapp.butler.model.UserSpaces;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class SnapshotService {
 
     private final SnapshotApiClient snapshotApiClient;
 
-
     public SnapshotService(SnapshotApiClient snapshotApiClient) {
         this.snapshotApiClient = snapshotApiClient;
     }
 
-    @Tool(name = "GetLastSnapshotCollectionTime", description = "(Butler) Get the last snapshot collection date and time.")
+    @Tool(name = "SnapshotGetLastSnapshotCollectionTime", description =
+        """
+            Retrieve the most recent timestamp when snapshot data was collected from the Cloud Foundry foundation.
+            Use this ONLY for checking data collection status and freshness, NOT for retrieving actual foundation data.
+        """)
     public TimestampResponse getCollectionTime() {
         return snapshotApiClient.collectGet("application/json").getBody();
     }
 
-    @Tool(name = "DownloadPOMFilesForJavaApplicationsAsTarball", description = "(Butler) Download a tarball of POM files for Java applications.")
-    public Resource downloadPomFiles() {
-        return snapshotApiClient.downloadPomfilesGet().getBody();
-    }
-
-    @Tool(name = "GetFoundationDemographics", description =
+    @Tool(name = "SnapshotGetFoundationDemographics", description =
         """
-            (Butler) Get demographic information about the Cloud Foundry foundation.
-            Demographics contains counts of: organizations, spaces, user accounts, and service accounts.
+            Retrieve aggregate statistics and counts for the entire Cloud Foundry foundation.
+            Use for high-level infrastructure overview queries like:
+            'How many organizations exist?' or 'What are the total counts of resources?'.
+            NOT for listing specific organizations, spaces, or users.
         """)
     public Demographics getDemographics() {
         return snapshotApiClient.snapshotDemographicsGet().getBody();
     }
 
-    @Tool(name = "GetSpringApplicationDetails", description = "(Butler) Get details of Spring applications.")
-    public List<Map<String, String>> getSpringApplicationInstanceDetails() {
-        return snapshotApiClient.snapshotDetailAiSpringGet().getBody();
-    }
-
-    @Tool(name = "GetDormantWorkloads", description =
+    @Tool(name ="SnapshotGetUsersInOrganizationAndSpace", description =
         """
-            (Butler) Get dormant workloads. Workloads contains lists of: applications, service instances, and application relationships that are dormant.
-            An application is considered dormant when the last retained event transpired daysSinceLastUpdate
-            or longer from the time of request. A service instance is considered dormant when the last retained event
-            transpired daysSinceLastUpdate or longer from the time of request.
-            Note: audit events are retained for up to 31 days.
+            Retrieve the complete user roster for a SPECIFIC organization and space combination. REQUIRES both
+            organization name AND space name parameters. NOT for listing users across multiple spaces or for
+            role-specific user information.
         """)
-    public Workloads getDormantWorkloads(@ToolParam(description = "Number of days since the last update to consider workloads dormant.") Integer daysSinceLastUpdate) {
-        return snapshotApiClient.snapshotDetailDormantDaysSinceLastUpdateGet(daysSinceLastUpdate).getBody();
-    }
-
-    @Tool(name = "GetSnapshotDetail", description =
-        """
-            (Butler) Get snapshot detail.  This includes...
-    
-            -- Applications
-                -- Detailed information about each application, including:
-                    -- Identification: Name, ID, organization, and space.
-                    -- Configuration: Buildpack, buildpack version, Docker image, and stack.
-                    -- Instance Information: Number of running and total instances.
-                    -- Resource Usage: Memory and disk space used and quota.
-                    -- Lifecycle: Last push timestamp, last event details (description, actor, timestamp), and requested state.
-                    -- Network: URLs associated with the application.
-                    -- Buildpack Release: Latest buildpack release type, date, version, and URL.
-        
-            -- Service Instances
-                -- Detailed information about each service instance, including:
-                    -- Identification: Name, ID, organization, and space.
-                    -- Service Information: Service plan, service offering, and type.
-                    -- Resource Usage: Disk space used and quota.
-                    -- Lifecycle: Last operation details (type, state, description, timestamp).
-                    -- Relationships: List of application IDs bound to the service instance.
-                    -- Dashboard: URL for the service instance dashboard.
-                    -- Tags: User-defined tags associated with the service instance.
-        
-            -- Relationships
-                -- A list of relationships between applications and service instances, showing which applications are bound to which service instances.
-        
-            -- Accounts
-                -- A list of user account names.
-                -- A list of service account names.
-        """)
-    public SnapshotDetail getSnapshotDetail() {
-        return snapshotApiClient.snapshotDetailGet().getBody();
-    }
-
-    @Tool(name = "GetLegacyWorkloadDetails", description = "(Butler) Get details of legacy workloads based on stacks and service offerings.")
-    public Workloads getLegacyWorkloads(
-            @ToolParam(description = "Comma-separated list of stacks to filter by.") String stacks,
-            @ToolParam(description = "Comma-separated list of service offerings to filter by.") String serviceOfferings) {
-        return snapshotApiClient.snapshotDetailLegacyGet(stacks, serviceOfferings).getBody();
-    }
-
-    @Tool(name ="GetUsersInOrganizationAndSpace", description = "(Butler) Get users in a specific organization and space.")
     public SpaceUsers getSpaceUsers(
             @ToolParam(description = "Organization name.") String organization,
             @ToolParam(description = "Space name.") String space) {
         return snapshotApiClient.snapshotOrganizationSpaceUsersGet(organization, space).getBody();
     }
 
-    @Tool(name = "TotalNumberOfOrganizations", description = "(Butler) Get the count of organizations.")
+    @Tool(name = "SnapshotTotalNumberOfOrganizations", description =
+        """
+            Retrieve ONLY the total COUNT of organizations as a single number. Use for queries like 'How many
+            organizations exist?' or 'What is the organization count?'. NOT for listing organization names or details -
+            use GetPageableOrganizations for that.
+        """)
     public Long getOrganizationsCount() {
         return snapshotApiClient.snapshotOrganizationsCountGet().getBody();
     }
 
-    @Tool(name = "ListAllOrganizations", description = "(Butler) List all organizations.")
-    public List<Organization> getAllOrganizations() {
-        return snapshotApiClient.snapshotOrganizationsGet().getBody();
-    }
-
-    @Tool(name = "TotalNumberOfSpaces", description = "(Butler) Get the count of spaces.")
+    @Tool(name = "SnapshotTotalNumberOfSpaces", description =
+        """
+            Retrieve ONLY the total COUNT of spaces as a single number. Use for queries like 'How many spaces exist?'
+            or 'What is the total space count?'. NOT for listing space names or details - use GetPageableSpaces for that.
+        """)
     public Long getSpacesCount() {
         return snapshotApiClient.snapshotSpacesCountGet().getBody();
     }
 
-    @Tool(name = "ListAllSpaces", description = "(Butler) List all spaces.")
-    public List<Space> getAllSpaces() {
-        return snapshotApiClient.snapshotSpacesGet().getBody();
-    }
-
-    @Tool(name = "ForEachOrganizationAndSpaceListAllUsersBySpaceRoles", description =
+    @Tool(name = "SnapshotListAllUsersBySpaceRolesInAnOrganizationAndSpace", description =
         """
-            (Butler) List all space users. Each space user record includes:
+            Retrieve users with DETAILED ROLE INFORMATION (auditor, developer, manager) for a specific organization and space.
+            REQUIRES both organization name AND space name parameters.
+            Use for role-based queries like 'Who has manager access in the marketing space?'
+            A space user record includes:
             -- Organization
             -- Space
             -- Lists of users with auditor, developer, and manager roles
             -- List of distinct users among all roles
         """)
-    public List<SpaceUsers> getAllSpaceUsers() {
-        return snapshotApiClient.snapshotSpacesUsersGet().getBody();
+    public SpaceUsers getSpaceUsersForAnOrganizationAndSpace(
+            @ToolParam(description = "Organization name.") String organization,
+            @ToolParam(description = "Space name.") String space) {
+
+        return Optional.ofNullable(snapshotApiClient.snapshotSpacesUsersGet())
+                .map(ResponseEntity::getBody)
+                .flatMap(spaceUsersList -> spaceUsersList.stream()
+                        .filter(su -> organization.equalsIgnoreCase(su.getOrganization())
+                                && space.equalsIgnoreCase(su.getSpace()))
+                        .findFirst())
+                .orElse(null);
     }
 
-    @Tool(name = "ListAllSpacesAssociatedWithUserAccount", description = "(Butler) List all the organizations/spaces associated with a single user account")
+    @Tool(name = "SnapshotListAllSpacesAssociatedWithUserAccount", description =
+        """
+            List all spaces a SPECIFIC USER has access to across all organizations. REQUIRES user account name parameter.
+            Use for user-centric queries like 'What spaces can john.doe@example.com access?' NOT for listing users in a space.
+        """)
     public UserSpaces getUserSpaces(@ToolParam(description = "User account name.") String name) {
         return snapshotApiClient.snapshotSpacesUsersNameGet(name).getBody();
     }
 
-    @Tool(name = "GetSpringDependencyFrequenciesSummary", description =
+    @Tool(name = "SnapshotGetSpringDependencyFrequenciesSummary", description =
         """
-            (Butler) Get a summary of Spring dependency frequencies for applications built with the Java buildpack.
-            Essentially a map of key-value pairs where the key is the dependency version
+            Analyze Spring dependency version statistics across Java applications. Returns frequency distribution data
+            ONLY, not details about specific applications.
+            Use for Spring dependency analysis questions like 'Which Spring Boot versions are most common?'
+            Returns a map of key-value pairs where the key is the dependency version
             and value is the number of occurrences of that version.
         """)
     public Map<String, Integer> getSpringDependencyFrequenciesSummary() {
         return snapshotApiClient.snapshotSummaryAiSpringGet().getBody();
     }
 
-    @Tool(name = "GetSnapshotSummary", description =
+    @Tool(name = "SnapshotGetSnapshotSummary", description =
         """
-           (Butler) Get snapshot summary.  This includes:
+           Retrieve a comprehensive AGGREGATED SUMMARY of the entire foundation, including counts, metrics, and statistics.
+           Use for broad overview queries like 'Give me a summary of the foundation'. NOT for listing specific applications, services, or users.
+           This summary includes:
            -- Application Counts - Total number of applications, running instances, stopped instances, crashed instances, and total instances.
-           -- Application Groupings - Counts of applications grouped by organization, buildpack, stack, Docker image, and application status (e.g., started, stopped, crashed).
+           -- Application Groupings - Counts of applications grouped by organization, buildpack, stack, Docker image, and application status.
            -- Application Resource Usage - Total memory and disk space used by applications (in gigabytes).
            -- Application Velocity - Metrics showing application creation and deletion trends over different time ranges.
            -- Service Instance Counts - Total number of service instances.
@@ -170,13 +138,13 @@ public class SnapshotService {
         return snapshotApiClient.snapshotSummaryGet().getBody();
     }
 
-    @Tool(name = "TotalNumberOfUserAccounts", description = "(Butler) Get the total count of user accounts.")
+    @Tool(name = "SnapshotTotalNumberOfUserAccounts", description =
+        """
+            Retrieve ONLY the total COUNT of user accounts as a single number. Use for queries like 'How many users exist?'
+            or 'What is the user count?'. NOT for listing user names or details - use GetPageableUserAccounts for that.
+        """)
     public Long getUsersCount() {
         return snapshotApiClient.snapshotUsersCountGet().getBody();
     }
 
-    @Tool(name = "ListAllUserAccounts", description = "(Butler) List all account names.")
-    public List<String> getAllUserAccountNames() {
-        return snapshotApiClient.snapshotUsersGet().getBody();
-    }
 }
