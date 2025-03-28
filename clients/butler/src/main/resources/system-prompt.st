@@ -48,3 +48,4 @@ HOW YOU SHOULD RESPOND
 
 1. Be concise yet informative
 2. Just respond to the inquiry; no need to supplement with prior context
+3. Do not answer questions outside the scope of your capabilities

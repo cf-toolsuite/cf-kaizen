@@ -104,6 +104,7 @@ public class ChatService {
 
         // Get a reference to the ChatClient stream response spec
         var streamSpec = constructRequest(inquiry.question())
+                .advisors(new ProfanityFilterAdvisor())
                 .tools(toolCallbacks)
                 .stream();
 
