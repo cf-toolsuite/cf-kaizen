@@ -14,37 +14,73 @@
 
 COMMAND=$1
 
-# ------------------------------
-# You are free to change these variable values
-#
-FOUNDATION="dhaka"
-CF_DOMAIN="apps.dhaka.cf-app.com"
-CF_KAIZEN_BUTLER_SERVER_URL="https://cf-kaizen-butler-server.$CF_DOMAIN"
-CF_KAIZEN_HOOVER_SERVER_URL="https://cf-kaizen-hoover-server.$CF_DOMAIN"
+# --------------------------------------------------------------------------------
+# ENVIRONMENT VARIABLES
+# Update values here as you like
 
-# Whichever plan you've configured below, it must a) be available from the cf marketplace and b) have chat capability
-GENAI_CHAT_SERVICE_NAME="kaizen-llm"
-GENAI_CHAT_PLAN_NAME="llama3.2"
-#
-# ------------------------------
+export FOUNDATION="dhaka"
+export CF_DOMAIN="apps.dhaka.cf-app.com"
+export CF_KAIZEN_BUTLER_SERVER_URL="https://cf-kaizen-butler-server.$CF_DOMAIN"
+export CF_KAIZEN_HOOVER_SERVER_URL="https://cf-kaizen-hoover-server.$CF_DOMAIN"
 
-flag="${2:-}"
-flag="${flag,,}"
+export GENAI_CHAT_SERVICE_NAME="kaizen-llm"
+# -- Must be an available service plan (@see cf m -e genai)
+export GENAI_CHAT_PLAN_NAME="llama3.2"
 
-if [ "$flag" == "y" ]; then
-  ENABLE_DROPLET_SCANNING="y"
-  ENABLE_CLONE_REFRESH="y"
-else
-  ENABLE_DROPLET_SCANNING="n"
-  ENABLE_CLONE_REFRESH="n"
-fi
+# Where do you want applications and services deployed?
+# cf-kaizen
+export KAIZEN_ORG="kaizen"
+export KAIZEN_SPACE="prod"
+# cf-butler and cf-hoover
+export OBSERVABILITY_ORG="observability"
+export OBSERVABILITY_SPACE="cf-toolsuite"
+# sample application
+export SAMPLE_APP_ORG="zoolabs"
+export SAMPLE_APP_SPACE="dev"
+export SAMPLE_APP_NAME="primes"
+export SAMPLE_APP_ARTIFACT_HOME="build/libs"
+export SAMPLE_APP_VERSION="1.0-SNAPSHOT"
+export SAMPLE_APP_GITHUB_REPO="fastnsilver/primes"
+export SAMPLE_APP_GITHUB_BRANCH="3.4"
+# --------------------------------------------------------------------------------
+# CAUTION: DO NOT CHANGE ANYTHING BELOW UNLESS YOU KNOW WHAT YOU'RE DOING
+
+function tool_checks() {
+  # Check for required tools
+  echo "-- Checking whether or not required tools are installed"
+
+  # Check if ytt is installed
+    if ! command -v jq &> /dev/null; then
+      echo "Error: jq is not installed. Please install it first."
+      echo "MacOS: brew install jq"
+      echo "Linux: Follow instructions at https://jqlang.org/download/"
+      exit 1
+    fi
+
+    # Check if gh (GitHub CLI) is installed
+    if ! command -v gh &> /dev/null; then
+      echo "Error: GitHub CLI (gh) is not installed. Please install it first."
+      echo "MacOS: brew install gh"
+      echo "Linux: Follow instructions at https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
+      exit 1
+    fi
+
+    # Check if cf (Cloud Foundry CLI) is installed
+    if ! command -v cf &> /dev/null; then
+      echo "Error: Cloud Foundry CLI (cf) is not installed. Please install it first."
+      echo "MacOS: brew install cloudfoundry/tap/cf-cli"
+      echo "Linux: Follow instructions at https://docs.cloudfoundry.org/cf-cli/install-go-cli.html"
+      exit 1
+    fi
+}
 
 function determine_jar_release() {
   local date_pattern='[0-9]{4}\.[0-9]{2}\.[0-9]{2}'
   local date=""
   local current_date=""
 
-  for file in target/*.jar; do
+  # Use find with -print0 and a while read loop to properly handle all filenames
+  while IFS= read -r -d '' file; do
     if [[ $file =~ $date_pattern ]]; then
       current_date="${BASH_REMATCH[0]}"
       if [[ -z $date ]]; then
@@ -57,10 +93,10 @@ function determine_jar_release() {
       echo "No matching date found in: $file"
       return 1
     fi
-  done
+  done < <(find target -name "*.jar" -type f -print0 2>/dev/null)
 
   if [[ -n $date ]]; then
-    echo $date
+    echo "$date"
   else
     echo "No files with the expected date pattern found."
     return 1
@@ -99,6 +135,48 @@ function set_cf_env_vars() {
   cf set-env "$app_name" JBP_CONFIG_SPRING_AUTO_RECONFIGURATION '{ enabled: false }'
 }
 
+function uber_build() {
+  if [ -f "pom.xml" ]; then
+    build_with_maven
+  fi
+
+  if [ -f "build.gradle" ]; then
+    build_with_gradle
+  fi
+}
+
+function build_with_maven() {
+  if [ -f "./mvnw" ]; then
+    chmod +x ./mvnw
+    ./mvnw install
+  else
+    mvn install
+  fi
+}
+
+function build_with_gradle() {
+  if [ -f "./gradlew" ]; then
+    chmod +x ./gradlew
+    ./gradlew build
+  else
+    gradle build
+  fi
+}
+
+# --------------------------------------------------------------------------------
+# START SCRIPT
+
+tool_checks
+
+flag="${2:-}"
+
+if [ "$flag" == "y" ] || [ "$flag" == "Y" ]; then
+  ENABLE_DROPLET_SCANNING="y"
+  ENABLE_CLONE_REFRESH="y"
+else
+  ENABLE_DROPLET_SCANNING="n"
+  ENABLE_CLONE_REFRESH="n"
+fi
 
 case $COMMAND in
 
@@ -115,7 +193,7 @@ authenticate)
 provision)
   ## Create orgs and spaces
   echo "-- Creating organizations and spaces"
-  declare -a SPACES=( "kaizen:prod" "observability:cf-toolsuite" "zoolabs:dev" )
+  declare -a SPACES=( "${KAIZEN_ORG}:${KAIZEN_SPACE}" "${OBSERVABILITY_ORG}:${OBSERVABILITY_SPACE}" "${SAMPLE_APP_ORG}:${SAMPLE_APP_SPACE}" )
   for space in "${SPACES[@]}"
   do
     # Split the string using ":" as delimiter
@@ -132,7 +210,7 @@ provision)
 deprovision)
   ## Delete orgs and spaces
   echo "-- Deleting organizations (and spaces)"
-  declare -a ORGANIZATIONS=( "kaizen" "observability" "zoolabs" )
+  declare -a ORGANIZATIONS=( "${KAIZEN_ORG}" "${OBSERVABILITY_ORG}" "${SAMPLE_APP_ORG}" )
   for org in "${ORGANIZATIONS[@]}"
   do
     cf delete-org "$org" -f
@@ -146,8 +224,11 @@ clone)
   declare -a REPOSITORIES=( "cf-toolsuite/cf-butler" "cf-toolsuite/cf-hoover" "cf-toolsuite/cf-kaizen" )
   for repo in "${REPOSITORIES[@]}"
   do
+    # Extract the repo name from the full path
+    repo_name=$(basename "$repo")
+    
     if [ "$ENABLE_CLONE_REFRESH" == "y" ]; then
-        rm -Rf "/tmp/$repo"
+        rm -Rf "/tmp/${repo_name}"
     fi
     gh repo clone "$repo"
   done
@@ -162,33 +243,45 @@ build)
   for proj in "${PROJECTS[@]}"
   do
     cd "$proj" || exit 1
-    ./mvnw install
+    uber_build
     cd /tmp || exit 1
   done
-  cd primes || exit 1
-  git checkout 3.4
-  ./gradlew build
+
+  cd ${SAMPLE_APP_NAME} || exit 1
+  git checkout ${SAMPLE_APP_GITHUB_BRANCH}
+  uber_build
   ;;
 
 deploy-sample-app)
-  ## Deploy application instance to zoolabs/dev
   echo "-- Deploying application instance"
-  cf target -o zoolabs -s dev
+  cf target -o ${SAMPLE_APP_ORG} -s ${SAMPLE_APP_SPACE}
 
-  cd /tmp/primes || exit 1
-  cf push primes -m 1G -p build/libs/primes-1.0-SNAPSHOT.jar -s cflinuxfs4 --no-start
-  set_cf_env_vars primes
-  cf start primes
+  cd /tmp/${SAMPLE_APP_NAME} || exit 1
+  cf push ${SAMPLE_APP_NAME} -m 1G -p ${SAMPLE_APP_ARTIFACT_HOME}/${SAMPLE_APP_NAME}-${SAMPLE_APP_VERSION}.jar -s cflinuxfs4 --no-start
+  set_cf_env_vars ${SAMPLE_APP_NAME}
+  cf start ${SAMPLE_APP_NAME}
   ;;
 
 deploy-observability)
   ## Deploy application and service instances to observability/cf-toolsuite
   echo "-- Deploying cf-butler and cf-hoover and supporting service instances"
-  cf target -o observability -s cf-toolsuite
+  cf target -o ${OBSERVABILITY_ORG} -s ${OBSERVABILITY_SPACE}
 
   cd /tmp/cf-butler || exit 1
   cf push --no-start --no-route
-  jq --arg token "$(jq -r '.RefreshToken' $HOME/.cf/config.json)" '.["CF_REFRESH-TOKEN"] = $token' /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION.json > /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION-updated.json
+  
+  # Check if $HOME/.cf/config.json exists (handling different possible locations)
+  CF_CONFIG_FILE="$HOME/.cf/config.json"
+  if [ ! -f "$CF_CONFIG_FILE" ]; then
+    # Try alternative location for macOS
+    CF_CONFIG_FILE="$HOME/Library/Application Support/cf/config.json"
+    if [ ! -f "$CF_CONFIG_FILE" ]; then
+      echo "Error: CF config file not found at expected locations"
+      exit 1
+    fi
+  fi
+  
+  jq --arg token "$(jq -r '.RefreshToken' "$CF_CONFIG_FILE")" '.["CF_REFRESH-TOKEN"] = $token' /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION.json > /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION-updated.json
   cf create-service credhub default cf-butler-secrets -c /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION-updated.json
   cf bind-service cf-butler cf-butler-secrets
   cf create-route $CF_DOMAIN --hostname cf-butler-dev
@@ -203,10 +296,13 @@ deploy-observability)
   cd /tmp/cf-hoover || exit 1
   cf push cf-hoover --no-start
   cf create-service p.config-server standard cf-hoover-config -c /tmp/cf-kaizen/config/secrets.hoover-on-$FOUNDATION.json
-  while [[ $(cf service cf-hoover-config) != *"succeeded"* ]]; do
+  
+  # Wait for service to be ready - compatible with both macOS and Linux
+  while ! cf service cf-hoover-config | grep -q "succeeded"; do
     echo "cf-hoover-config is not ready yet..."
     sleep 5
   done
+  
   cf bind-service cf-hoover cf-hoover-config
   cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED false
   cf set-health-check cf-hoover http --endpoint /actuator/health --invocation-timeout 180
@@ -217,11 +313,11 @@ deploy-kaizen)
   ## Deploy application instances to kaizen/prod
   echo "-- Deploying MCP server and client application instances"
 
-  cf target -o observability -s cf-toolsuite
+  cf target -o ${OBSERVABILITY_ORG} -s ${OBSERVABILITY_SPACE}
   CF_BUTLER_API_ENDPOINT=$(get_app_url cf-butler)
   CF_HOOVER_API_ENDPOINT=$(get_app_url cf-hoover)
 
-  cf target -o kaizen -s prod
+  cf target -o ${KAIZEN_ORG} -s ${KAIZEN_SPACE}
 
   cd /tmp/cf-kaizen/target || exit 1
   VERSION="0.0.1-SNAPSHOT"
@@ -295,7 +391,7 @@ deploy-kaizen)
 
 destroy)
   echo "-- Deleting all application and service instances"
-  cf target -o kaizen -s prod
+  cf target -o ${KAIZEN_ORG} -s ${KAIZEN_SPACE}
   cf unbind-service cf-kaizen-butler-frontend $GENAI_CHAT_SERVICE_NAME
   cf unbind-service cf-kaizen-hoover-frontend $GENAI_CHAT_SERVICE_NAME
   cf delete-service $GENAI_CHAT_SERVICE_NAME -f
@@ -305,13 +401,13 @@ destroy)
     cf delete "$app" -r -f
   done
 
-  cf target -o observability -s cf-toolsuite
+  cf target -o ${OBSERVABILITY_ORG} -s ${OBSERVABILITY_SPACE}
   cf unbind-service cf-hoover cf-hoover-config
   cf delete-service cf-hoover-config -f
   cf delete cf-hoover -r -f
   cf delete cf-butler -r -f
 
-  cf target -o zoolabs -s dev
+  cf target -o ${SAMPLE_APP_ORG} -s ${SAMPLE_APP_SPACE}
   cf delete primes -r -f
   ;;
 
@@ -328,3 +424,6 @@ download-artifacts)
   echo && printf "\e[31m⏹  Usage: deploy-on-tp4cf.sh authenticate|provision|deprovision|clone|build|deploy-sample-app|deploy-observability|deploy-kaizen|destroy|download-artifacts \e[m\n" && echo
   ;;
 esac
+
+# END SCRIPT
+# --------------------------------------------------------------------------------

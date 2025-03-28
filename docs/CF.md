@@ -176,20 +176,25 @@ Validate that the additional tools are present before crafting and executing you
 
 ### Deploying with the All-in-one script
 
-If you're in a hurry, open the all-in-one [script](../scripts/all-in-one.sh) in your favorite editor.
+If you're in a hurry, open the all-in-one [script](../scripts/all-in-one.sh) in your favorite editor.  (There's also a PowerShell [variant](../scripts/all-in-one.ps1)).
 
 Change the values within the _ENVIRONMENT VARIABLES_ section to suit your needs.  Save the changes.  Open a Terminal session, then execute:
 
 ```bash
+# On MacOS/Linux
 ./scripts/all-in-one.sh
+# On Windows
+.\all-in-one.ps1
 ```
+
+
 
 > [!IMPORTANT]
 > This script will only deploy the cf-kaizen applications (only the MCP servers and clients).  Application instances of cf-butler and/or cf-hoover should previously have been deployed.
 
 ### Deploying to Tanzu Platform for Cloud Foundry
 
-If you're interested in hoisting everything so that it runs on a target foundation, take a look at this [script](../scripts/deploy-on-tp4cf.sh).
+If you're interested in hoisting everything so that it runs on a target foundation, take a look at this [script](../scripts/deploy-on-tp4cf.sh).  (There's also a PowerShell [variant](../scripts/deploy-on-tp4cf.ps1)).
 
 Let's say you already know of a Cloud Foundry API endpoint, and your Platform Engineering team has setup Single Sign-On.  
 
@@ -197,6 +202,7 @@ Well, to get rolling, you could open a Terminal session, then execute:
 
 ```bash
 cd scripts
+# Take care to replace the CF_API value below with your purposes
 export CF_API="https://api.sys.dhaka.cf-app.com"
 envsubst '$CF_API' < deploy-on-tp4cf.sh > deploy.sh
 chmod +x *.sh
@@ -221,13 +227,32 @@ chmod +x *.sh
 ./deploy.sh deploy-kaizen --pre-built
 ```
 
+```bash
+# If you're on Windows then swap out export command above for
+$env:CF_API = "https://api.sys.dhaka.cf-app.com"
+# If you're on Windows then swap out envsubst command above for
+$content = Get-Content -Path "deploy-on-tp4cf.ps1" -Raw
+$content = $content -replace '\$CF_API', $env:CF_API
+$content | Set-Content -Path "deploy.ps1"
+# If you're on Windows then swap out occurrences of ./deploy.sh above for .\deploy.ps1
+# Take care to replace {option} below with the actual option you wish to execute 
+.\deploy.ps1 {option}
+```
+
 When you've completed your evaluation, you can clean up everything with, e.g.,
 
 ```bash
+# On MacOS/Linux
 ./deploy.sh destroy
+# On Windows
+.\deploy.ps1 destroy
 
-# or more aggressively 
+# Or more aggressively...
+
+# On MacOS/Linux
 ./deploy.sh deprovision
+# On Windows
+.\deploy.ps1 deprovision
 ```
 
 ### Consuming models off-platform
