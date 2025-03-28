@@ -89,6 +89,34 @@ export const ChatProvider = ({ children, isDarkMode }) => {
     };
   }, [toolState.showToolsMenu, tooltipState.showTooltip, toolState.setShowToolsMenu, tooltipState.handleTooltipMouseLeave]);
 
+  // Function to resubmit a question from history
+  const resubmitQuestion = (fullQuestionText, originalTools = []) => {
+    // Set the question in the textarea
+    chatState.setQuestion(fullQuestionText);
+    
+    // After a small delay to allow question state to update
+    setTimeout(() => {
+      // Set the tools that were originally used with this question
+      if (originalTools && originalTools.length > 0) {
+        // Extract just the tool IDs if tools are objects
+        const toolIds = originalTools.map(tool => 
+          typeof tool === 'string' ? tool : tool.id
+        );
+        toolState.setSelectedTools(toolIds);
+      } 
+      // If no original tools or empty tools array, ensure at least one tool is selected
+      else if (toolState.selectedTools.length === 0 && toolState.availableTools.length > 0) {
+        toolState.setSelectedTools([toolState.availableTools[0].id]);
+      }
+      
+      // Focus the textarea to ensure the user sees where the text was populated
+      const textarea = document.querySelector('textarea');
+      if (textarea) {
+        textarea.focus();
+      }
+    }, 100); // Small delay to ensure React state updates
+  };
+
   // Check if submit should be disabled
   const isSubmitDisabled = chatState.isLoading ||
                            !chatState.question.trim() ||
@@ -122,7 +150,8 @@ export const ChatProvider = ({ children, isDarkMode }) => {
     isSubmitDisabled,
 
     // Actions
-    handleSubmit
+    handleSubmit,
+    resubmitQuestion
   };
 
   return (

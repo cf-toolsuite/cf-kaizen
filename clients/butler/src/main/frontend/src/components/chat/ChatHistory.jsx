@@ -6,7 +6,7 @@ import rehypeFormat from 'rehype-format';
 import remarkBreaks from 'remark-breaks';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ChevronDown, ChevronUp, Wrench } from 'lucide-react';
+import { ChevronDown, ChevronUp, RotateCcw, Calendar } from 'lucide-react';
 import { processMarkdown } from '@/utils/markdownProcessor';
 import MetadataDisplay from './MetadataDisplay';
 import { useChat } from '../../context/ChatContext';
@@ -15,7 +15,9 @@ const ChatHistory = () => {
   const {
     chatHistory,
     toggleHistoryItem,
-    isDarkMode
+    isDarkMode,
+    resubmitQuestion,
+    isLoading
   } = useChat();
 
   if (chatHistory.length === 0) {
@@ -44,26 +46,44 @@ const ChatHistory = () => {
             >
               {item.question}
             </span>
-            <div className="flex items-center justify-center w-6 h-6 min-w-6 min-h-6">
-              {item.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <div className="flex items-center">
+              <div className="flex items-center">
+                <button
+                  className={`flex items-center justify-center w-6 h-6 min-w-6 min-h-6 rounded-full ${isLoading ? 'opacity-50 cursor-not-allowed' : ''} ${isDarkMode ? 'hover:bg-teal-700' : 'hover:bg-gray-200'}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isLoading) {
+                      // Pass the question text and the tools that were originally used
+                      resubmitQuestion(item.fullQuestionText, item.tools);
+                    }
+                  }}
+                  disabled={isLoading}
+                  title="Reload this question"
+                >
+                  <RotateCcw size={14} className={isDarkMode ? 'text-teal-100' : 'text-blue-600'} />
+                </button>
+                <div className="flex items-center justify-center w-6 h-6 min-w-6 min-h-6">
+                  {item.expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Show a condensed version of metadata in collapsed state */}
           {!item.expanded && item.metadata && (
-            <MetadataDisplay 
-              metadata={item.metadata} 
-              isDarkMode={isDarkMode} 
-              condensed={true} 
+            <MetadataDisplay
+              metadata={item.metadata}
+              isDarkMode={isDarkMode}
+              condensed={true}
             />
           )}
 
-          {/* Show selected tools in the history item */}
-          {!item.expanded && item.tools && item.tools.length > 0 && (
+          {/* Show timestamp */}
+          {!item.expanded && item.timestamp && (
             <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               <div className="flex items-center gap-1">
-                <Wrench size={10} />
-                <span>{item.tools.length} tool{item.tools.length > 1 ? 's were' : ' was'} active</span>
+                <Calendar size={10} />
+                <span>{new Date(item.timestamp).toLocaleString()}</span>
               </div>
             </div>
           )}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, ChevronDown, Info } from 'lucide-react';
+import { Hammer, ChevronDown, Info } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 
 const ToolSelector = () => {
@@ -35,8 +35,8 @@ const ToolSelector = () => {
         } ${selectedTools.length > 0 ? 'border-2 border-blue-500' : ''}`}
         title={`${selectedTools.length} tools selected`}
       >
-        <Wrench size={16} />
-        <span>Tools{selectedTools.length > 0 ? ` (${selectedTools.length})` : ''}</span>
+        <Hammer size={16} />
+        <span>{selectedTools.length > 0 ? ` ${selectedTools.length}` : ''}</span>
         <ChevronDown size={14} />
       </button>
 

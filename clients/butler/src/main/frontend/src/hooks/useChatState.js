@@ -29,6 +29,7 @@ export const useChatState = () => {
       const newHistory = [
         {
           question: questionText,
+          fullQuestionText: questionText, // Store the full question text
           answer: answerText,
           expanded: false,
           questionNumber: prev.length > 0 ? prev[0].questionNumber + 1 : 1,
@@ -36,6 +37,7 @@ export const useChatState = () => {
           titleColor,
           metadata,
           tools: tools && tools.length > 0 ? [...tools] : [],
+          timestamp: new Date(), // Add timestamp
         },
         ...prev,
       ];
