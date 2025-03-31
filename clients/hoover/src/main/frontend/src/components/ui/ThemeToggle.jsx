@@ -3,30 +3,28 @@ import React from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 const ThemeToggle = ({ isDarkMode, toggleTheme }) => {
-    return (
-        <div className="flex items-center">
-            <button
-                onClick={toggleTheme}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                    isDarkMode ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-                role="switch"
-                aria-checked={isDarkMode}
-            >
-        <span
-            className={`${
-                isDarkMode ? 'translate-x-6' : 'translate-x-1'
-            } inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out`}
-        >
-          {isDarkMode ? (
-              <Moon className="h-4 w-4 text-blue-800" />
-          ) : (
-              <Sun className="h-4 w-4 text-yellow-500" />
-          )}
-        </span>
-            </button>
-        </div>
-    );
+  return (
+    <button
+      onClick={toggleTheme}
+      className={`relative inline-flex items-center justify-center rounded-full transition-colors focus:outline-none ${
+        isDarkMode ? 'bg-blue-600' : 'bg-gray-200'
+      }`}
+      role="switch"
+      aria-checked={isDarkMode}
+      style={{ 
+        touchAction: 'manipulation', 
+        minHeight: '40px', 
+        minWidth: '40px',
+        padding: '10px'
+      }}
+    >
+      {isDarkMode ? (
+        <Moon className="h-5 w-5 text-white" />
+      ) : (
+        <Sun className="h-5 w-5 text-yellow-500" />
+      )}
+    </button>
+  );
 };
 
 export default ThemeToggle;

@@ -60,26 +60,16 @@ export const ChatProvider = ({ children, isDarkMode }) => {
     }
   }, [chatState.answer]);
 
-  // Handle clicks outside of tooltips and menus
+  // Handle clicks outside of tools menu only (tooltips handled by useTooltip hook)
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Close tools menu when clicking outside
       if (
         toolState.showToolsMenu &&
         !event.target.closest('.tools-menu-container') &&
-        !event.target.closest('.tooltip-container') &&
-        !event.target.closest('.tooltip-icon')
+        !event.target.closest('.tooltip-content')
       ) {
         toolState.setShowToolsMenu(false);
-        tooltipState.handleTooltipMouseLeave();
-      }
-      // Close tooltip when clicking outside
-      else if (
-        tooltipState.showTooltip &&
-        !event.target.closest('.tooltip-container') &&
-        !event.target.closest('.tooltip-icon')
-      ) {
-        tooltipState.handleTooltipMouseLeave();
       }
     };
 
@@ -87,7 +77,7 @@ export const ChatProvider = ({ children, isDarkMode }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [toolState.showToolsMenu, tooltipState.showTooltip, toolState.setShowToolsMenu, tooltipState.handleTooltipMouseLeave]);
+  }, [toolState.showToolsMenu, toolState.setShowToolsMenu]);
 
   // Function to resubmit a question from history
   const resubmitQuestion = (fullQuestionText, originalTools = []) => {
