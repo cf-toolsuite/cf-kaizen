@@ -7,6 +7,7 @@ import rehypeFormat from 'rehype-format';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { processMarkdown } from '@/utils/markdownProcessor';
+import Link from './common/Link';
 
 // Custom component for better markdown rendering with optimal spacing
 const MarkdownRenderer = ({ content, isDarkMode, className = '' }) => {
@@ -77,6 +78,16 @@ const MarkdownRenderer = ({ content, isDarkMode, className = '' }) => {
             <code className={className} {...props}>
               {children}
             </code>
+          );
+        },
+        
+        // Custom link renderer with consistent styling
+        a: ({ node, href, children, ...props }) => {
+          const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));
+          return (
+            <Link href={href} external={isExternal} {...props}>
+              {children}
+            </Link>
           );
         }
       }}
