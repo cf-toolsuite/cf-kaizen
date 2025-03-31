@@ -42,10 +42,10 @@ const ToolSelector = () => {
 
       {showToolsMenu && (
         <div
-          className={`absolute left-0 mt-1 rounded-md shadow-lg z-10 ${
+          className={`absolute left-0 bottom-full mb-1 rounded-md shadow-lg z-10 ${
             isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
           } border max-h-64 overflow-y-auto`}
-          style={{ width: (historyButtonRef?.current?.offsetWidth || 150) * 5 }} // Quintuple the width
+          style={{ width: (historyButtonRef?.current?.offsetWidth || 150) * 4 }}
         >
           {/* Fixed header */}
           <div
@@ -92,7 +92,7 @@ const ToolSelector = () => {
                   <div className="flex-grow">
                     <label
                       htmlFor={`tool-${key}`}
-                      className="font-medium cursor-pointer flex items-center group relative"
+                      className="cursor-pointer flex items-center group relative"
                     >
                       <span
                         className="hover:underline"
@@ -122,12 +122,14 @@ const ToolSelector = () => {
           ref={tooltipRef}
           className={`fixed p-3 rounded-md shadow-lg z-20 max-w-xs ${
             isDarkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-900'
-          } border`}
+          } border overflow-y-auto`}
           style={{
             maxHeight: '30vh',
-            overflow: 'auto',
-            top: `${tooltipAnchor.getBoundingClientRect().bottom + window.scrollY + 5}px`, // Position below the anchor
-            left: `${tooltipAnchor.getBoundingClientRect().left + window.scrollX}px`, // Align with the left edge of the anchor
+            top: `${Math.max(10, tooltipAnchor.getBoundingClientRect().top + window.scrollY - 10)}px`,
+            left: `${Math.min(
+              window.innerWidth - 250,
+              tooltipAnchor.getBoundingClientRect().right + window.scrollX + 5
+            )}px`
           }}
           onClick={(e) => e.stopPropagation()}
         >

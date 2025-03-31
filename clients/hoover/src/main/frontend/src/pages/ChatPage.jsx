@@ -1,4 +1,5 @@
 import React from 'react';
+import ResponsiveContainer from '../components/layout/ResponsiveContainer';
 import { ChatProvider } from '../context/ChatContext';
 import ChatContainer from '../components/chat/ChatContainer';
 import '@/components/ui/markdown-styles.css';
@@ -10,7 +11,9 @@ import '@/components/ui/markdown-styles.css';
 const ChatPage = ({ isDarkMode }) => {
   return (
     <ChatProvider isDarkMode={isDarkMode}>
-      <ChatContainer />
+      <ResponsiveContainer>
+        <ChatContainer />
+      </ResponsiveContainer>
     </ChatProvider>
   );
 };
