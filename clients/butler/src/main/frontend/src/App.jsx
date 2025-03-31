@@ -41,13 +41,13 @@ const App = () => {
             <header className="py-4 border-b">
                 <ResponsiveContainer>
                     <div className="flex justify-between items-center">
-                    <div className="flex-1 flex justify-center">
-                        <h1 className="text-xl font-semibold mr-auto flex items-center"><BrainCircuit className="mr-2" size={24} /> Butler</h1>
+                    <div className="flex items-center">
+                        <h1 className="text-xl font-semibold flex items-center">
+                            <BrainCircuit className="mr-2" size={24} /> Butler
+                        </h1>
                     </div>
-                    <div className="flex-1 flex justify-center">
-                        <div className="ml-auto">
-                            <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-                        </div>
+                    <div className="flex items-center">
+                        <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
                     </div>
                 </div>
                 </ResponsiveContainer>
