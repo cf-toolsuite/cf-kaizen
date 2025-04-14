@@ -9,9 +9,11 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AbstractMessage;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,9 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
@@ -83,6 +88,9 @@ public class ChatService {
      * @return A stream of response chunks, with metadata appended at the end
      */
     public Flux<String> streamResponseToQuestion(Inquiry inquiry) {
+        // Record start time for response time calculation
+        Instant startTime = Instant.now();
+
         List<McpAsyncClient> clients = asyncClientManager.newMcpAsyncClients();
         AsyncMcpToolCallbackProvider provider = new AsyncMcpToolCallbackProvider(clients);
 
@@ -93,70 +101,95 @@ public class ChatService {
             // Filter tool callbacks based on selected tools
             List<String> selectedTools = inquiry.tools();
             toolCallbacks = Arrays.stream(toolCallbacks)
-                .filter(callback -> selectedTools.contains(callback.getToolDefinition().name()))
-                .toArray(ToolCallback[]::new);
+                    .filter(callback -> selectedTools.contains(callback.getToolDefinition().name()))
+                    .toArray(ToolCallback[]::new);
 
             log.info("Filtered tools to {} selected tools: {}", toolCallbacks.length, selectedTools);
         }
 
-        // Record start time for response time calculation
-        Instant startTime = Instant.now();
-
-        // Get a reference to the ChatClient stream response spec
-        var streamSpec = constructRequest(inquiry.question())
+        var request = chatClient
+                .prompt()
+                .user(inquiry.question())
                 .advisors(new ProfanityFilterAdvisor())
-                .tools(toolCallbacks)
-                .stream();
+                .tools(toolCallbacks);
 
-        // First, stream the content chunks
-        return streamSpec
-                .content()
+        // Get the streaming response
+        var streamingResponse = request.stream();
+
+        // Create holders for the final response metadata
+        AtomicInteger promptTokens = new AtomicInteger(0);
+        AtomicInteger completionTokens = new AtomicInteger(0);
+        AtomicInteger totalTokens = new AtomicInteger(0);
+        AtomicReference<String> modelRef = new AtomicReference<>("");
+
+        // Stream the content and collect metadata along the way
+        return streamingResponse.chatResponse()
+                .map(chatResponse -> {
+                    ChatResponseMetadata metadata = chatResponse.getMetadata();
+                    if (metadata != null && metadata.getUsage() != null) {
+                        Usage usage = metadata.getUsage();
+
+                        // Update with max values seen so far
+                        promptTokens.updateAndGet(current -> Math.max(current, usage.getPromptTokens()));
+                        completionTokens.updateAndGet(current -> Math.max(current, usage.getCompletionTokens()));
+                        totalTokens.updateAndGet(current -> Math.max(current, usage.getTotalTokens()));
+
+                        // Capture the model info (should be same for all responses)
+                        if (metadata.getModel() != null) {
+                            modelRef.set(metadata.getModel());
+                        }
+                    }
+                    // Safely extract content, handling potential nulls
+                    return Optional.ofNullable(chatResponse.getResult())
+                            .map(Generation::getOutput)
+                            .map(AbstractMessage::getText)
+                            .orElse("");
+
+                })
                 // After all content is streamed, send a final metadata chunk
                 .concatWith(Mono.defer(() -> {
                     try {
-                        // Calculate response time
+                        // Calculate response time at completion of streaming
                         Instant endTime = Instant.now();
                         Duration responseDuration = Duration.between(startTime, endTime);
                         String formattedTime = MetricUtils.formatResponseTime(responseDuration);
 
-                        // Get the last metadata from the response
-                        // Use a synchronous call to get full metadata after streaming is done
-                        var chatResponse = chatClient
-                                .prompt()
-                                .user(inquiry.question())
-                                .call()
-                                .chatResponse();
-
-                        ChatResponseMetadata metadata = chatResponse.getMetadata();
-                        Usage usage = metadata.getUsage();
-
-                        // Calculate tokens per second
+                        // Calculate tokens per second using accumulated metadata
                         Double tokensPerSecond = MetricUtils.calculateTokensPerSecond(
-                                usage.getTotalTokens(),
+                                totalTokens.get(),
                                 responseDuration.toMillis()
                         );
 
-                        // Create metadata object
+                        // Create metadata object from accumulated values
                         ChatMetadata chatMetadata = ChatMetadata.builder()
-                                .inputTokens(usage.getPromptTokens())
-                                .outputTokens(usage.getCompletionTokens())
-                                .totalTokens(usage.getTotalTokens())
+                                .inputTokens(promptTokens.get())
+                                .outputTokens(completionTokens.get())
+                                .totalTokens(totalTokens.get())
                                 .responseTime(formattedTime)
                                 .tokensPerSecond(tokensPerSecond)
-                                .model(metadata.getModel())
+                                .model(modelRef.get())
                                 .build();
 
                         // Create and serialize a metadata response
                         ChatResponse metadataResponse = ChatResponse.metadataChunk(chatMetadata);
-                        return Mono.just(objectMapper.writeValueAsString(metadataResponse));
-                    }
-                    catch (JsonProcessingException e) {
-                        log.error("Error serializing metadata: ", e);
-                        return Mono.empty();
-                    }
-                    catch (Exception e) {
-                        log.error("Error retrieving metadata: ", e);
-                        return Mono.empty();
+                        String metadataJson = objectMapper.writeValueAsString(metadataResponse);
+
+                        return Mono.just(metadataJson);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error serializing metadata", e);
+
+                        // Create a minimal JSON metadata if serialization fails
+                        try {
+                            Instant endTime = Instant.now();
+                            Duration responseDuration = Duration.between(startTime, endTime);
+                            String formattedTime = MetricUtils.formatResponseTime(responseDuration);
+
+                            return Mono.just(String.format("{\"type\":\"metadata\",\"responseTime\":\"%s\"}", formattedTime));
+                        } catch (RuntimeException fallbackError) {
+                            // Using specific RuntimeException for fallback error
+                            log.error("Failed to create fallback metadata", fallbackError);
+                            return Mono.empty();
+                        }
                     }
                 }));
     }

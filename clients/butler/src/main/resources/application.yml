@@ -114,6 +114,7 @@ spring:
       chat:
         options:
           model: ${CHAT_MODEL:llama-3.3-70b-versatile}
+          stream-usage: true
       embedding:
         base_url: ${EMBEDDING_BASEURL:https://api.openai.com}
         options:
@@ -148,6 +149,7 @@ spring:
       chat:
         options:
           model: ${CHAT_MODEL:gpt-4o-mini}
+          stream-usage: true
       embedding:
         options:
           model: ${EMBEDDING_MODEL:text-embedding-ada-002}
@@ -165,6 +167,7 @@ spring:
       base_url: ${OPENAI_BASE_URL:https://openrouter.ai/api}
       chat:
         options:
+          stream-usage: true
           model: ${CHAT_MODEL:anthropic/claude-3.7-sonnet}
 #         other models available:
 #            - google/gemini-2.0-flash-exp:free
@@ -186,9 +189,6 @@ spring:
   config:
     activate:
       on-profile: ollama
-
-  autoconfigure:
-    exclude: org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
 
   ai:
     ollama:
