@@ -6,7 +6,7 @@ Facilitates read-and-write operations via one of more cf-butler instance(s) inst
 
 ### Prerequisites
 
-* one or more [cf-butler](https://github.com/cf-toolsuite/cf-butler) instance(s) deployed 
+* one or more [cf-butler](https://github.com/cf-toolsuite/cf-butler) instance(s) deployed
 * the following CLIs/SDKs:
   * git
   * gh

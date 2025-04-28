@@ -226,7 +226,7 @@ clone)
   do
     # Extract the repo name from the full path
     repo_name=$(basename "$repo")
-    
+
     if [ "$ENABLE_CLONE_REFRESH" == "y" ]; then
         rm -Rf "/tmp/${repo_name}"
     fi
@@ -269,7 +269,7 @@ deploy-observability)
 
   cd /tmp/cf-butler || exit 1
   cf push --no-start --no-route
-  
+
   # Check if $HOME/.cf/config.json exists (handling different possible locations)
   CF_CONFIG_FILE="$HOME/.cf/config.json"
   if [ ! -f "$CF_CONFIG_FILE" ]; then
@@ -280,7 +280,7 @@ deploy-observability)
       exit 1
     fi
   fi
-  
+
   jq --arg token "$(jq -r '.RefreshToken' "$CF_CONFIG_FILE")" '.["CF_REFRESH-TOKEN"] = $token' /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION.json > /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION-updated.json
   cf create-service credhub default cf-butler-secrets -c /tmp/cf-kaizen/config/secrets.butler-on-$FOUNDATION-updated.json
   cf bind-service cf-butler cf-butler-secrets
@@ -296,13 +296,13 @@ deploy-observability)
   cd /tmp/cf-hoover || exit 1
   cf push cf-hoover --no-start
   cf create-service p.config-server standard cf-hoover-config -c /tmp/cf-kaizen/config/secrets.hoover-on-$FOUNDATION.json
-  
+
   # Wait for service to be ready - compatible with both macOS and Linux
   while ! cf service cf-hoover-config | grep -q "succeeded"; do
     echo "cf-hoover-config is not ready yet..."
     sleep 5
   done
-  
+
   cf bind-service cf-hoover cf-hoover-config
   cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED false
   cf set-health-check cf-hoover http --endpoint /actuator/health --invocation-timeout 180

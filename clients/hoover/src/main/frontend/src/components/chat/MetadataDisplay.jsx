@@ -34,7 +34,7 @@ const MetadataDisplay = ({ metadata, isDarkMode, condensed = false, isResponseTi
       </div>
     );
   }
-  
+
   // For response tile (main chat area)
   if (isResponseTile) {
     return (
@@ -74,7 +74,7 @@ const MetadataDisplay = ({ metadata, isDarkMode, condensed = false, isResponseTi
       </div>
     );
   }
-  
+
   // For expanded history items (two rows)
   return (
     <div className={styleClass}>
@@ -97,7 +97,7 @@ const MetadataDisplay = ({ metadata, isDarkMode, condensed = false, isResponseTi
             </span>
           )}
         </div>
-        
+
         {/* Second line: response time, total tokens, tokens per second */}
         <div className="flex gap-x-2">
           {metadata.responseTime && (

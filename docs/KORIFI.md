@@ -124,7 +124,7 @@ kubectl delete namespace korifi-installer
 Configure the Admin User Role Binding.
 :s:
 > [!IMPORTANT]
-> Set the value of the GITHUB_USERNAME environment variable before attempting to apply the RoleBinding. 
+> Set the value of the GITHUB_USERNAME environment variable before attempting to apply the RoleBinding.
 > This value needs to be your GitHub username!
 
 ```bash
@@ -218,7 +218,7 @@ cf start config-server
 
 #### of cf-toolsuite applications
 
-cf-butler 
+cf-butler
 
 ```bash
 cd /tmp
@@ -281,4 +281,4 @@ Validate that the additional tools are present before crafting and executing you
 ```
 
 > [!IMPORTANT]
-> Replace <path-to.m2-home> above with $HOME/.m2 when on Linux or MacOS and %USERPROFILE%\.m2 when on Windows.  Evaluate the path options mentioned and be sure to replace with an absolute path. 
+> Replace <path-to.m2-home> above with $HOME/.m2 when on Linux or MacOS and %USERPROFILE%\.m2 when on Windows.  Evaluate the path options mentioned and be sure to replace with an absolute path.

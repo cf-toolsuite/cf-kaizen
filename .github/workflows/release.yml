@@ -52,24 +52,24 @@ jobs:
         run: |
           # Set version for all modules at once
           ./mvnw versions:set -DnewVersion=${{ github.event.release.tag_name }}
-          
+
           # Install all modules first (without packaging specific modules)
           ./mvnw clean install -DskipTests
-          
+
           # Now build the specific module with the model-api parameter (not as a profile)
           ./mvnw package -pl ${{ matrix.module-path }} -Dmodel-api-provider=${{ matrix.model-api }}
-          
+
           # Create the target directory if it doesn't exist
           mkdir -p target
-          
+
           # Find the main JAR (not the sources or javadoc ones)
           MAIN_JAR=$(find ${{ matrix.module-path }}/target/ -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*-tests.jar")
-          
+
           echo "Found JAR: $MAIN_JAR"
-          
+
           # Copy the jar to the expected location
           cp "$MAIN_JAR" target/cf-kaizen-${{ matrix.module }}-${{ matrix.model-api }}-${{ github.event.release.tag_name }}.jar
-          
+
           echo "Contents of target:"
           ls -l target
       - name: Upload artifact

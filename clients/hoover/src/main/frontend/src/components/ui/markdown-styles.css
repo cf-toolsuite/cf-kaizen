@@ -12,18 +12,18 @@
 }
 
 /* Add margin after headings */
-.markdown-content h1, 
-.markdown-content h2, 
-.markdown-content h3, 
-.markdown-content h4, 
-.markdown-content h5, 
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
 .markdown-content h6 {
   margin-top: 1rem !important;
   margin-bottom: 0.5rem !important;
 }
 
 /* Space between list items */
-.markdown-content ul, 
+.markdown-content ul,
 .markdown-content ol {
   margin-top: 0.5rem !important;
   margin-bottom: 0.5rem !important;

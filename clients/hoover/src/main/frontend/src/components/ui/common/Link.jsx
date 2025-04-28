@@ -13,14 +13,14 @@ import React from 'react';
 const Link = ({ href, children, external = false, className = '', onClick, ...props }) => {
   // Base classes for links - uses Tailwind for consistent styling
   const baseClasses = "font-medium transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded px-1";
-  
+
   // External link handling - adds appropriate attributes for security and UX
-  const externalProps = external 
-    ? { target: "_blank", rel: "noopener noreferrer" } 
+  const externalProps = external
+    ? { target: "_blank", rel: "noopener noreferrer" }
     : {};
-  
+
   return (
-    <a 
+    <a
       href={href}
       className={`${baseClasses} text-blue-600 dark:text-blue-400 underline decoration-[0.05em] underline-offset-2 ${className}`}
       onClick={onClick}

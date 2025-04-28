@@ -6,7 +6,7 @@ Facilitates read-only operations via a cf-hoover instance installed on a target 
 
 ### Prerequisites
 
-* [cf-hoover](https://github.com/cf-toolsuite/cf-hoover) instance deployed 
+* [cf-hoover](https://github.com/cf-toolsuite/cf-hoover) instance deployed
 * the following CLIs/SDKs:
   * git
   * gh
@@ -17,7 +17,7 @@ Facilitates read-only operations via a cf-hoover instance installed on a target 
 * Claude Desktop
   * [Windows and Mac](https://claude.ai/download)
   * [Linux](https://github.com/wankdanker/claude-desktop-linux-bash)
-  
+
 ### Building
 
 ```bash

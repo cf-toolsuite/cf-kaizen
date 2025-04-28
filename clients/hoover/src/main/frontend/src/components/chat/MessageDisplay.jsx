@@ -30,28 +30,28 @@ const MessageDisplay = () => {
     const calculateHeight = () => {
       // Get the viewport height
       const viewportHeight = window.innerHeight;
-      
+
       // Calculate available space (subtracting space for header, input, padding, etc.)
       // These values can be adjusted based on your specific layout
       const headerHeight = 80; // Approx. header height
       const inputHeight = 140; // Approx. input area height
       const buttonSpace = 60; // Approx. space for buttons
       const margins = 100; // Approx. total margins and padding
-      
+
       // Calculate available height for the message container
       const availableHeight = viewportHeight - headerHeight - inputHeight - buttonSpace - margins;
-      
+
       // Ensure we have a minimum height
       const optimalHeight = Math.max(availableHeight, 300);
-      
+
       // Set the container height
       setContainerHeight(`${optimalHeight}px`);
     };
-    
+
     // Calculate on mount and window resize
     calculateHeight();
     window.addEventListener('resize', calculateHeight);
-    
+
     // Cleanup event listener
     return () => window.removeEventListener('resize', calculateHeight);
   }, []);
@@ -108,7 +108,7 @@ const MessageDisplay = () => {
                   </code>
                 );
               },
-              
+
               // Custom link renderer with consistent styling
               a({ node, href, children, ...props }) {
                 const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));

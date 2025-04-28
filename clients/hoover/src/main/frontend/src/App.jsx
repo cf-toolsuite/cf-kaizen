@@ -18,10 +18,10 @@ const App = () => {
     useEffect(() => {
         // Check if the device is mobile
         setIsMobile(isMobileDevice());
-        
+
         // Preconnect to important domains
         preconnect(['https://fonts.googleapis.com']);
-        
+
         // Apply theme when component mounts and when theme changes
         if (isDarkMode) {
             document.documentElement.classList.add('dark');

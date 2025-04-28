@@ -45,7 +45,7 @@ public record ChatMetadata(
             this.responseTime = responseTime;
             return this;
         }
-        
+
         public Builder tokensPerSecond(Double tokensPerSecond) {
             this.tokensPerSecond = tokensPerSecond;
             return this;

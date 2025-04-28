@@ -32,7 +32,7 @@ const ToolSelector = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -45,28 +45,28 @@ const ToolSelector = () => {
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      
+
       // Default position to the right of the anchor
       let left = anchorRect.right + 5;
       let top = anchorRect.top - 10;
-      
+
       // Check if tooltip would go off the right edge
       if (left + tooltipRect.width > viewportWidth) {
         // Position to the left of the anchor
         left = Math.max(10, anchorRect.left - tooltipRect.width - 5);
       }
-      
+
       // Check if tooltip would go off the bottom edge
       if (top + tooltipRect.height > viewportHeight) {
         // Position above the anchor
         top = Math.max(10, viewportHeight - tooltipRect.height - 10);
       }
-      
+
       // Check if tooltip would go off the top edge
       if (top < 10) {
         top = 10;
       }
-      
+
       setTooltipPosition({ top, left });
     }
   }, [showTooltip, tooltipAnchor, tooltipRef]);
@@ -133,7 +133,7 @@ const ToolSelector = () => {
           </div>
 
           {/* Scrollable content */}
-          <ToolSelectorContent 
+          <ToolSelectorContent
             availableTools={availableTools}
             selectedTools={selectedTools}
             handleToolSelect={handleToolSelect}
@@ -146,7 +146,7 @@ const ToolSelector = () => {
       {/* Mobile Tools Menu - Full screen overlay */}
       {showToolsMenu && isMobile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-          <div 
+          <div
             className={`w-11/12 max-w-lg max-h-[80vh] rounded-lg shadow-xl ${
               isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
             } flex flex-col`}
@@ -174,7 +174,7 @@ const ToolSelector = () => {
                 >
                   Clear All
                 </button>
-                <button 
+                <button
                   onClick={() => toggleToolsMenu(null)}
                   className={`p-2 rounded-full ${
                     isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'
@@ -185,9 +185,9 @@ const ToolSelector = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="overflow-y-auto p-3 flex-grow">
-              <ToolSelectorContent 
+              <ToolSelectorContent
                 availableTools={availableTools}
                 selectedTools={selectedTools}
                 handleToolSelect={handleToolSelect}
@@ -195,7 +195,7 @@ const ToolSelector = () => {
                 isDarkMode={isDarkMode}
               />
             </div>
-            
+
             <div className="p-3 border-t flex justify-end">
               <button
                 onClick={() => toggleToolsMenu(null)}
@@ -254,13 +254,13 @@ const ToolSelectorContent = ({ availableTools, selectedTools, handleToolSelect, 
                 className="flex items-center group relative"
               >
                 {/* Use span with tooltip-label class for the label text */}
-                <span 
+                <span
                   className="hover:underline tooltip-label cursor-pointer"
                   onClick={() => handleToolSelect(key)}
                 >
                   {value.displayName}
                 </span>
-                
+
                 {/* Separated info icon that won't trigger checkbox toggle */}
                 <span
                   className="ml-1 text-gray-400 hover:text-gray-600 cursor-pointer tooltip-icon"

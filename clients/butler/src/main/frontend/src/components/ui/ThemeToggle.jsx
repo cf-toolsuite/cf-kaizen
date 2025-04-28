@@ -11,9 +11,9 @@ const ThemeToggle = ({ isDarkMode, toggleTheme }) => {
       }`}
       role="switch"
       aria-checked={isDarkMode}
-      style={{ 
-        touchAction: 'manipulation', 
-        minHeight: '40px', 
+      style={{
+        touchAction: 'manipulation',
+        minHeight: '40px',
         minWidth: '40px',
         padding: '10px'
       }}

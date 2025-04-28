@@ -66,7 +66,7 @@ function Determine-JarRelease {
 
     # Get all jar files safely
     $files = Get-ChildItem -Path "target" -Filter "*.jar" -File -ErrorAction SilentlyContinue
-    
+
     if ($null -eq $files -or $files.Count -eq 0) {
         Write-Host "No files found in target directory."
         return $null

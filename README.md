@@ -122,6 +122,7 @@ mvn clean install
 ```
 
 This will:
+
 - Build the Java backend components
 - Download and install Node.js and npm (via frontend-maven-plugin)
 - Install JavaScript dependencies
@@ -140,7 +141,7 @@ This will:
 cd butler
 # Replace the application domain below with your own
 export CF_APP_DOMAIN=apps.dhaka.cf-app.com
-# If the name of the cf-butler instance on the foundation 
+# If the name of the cf-butler instance on the foundation
 # you are targeting is named differently, be sure to update the value
 export CF_BUTLER_API_ENDPOINT=https://cf-butler.${CF_APP_DOMAIN}
 mvn spring-boot:run -Dspring-boot.run.profiles=cloud,dev
@@ -157,7 +158,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=openai,dev
 cd hoover
 # Replace the application domain below with your own
 export CF_APP_DOMAIN=apps.dhaka.cf-app.com
-# If the name of the cf-hoover instance on the foundation 
+# If the name of the cf-hoover instance on the foundation
 # you are targeting is named differently, be sure to update the value
 export CF_BUTLER_API_ENDPOINT=https://cf-hoover.${CF_APP_DOMAIN}
 # Open a separate terminal session, target the root of cf-kaizen project source, then...
@@ -221,7 +222,7 @@ spring:
           connections:
             butler:
               url: ${CF_KAIZEN_BUTLER_SERVER_URL:http://localhost:8082}
-              
+
   # Additional configuration options...
 ```
 
@@ -229,7 +230,7 @@ spring:
 
 cf-kaizen can be deployed to Cloud Foundry using standard cf CLI commands:
 
-E.g., 
+E.g.,
 
 ```bash
 cf push cf-kaizen-butler-frontend -m 1G -p ./target/cf-kaizen-butler-frontend-0.0.1-SNAPSHOT.jar

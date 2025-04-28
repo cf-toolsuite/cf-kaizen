@@ -98,7 +98,7 @@ cf start primes
 
 #### of cf-toolsuite applications
 
-cf-butler 
+cf-butler
 
 ```bash
 cd /tmp
@@ -110,7 +110,7 @@ jq --arg token "$(jq -r '.RefreshToken' $HOME/.cf/config.json)" '.["CF_REFRESH-T
 cf create-service credhub default cf-butler-secrets -c /tmp/cf-kaizen/config/secrets.butler-on-dhaka-updated.json
 cf bind-service cf-butler cf-butler-secrets
 cf create-route apps.dhaka.cf-app.com --hostname cf-butler-dev
-cf map-route cf-butler apps.dhaka.cf-app.com --hostname cf-butler-dev 
+cf map-route cf-butler apps.dhaka.cf-app.com --hostname cf-butler-dev
 cf start cf-butler
 ```
 
@@ -136,7 +136,7 @@ cf start cf-hoover
 ```
 
 > [!NOTE]
-> You'll likely want to fork the https://github.com/cf-toolsuite/cf-hoover-config repository, then edit and rename the secrets.hoover-on-dhaka.json file above to suit your needs 
+> You'll likely want to fork the https://github.com/cf-toolsuite/cf-hoover-config repository, then edit and rename the secrets.hoover-on-dhaka.json file above to suit your needs
 
 ### Configuring Claude Desktop
 
@@ -196,7 +196,7 @@ Change the values within the _ENVIRONMENT VARIABLES_ section to suit your needs.
 
 If you're interested in hoisting everything so that it runs on a target foundation, take a look at this [script](../scripts/deploy-on-tp4cf.sh).  (There's also a PowerShell [variant](../scripts/deploy-on-tp4cf.ps1)).
 
-Let's say you already know of a Cloud Foundry API endpoint, and your Platform Engineering team has setup Single Sign-On.  
+Let's say you already know of a Cloud Foundry API endpoint, and your Platform Engineering team has setup Single Sign-On.
 
 Well, to get rolling, you could open a Terminal session, then execute:
 
@@ -235,7 +235,7 @@ $content = Get-Content -Path "deploy-on-tp4cf.ps1" -Raw
 $content = $content -replace '\$CF_API', $env:CF_API
 $content | Set-Content -Path "deploy.ps1"
 # If you're on Windows then swap out occurrences of ./deploy.sh above for .\deploy.ps1
-# Take care to replace {option} below with the actual option you wish to execute 
+# Take care to replace {option} below with the actual option you wish to execute
 .\deploy.ps1 {option}
 ```
 

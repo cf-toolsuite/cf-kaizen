@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 /**
  * A component that provides optimized image loading for better performance.
  * Implements lazy loading, proper sizing, and loading placeholders.
- * 
+ *
  * @param {Object} props - Component props
  * @param {string} props.src - Image source URL
  * @param {string} props.alt - Alt text for the image
@@ -13,13 +13,13 @@ import React, { useState, useEffect } from 'react';
  * @param {string} props.className - Additional CSS classes
  * @returns {JSX.Element} - Rendered component
  */
-const OptimizedImage = ({ 
-  src, 
-  alt, 
-  width, 
-  height, 
+const OptimizedImage = ({
+  src,
+  alt,
+  width,
+  height,
   className = '',
-  ...props 
+  ...props
 }) => {
   const [loaded, setLoaded] = useState(false);
 
@@ -29,7 +29,7 @@ const OptimizedImage = ({
   }, [src]);
 
   return (
-    <div 
+    <div
       className={`relative overflow-hidden ${loaded ? '' : 'bg-gray-200 dark:bg-gray-700'}`}
       style={{ width, height, aspectRatio: width && height ? `${width}/${height}` : 'auto' }}
     >

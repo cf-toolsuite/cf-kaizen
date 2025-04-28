@@ -13,7 +13,7 @@ import Link from './common/Link';
 const MarkdownRenderer = ({ content, isDarkMode, className = '' }) => {
   // Process the markdown content first
   const processedContent = processMarkdown(content);
-  
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -23,14 +23,14 @@ const MarkdownRenderer = ({ content, isDarkMode, className = '' }) => {
         // Enhance paragraph spacing for better readability
         p: ({ node, children, ...props }) => {
           // Detect if this is a list of key-value pairs based on content
-          const isKeyValueList = 
-            String(children).includes('**') && 
-            String(children).includes(':') && 
+          const isKeyValueList =
+            String(children).includes('**') &&
+            String(children).includes(':') &&
             !String(children).match(/[.!?]$/);
-            
+
           return (
-            <p 
-              className={isKeyValueList ? 'key-value-item' : ''} 
+            <p
+              className={isKeyValueList ? 'key-value-item' : ''}
               style={{ marginBottom: isKeyValueList ? '0.15rem' : '0.5rem' }}
               {...props}
             >
@@ -38,21 +38,21 @@ const MarkdownRenderer = ({ content, isDarkMode, className = '' }) => {
             </p>
           );
         },
-        
+
         // Add custom spacing for headings
         h1: ({ node, ...props }) => <h1 style={{ marginTop: '1.2rem', marginBottom: '0.8rem' }} {...props} />,
         h2: ({ node, ...props }) => <h2 style={{ marginTop: '1rem', marginBottom: '0.6rem' }} {...props} />,
         h3: ({ node, ...props }) => <h3 style={{ marginTop: '0.8rem', marginBottom: '0.5rem' }} {...props} />,
-        
+
         // Custom list items renderer
         li: ({ node, children, ordered, ...props }) => {
           // Check if this is an application entry or a detail item
           const isApplicationEntry = String(children).includes('Application Name');
           const isDetailItem = String(children).includes('**') && String(children).includes(':');
-          
+
           return (
-            <li 
-              style={{ 
+            <li
+              style={{
                 marginBottom: isApplicationEntry ? '0.6rem' : (isDetailItem ? '0.1rem' : '0.2rem')
               }}
               {...props}
@@ -61,7 +61,7 @@ const MarkdownRenderer = ({ content, isDarkMode, className = '' }) => {
             </li>
           );
         },
-        
+
         // Code block handling with syntax highlighting
         code: ({ node, inline, className, children, ...props }) => {
           const match = /language-(\w+)/.exec(className || '');
@@ -80,7 +80,7 @@ const MarkdownRenderer = ({ content, isDarkMode, className = '' }) => {
             </code>
           );
         },
-        
+
         // Custom link renderer with consistent styling
         a: ({ node, href, children, ...props }) => {
           const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));

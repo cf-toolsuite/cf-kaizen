@@ -115,7 +115,7 @@ spec:
               }
 
               cd /tmp
-              
+
               # Clone and checkout specific branch of cf-kaizen, then navigate to korifi/uaa directory
               KAIZEN_BRANCH="main"
               git clone https://github.com/cf-toolsuite/cf-kaizen
@@ -149,7 +149,7 @@ spec:
               openssl x509 -in saml_cert.pem -outform PEM -out saml_cert_formatted.pem
 
               show_file saml_cert_formatted.pem
-              
+
               cat > schema.yml <<EOF
               #@data/values-schema
               ---
@@ -162,7 +162,7 @@ spec:
               saml_private_key: ""
               saml_certificate: ""
               EOF
-                    
+
               cat > values.yml <<EOF
               ---
               admin_client_secret: "${ADMIN_PASSWORD}"
@@ -177,9 +177,9 @@ spec:
               cat saml_private_pkcs8.pem | sed 's/^/  /' >> values.yml
               echo "saml_certificate: |" >> values.yml
               cat saml_cert_formatted.pem | sed 's/^/  /' >> values.yml
-              
+
               show_file values.yml
-              
+
               # Combine values and templates
               ytt -f namespace.yml -f service-account.yml -f service.yml -f deployment.yml -f clusterissuer.yml -f certificate.yml -f httpproxy.yml > uaa-install.yml
               ytt -f schema.yml -f configmap.yml -f secrets.yml --data-values-file values.yml  > uaa-config.yml
@@ -212,15 +212,15 @@ spec:
             - -c
             - |
               set -euo pipefail
-              
+
               cd /tmp
               KORIFI_VERSION="v0.14.0"
               git clone https://github.com/cloudfoundry/korifi.git
               cd korifi
               git checkout ${KORIFI_VERSION}
-              
+
               scripts/install-dependencies.sh --insecure-tls-metrics-server
-              
+
               helm repo add twuni https://helm.twun.io
               helm upgrade --install localregistry twuni/docker-registry \
                 --namespace default \

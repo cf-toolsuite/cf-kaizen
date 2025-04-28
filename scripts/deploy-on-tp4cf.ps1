@@ -14,7 +14,7 @@
 param (
     [Parameter(Position=0, Mandatory=$true)]
     [string]$Command,
-    
+
     [Parameter(Position=1)]
     [string]$Flag
 )
@@ -93,7 +93,7 @@ function Determine-JarRelease {
 
     # Use Get-ChildItem to locate jar files
     $files = Get-ChildItem -Path "target" -Filter "*.jar" -File -ErrorAction SilentlyContinue
-    
+
     if ($null -eq $files -or $files.Count -eq 0) {
         Write-Host "No files found in target directory."
         return $null
@@ -139,7 +139,7 @@ function Get-AppUrl {
     # Use cf app command to get app details, then extract the routes
     $appDetails = cf app $AppName
     $routes = ($appDetails | Select-String -Pattern "routes:").Line
-    
+
     if ($routes) {
         $url = $routes -replace "routes:", "" -replace "\s+", ""
         return $url.Trim()
@@ -232,7 +232,7 @@ switch ($Command) {
             $parts = $space -split ":"
             $o = $parts[0]
             $s = $parts[1]
-            
+
             # Now use the extracted values
             cf create-org $o
             cf create-space "$s" -o "$o"
@@ -256,7 +256,7 @@ switch ($Command) {
         foreach ($repo in $REPOSITORIES) {
             # Extract the repo name from the full path
             $repo_name = Split-Path -Leaf $repo
-            
+
             if ($ENABLE_CLONE_REFRESH -eq "y") {
                 if (Test-Path -Path "$env:TEMP\$repo_name") {
                     Remove-Item -Path "$env:TEMP\$repo_name" -Recurse -Force
@@ -300,7 +300,7 @@ switch ($Command) {
 
         Set-Location -Path "$env:TEMP\cf-butler"
         cf push --no-start --no-route
-        
+
         # Check if CF config file exists
         $CF_CONFIG_FILE = "$env:USERPROFILE\.cf\config.json"
         if (-not (Test-Path -Path $CF_CONFIG_FILE)) {
@@ -311,36 +311,36 @@ switch ($Command) {
                 Exit 1
             }
         }
-        
+
         $refreshToken = (Get-Content -Path $CF_CONFIG_FILE | ConvertFrom-Json).RefreshToken
         $secrets = Get-Content -Path "$env:TEMP\cf-kaizen\config\secrets.butler-on-$FOUNDATION.json" | ConvertFrom-Json
         $secrets | Add-Member -MemberType NoteProperty -Name "CF_REFRESH-TOKEN" -Value $refreshToken -Force
         $secrets | ConvertTo-Json | Out-File -FilePath "$env:TEMP\cf-kaizen\config\secrets.butler-on-$FOUNDATION-updated.json" -Encoding utf8
-        
+
         cf create-service credhub default cf-butler-secrets -c "$env:TEMP\cf-kaizen\config\secrets.butler-on-$FOUNDATION-updated.json"
         cf bind-service cf-butler cf-butler-secrets
         cf create-route $CF_DOMAIN --hostname cf-butler-dev
         cf map-route cf-butler $CF_DOMAIN --hostname cf-butler-dev
-        
+
         if ($ENABLE_DROPLET_SCANNING -eq "y") {
             Write-Host "-- Droplet scanning will be enabled"
             cf set-env cf-butler JAVA_ARTIFACTS_FETCH_MODE list-jars-in-droplet
         }
-        
+
         cf set-health-check cf-butler http --endpoint /actuator/health --invocation-timeout 180
         cf start cf-butler
 
         Set-Location -Path "$env:TEMP\cf-hoover"
         cf push cf-hoover --no-start
         cf create-service p.config-server standard cf-hoover-config -c "$env:TEMP\cf-kaizen\config\secrets.hoover-on-$FOUNDATION.json"
-        
+
         # Wait for service to be ready
         do {
             Write-Host "cf-hoover-config is not ready yet..."
             Start-Sleep -Seconds 5
             $serviceStatus = cf service cf-hoover-config
         } while ($serviceStatus -notmatch "succeeded")
-        
+
         cf bind-service cf-hoover cf-hoover-config
         cf set-env cf-hoover SPRING_CLOUD_DISCOVERY_ENABLED false
         cf set-health-check cf-hoover http --endpoint /actuator/health --invocation-timeout 180
@@ -372,7 +372,7 @@ switch ($Command) {
             $ARTIFACT_NAME = "cf-kaizen-butler-server-$VERSION.jar"
             $ARTIFACT_HOME = "$env:TEMP\cf-kaizen\butler"
         }
-        
+
         Set-Location -Path $ARTIFACT_HOME
         cf push cf-kaizen-butler-server -m 1G -k 512M -p "target\$ARTIFACT_NAME" -s cflinuxfs4 --no-start
         Set-CFEnvVars -AppName "cf-kaizen-butler-server"
@@ -388,7 +388,7 @@ switch ($Command) {
             $ARTIFACT_NAME = "cf-kaizen-hoover-server-$VERSION.jar"
             $ARTIFACT_HOME = "$env:TEMP\cf-kaizen\hoover"
         }
-        
+
         Set-Location -Path $ARTIFACT_HOME
         cf push cf-kaizen-hoover-server -m 1G -k 512M -p "target\$ARTIFACT_NAME" -s cflinuxfs4 --no-start
         Set-CFEnvVars -AppName "cf-kaizen-hoover-server"
@@ -407,7 +407,7 @@ switch ($Command) {
             $ARTIFACT_NAME = "cf-kaizen-butler-frontend-$VERSION.jar"
             $ARTIFACT_HOME = "$env:TEMP\cf-kaizen\clients\butler"
         }
-        
+
         Set-Location -Path $ARTIFACT_HOME
         cf push cf-kaizen-butler-frontend -m 1G -k 512M -p "target\$ARTIFACT_NAME" -s cflinuxfs4 --no-start
         Set-CFEnvVars -AppName "cf-kaizen-butler-frontend"
@@ -424,7 +424,7 @@ switch ($Command) {
             $ARTIFACT_NAME = "cf-kaizen-hoover-frontend-$VERSION.jar"
             $ARTIFACT_HOME = "$env:TEMP\cf-kaizen\clients\hoover"
         }
-        
+
         Set-Location -Path $ARTIFACT_HOME
         cf push cf-kaizen-hoover-frontend -m 1G -k 512M -p "target\$ARTIFACT_NAME" -s cflinuxfs4 --no-start
         Set-CFEnvVars -AppName "cf-kaizen-hoover-frontend"

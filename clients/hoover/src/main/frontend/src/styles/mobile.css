@@ -4,7 +4,7 @@
   margin-bottom: 1rem;
 }
 
-.markdown-content h1, .markdown-content h2, .markdown-content h3, 
+.markdown-content h1, .markdown-content h2, .markdown-content h3,
 .markdown-content h4, .markdown-content h5, .markdown-content h6 {
   margin-top: 1.5rem;
   margin-bottom: 1rem;
@@ -35,21 +35,21 @@
 
 @media (max-width: 640px) {
   /* Increase touch targets for better mobile experience */
-  button, 
+  button,
   [role="button"],
   .clickable {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Adjust font sizes for better readability on small screens */
   body {
     font-size: 16px;
   }
-  
+
   /* Ensure form elements are sized appropriately */
-  input, 
-  select, 
+  input,
+  select,
   textarea {
     font-size: 16px; /* Prevents iOS zoom on focus */
   }

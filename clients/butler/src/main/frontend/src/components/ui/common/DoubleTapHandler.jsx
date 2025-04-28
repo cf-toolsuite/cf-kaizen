@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 /**
  * A component that handles double-tap (double-click) gestures on mobile devices.
  * This provides better touch interactions for mobile users.
- * 
+ *
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Child elements to render inside the component
  * @param {Function} props.onDoubleTap - Function to call when a double-tap is detected
@@ -13,13 +13,13 @@ import React, { useState, useRef } from 'react';
  * @param {string} props.className - Additional CSS classes to apply
  * @returns {JSX.Element} - Rendered component
  */
-const DoubleTapHandler = ({ 
-  children, 
-  onDoubleTap, 
+const DoubleTapHandler = ({
+  children,
+  onDoubleTap,
   onClick,
-  delay = 300, 
+  delay = 300,
   className = '',
-  ...props 
+  ...props
 }) => {
   const [lastTap, setLastTap] = useState(0);
   const timerRef = useRef(null);
@@ -27,7 +27,7 @@ const DoubleTapHandler = ({
   const handleTap = (e) => {
     const now = Date.now();
     const timeDiff = now - lastTap;
-    
+
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -42,7 +42,7 @@ const DoubleTapHandler = ({
     } else {
       // First tap
       setLastTap(now);
-      
+
       // Schedule single tap callback after delay
       if (onClick) {
         timerRef.current = setTimeout(() => {
@@ -54,7 +54,7 @@ const DoubleTapHandler = ({
   };
 
   return (
-    <div 
+    <div
       onClick={handleTap}
       className={`touch-action-manipulation ${className}`}
       {...props}

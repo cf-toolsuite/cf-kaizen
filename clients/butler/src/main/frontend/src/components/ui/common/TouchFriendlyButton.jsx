@@ -4,7 +4,7 @@ import React from 'react';
 /**
  * A button component with touch-friendly dimensions and behavior.
  * Ensures minimum touch target size and proper touch action handling.
- * 
+ *
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Child elements to render inside the button
  * @param {Function} props.onClick - Click handler function
