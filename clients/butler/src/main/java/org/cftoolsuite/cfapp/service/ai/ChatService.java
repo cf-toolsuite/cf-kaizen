@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
 
 @Service
 public class ChatService {
@@ -65,8 +64,7 @@ public class ChatService {
 
         this.chatClient = ChatClient.builder(chatModel)
                 .defaultSystem(systemPrompt)
-                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory), new SimpleLoggerAdvisor())
-                .defaultAdvisors(a -> a.param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build(), new SimpleLoggerAdvisor())
                 .build();
         this.asyncClientManager = asyncClientManager;
         this.objectMapper = objectMapper;
@@ -110,7 +108,6 @@ public class ChatService {
         var request = chatClient
                 .prompt()
                 .user(inquiry.question())
-                .advisors(new ProfanityFilterAdvisor())
                 .tools(toolCallbacks);
 
         // Get the streaming response
