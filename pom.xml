@@ -83,7 +83,7 @@
 		<npm.version>10.9.2</npm.version>
 		<spring-boot-hc5.version>1.2.0</spring-boot-hc5.version>
 		<spring-cloud-bindings.version>2.0.4</spring-cloud-bindings.version>
-		<assertj.version>3.27.4</assertj.version>
+		<assertj.version>3.27.5</assertj.version>
 	</properties>
 
 	<build>
