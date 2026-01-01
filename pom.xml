@@ -78,7 +78,7 @@
 		<spring-doc.version>3.0.0</spring-doc.version>
 		<cfenv.version>3.5.0</cfenv.version>
 		<commons-io.version>2.21.0</commons-io.version>
-		<json-io.version>4.70.0</json-io.version>
+		<json-io.version>4.72.0</json-io.version>
 		<node.version>v23.4.0</node.version>
 		<npm.version>10.9.2</npm.version>
 		<spring-boot-hc5.version>1.2.1</spring-boot-hc5.version>
