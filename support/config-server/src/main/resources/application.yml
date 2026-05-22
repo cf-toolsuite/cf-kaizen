@@ -10,7 +10,7 @@
 server:
   compression:
     enabled: true
-  undertow:
+  tomcat:
     accesslog:
       enabled: true
 
