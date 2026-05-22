@@ -20,17 +20,8 @@ public class CfKaizenHooverMcpServerApplication {
 	}
 
 	@Bean
-	public ToolCallbackProvider hooverTools(
-		HooverService hooverService,
-		PageableHooverService pageableHooverService) {
-		return
-			ToolCallbackProvider
-				.from(List.of(
-					ToolCallbacks.from(
-						hooverService,
-						pageableHooverService
-					)
-				));
+	public ToolCallbackProvider hooverTools(HooverService hooverService, PageableHooverService pageableHooverService) {
+		return ToolCallbackProvider.from(List.of(ToolCallbacks.from(hooverService, pageableHooverService)));
 	}
 
 }

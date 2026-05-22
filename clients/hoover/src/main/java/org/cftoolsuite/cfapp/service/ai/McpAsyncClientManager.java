@@ -1,14 +1,14 @@
 package org.cftoolsuite.cfapp.service.ai;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.client.McpAsyncClient;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.transport.WebFluxSseClientTransport;
+import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema;
-import org.springframework.ai.mcp.client.autoconfigure.NamedClientMcpTransport;
-import org.springframework.ai.mcp.client.autoconfigure.configurer.McpAsyncClientConfigurer;
-import org.springframework.ai.mcp.client.autoconfigure.properties.McpClientCommonProperties;
-import org.springframework.ai.mcp.client.autoconfigure.properties.McpSseClientProperties;
+import org.springframework.ai.mcp.client.common.autoconfigure.NamedClientMcpTransport;
+import org.springframework.ai.mcp.client.common.autoconfigure.configurer.McpAsyncClientConfigurer;
+import org.springframework.ai.mcp.client.common.autoconfigure.properties.McpClientCommonProperties;
+import org.springframework.ai.mcp.client.common.autoconfigure.properties.McpSseClientProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -21,69 +21,63 @@ import java.util.Map;
 @Component
 public class McpAsyncClientManager {
 
-    private final McpAsyncClientConfigurer mcpSyncClientConfigurer;
-    private final McpClientCommonProperties mcpClientCommonProperties;
-    private final McpSseClientProperties mcpSseClientProperties;
-    private final ObjectProvider<WebClient.Builder> webClientBuilderProvider;
-    private final ObjectProvider<ObjectMapper> objectMapperProvider;
+	private final McpAsyncClientConfigurer mcpSyncClientConfigurer;
+	private final McpClientCommonProperties mcpClientCommonProperties;
+	private final McpSseClientProperties mcpSseClientProperties;
+	private final ObjectProvider<WebClient.Builder> webClientBuilderProvider;
 
-    public McpAsyncClientManager(McpAsyncClientConfigurer mcpSyncClientConfigurer,
-                                 McpClientCommonProperties mcpClientCommonProperties,
-                                 McpSseClientProperties mcpSseClientProperties,
-                                 ObjectProvider<WebClient.Builder> webClientBuilderProvider,
-                                 ObjectProvider<ObjectMapper> objectMapperProvider
-                                ) {
+	public McpAsyncClientManager(McpAsyncClientConfigurer mcpSyncClientConfigurer,
+			McpClientCommonProperties mcpClientCommonProperties, McpSseClientProperties mcpSseClientProperties,
+			ObjectProvider<WebClient.Builder> webClientBuilderProvider) {
 
-        this.mcpSyncClientConfigurer = mcpSyncClientConfigurer;
-        this.mcpClientCommonProperties = mcpClientCommonProperties;
-        this.mcpSseClientProperties = mcpSseClientProperties;
-        this.webClientBuilderProvider = webClientBuilderProvider;
-        this.objectMapperProvider = objectMapperProvider;
-    }
+		this.mcpSyncClientConfigurer = mcpSyncClientConfigurer;
+		this.mcpClientCommonProperties = mcpClientCommonProperties;
+		this.mcpSseClientProperties = mcpSseClientProperties;
+		this.webClientBuilderProvider = webClientBuilderProvider;
+	}
 
-    public List<McpAsyncClient> newMcpAsyncClients() {
+	public List<McpAsyncClient> newMcpAsyncClients() {
 
-        List<NamedClientMcpTransport> namedTransports = new ArrayList<>();
+		List<NamedClientMcpTransport> namedTransports = new ArrayList<>();
 
-        var webClientBuilderTemplate = webClientBuilderProvider.getIfAvailable(WebClient::builder);
-        var objectMapper = objectMapperProvider.getIfAvailable(ObjectMapper::new);
+		var webClientBuilderTemplate = webClientBuilderProvider.getIfAvailable(WebClient::builder);
 
-        for (Map.Entry<String, McpSseClientProperties.SseParameters> serverParameters : mcpSseClientProperties.getConnections().entrySet()) {
-            var webClientBuilder = webClientBuilderTemplate.clone().baseUrl(serverParameters.getValue().url());
-            var transport = new WebFluxSseClientTransport(webClientBuilder, objectMapper);
-            namedTransports.add(new NamedClientMcpTransport(serverParameters.getKey(), transport));
-        }
+		for (Map.Entry<String, McpSseClientProperties.SseParameters> serverParameters : mcpSseClientProperties
+				.getConnections().entrySet()) {
+			var webClientBuilder = webClientBuilderTemplate.clone().baseUrl(serverParameters.getValue().url());
+			var transport = new WebFluxSseClientTransport(webClientBuilder, McpJsonMapper.getDefault());
+			namedTransports.add(new NamedClientMcpTransport(serverParameters.getKey(), transport));
+		}
 
-        List<McpAsyncClient> mcpAsyncClients = new ArrayList<>();
+		List<McpAsyncClient> mcpAsyncClients = new ArrayList<>();
 
-        if (!CollectionUtils.isEmpty(namedTransports)) {
-            for (NamedClientMcpTransport namedTransport : namedTransports) {
+		if (!CollectionUtils.isEmpty(namedTransports)) {
+			for (NamedClientMcpTransport namedTransport : namedTransports) {
 
-                McpSchema.Implementation clientInfo = new McpSchema.Implementation(
-                        connectedClientName(mcpClientCommonProperties.getName(), namedTransport.name()),
-                        mcpClientCommonProperties.getVersion());
+				McpSchema.Implementation clientInfo = new McpSchema.Implementation(
+						connectedClientName(mcpClientCommonProperties.getName(), namedTransport.name()),
+						mcpClientCommonProperties.getVersion());
 
-                McpClient.AsyncSpec syncSpec = McpClient.async(namedTransport.transport())
-                        .clientInfo(clientInfo)
-                        .requestTimeout(mcpClientCommonProperties.getRequestTimeout());
+				McpClient.AsyncSpec syncSpec = McpClient.async(namedTransport.transport()).clientInfo(clientInfo)
+						.requestTimeout(mcpClientCommonProperties.getRequestTimeout());
 
-                syncSpec = mcpSyncClientConfigurer.configure(namedTransport.name(), syncSpec);
+				syncSpec = mcpSyncClientConfigurer.configure(namedTransport.name(), syncSpec);
 
-                var syncClient = syncSpec.build();
+				var syncClient = syncSpec.build();
 
-                if (mcpClientCommonProperties.isInitialized()) {
-                    syncClient.initialize().block();
-                }
+				if (mcpClientCommonProperties.isInitialized()) {
+					syncClient.initialize().block();
+				}
 
-                mcpAsyncClients.add(syncClient);
-            }
-        }
+				mcpAsyncClients.add(syncClient);
+			}
+		}
 
-        return mcpAsyncClients;
-    }
+		return mcpAsyncClients;
+	}
 
-    private String connectedClientName(String clientName, String serverConnectionName) {
-        return clientName + " - " + serverConnectionName;
-    }
+	private String connectedClientName(String clientName, String serverConnectionName) {
+		return clientName + " - " + serverConnectionName;
+	}
 
 }

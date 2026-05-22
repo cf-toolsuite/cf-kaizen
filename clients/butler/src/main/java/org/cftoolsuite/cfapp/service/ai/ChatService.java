@@ -34,173 +34,151 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-
 @Service
 public class ChatService {
 
-    private final Logger log = LoggerFactory.getLogger(ChatService.class);
+	private final Logger log = LoggerFactory.getLogger(ChatService.class);
 
-    private final ChatClient chatClient;
-    private final McpAsyncClientManager asyncClientManager;
-    private final ObjectMapper objectMapper;
-    private final String greetingMessage;
+	private final ChatClient chatClient;
+	private final McpAsyncClientManager asyncClientManager;
+	private final ObjectMapper objectMapper;
+	private final String greetingMessage;
 
-    public ChatService(
-            @Value("classpath:/system-prompt.st") Resource systemPrompt,
-            @Value("classpath:/greeting-prompt.st") Resource greetingPrompt,
-            ChatModel chatModel,
-            ChatMemory chatMemory,
-            McpAsyncClientManager asyncClientManager,
-            ObjectMapper objectMapper
-    ) {
-        String greetingContent;
-        try {
-            greetingContent = new String(greetingPrompt.getInputStream().readAllBytes());
-        } catch (IOException e) {
-            log.warn("Failed to load greeting prompt, using default", e);
-            greetingContent = "I'm here to help you with questions about your Cloud Foundry foundation.  How can I assist you today?";
-        }
-        this.greetingMessage = greetingContent;
+	public ChatService(@Value("classpath:/system-prompt.st") Resource systemPrompt,
+			@Value("classpath:/greeting-prompt.st") Resource greetingPrompt, ChatModel chatModel, ChatMemory chatMemory,
+			McpAsyncClientManager asyncClientManager, ObjectMapper objectMapper) {
+		String greetingContent;
+		try {
+			greetingContent = new String(greetingPrompt.getInputStream().readAllBytes());
+		} catch (IOException e) {
+			log.warn("Failed to load greeting prompt, using default", e);
+			greetingContent = "I'm here to help you with questions about your Cloud Foundry foundation.  How can I assist you today?";
+		}
+		this.greetingMessage = greetingContent;
 
-        this.chatClient = ChatClient.builder(chatModel)
-                .defaultSystem(systemPrompt)
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build(), new SimpleLoggerAdvisor())
-                .build();
-        this.asyncClientManager = asyncClientManager;
-        this.objectMapper = objectMapper;
-    }
+		this.chatClient = ChatClient.builder(chatModel).defaultSystem(systemPrompt)
+				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build(), new SimpleLoggerAdvisor())
+				.build();
+		this.asyncClientManager = asyncClientManager;
+		this.objectMapper = objectMapper;
+	}
 
-    /**
-     * Returns the greeting message shown to users when they first visit the chat page.
-     *
-     * @return the greeting message
-     */
-    public String getGreetingMessage() {
-        return this.greetingMessage;
-    }
+	/**
+	 * Returns the greeting message shown to users when they first visit the chat
+	 * page.
+	 *
+	 * @return the greeting message
+	 */
+	public String getGreetingMessage() {
+		return this.greetingMessage;
+	}
 
-    /**
-     * Streams a response to a question, including both content chunks and metadata.
-     *
-     * @param inquiry The user's inquiry containing question and selected tools
-     * @return A stream of response chunks, with metadata appended at the end
-     */
-    public Flux<String> streamResponseToQuestion(Inquiry inquiry) {
-        // Record start time for response time calculation
-        Instant startTime = Instant.now();
+	/**
+	 * Streams a response to a question, including both content chunks and metadata.
+	 *
+	 * @param inquiry
+	 *            The user's inquiry containing question and selected tools
+	 * @return A stream of response chunks, with metadata appended at the end
+	 */
+	public Flux<String> streamResponseToQuestion(Inquiry inquiry) {
+		// Record start time for response time calculation
+		Instant startTime = Instant.now();
 
-        List<McpAsyncClient> clients = asyncClientManager.newMcpAsyncClients();
-        AsyncMcpToolCallbackProvider provider = new AsyncMcpToolCallbackProvider(clients);
+		List<McpAsyncClient> clients = asyncClientManager.newMcpAsyncClients();
+		AsyncMcpToolCallbackProvider provider = new AsyncMcpToolCallbackProvider(clients);
 
-        // Filter tools if specified in the inquiry
-        ToolCallback[] toolCallbacks = provider.getToolCallbacks();
+		// Filter tools if specified in the inquiry
+		ToolCallback[] toolCallbacks = provider.getToolCallbacks();
 
-        if (!CollectionUtils.isEmpty(inquiry.tools())) {
-            // Filter tool callbacks based on selected tools
-            List<String> selectedTools = inquiry.tools();
-            toolCallbacks = Arrays.stream(toolCallbacks)
-                    .filter(callback -> selectedTools.contains(callback.getToolDefinition().name()))
-                    .toArray(ToolCallback[]::new);
+		if (!CollectionUtils.isEmpty(inquiry.tools())) {
+			// Filter tool callbacks based on selected tools
+			List<String> selectedTools = inquiry.tools();
+			toolCallbacks = Arrays.stream(toolCallbacks)
+					.filter(callback -> selectedTools.contains(callback.getToolDefinition().name()))
+					.toArray(ToolCallback[]::new);
 
-            log.info("Filtered tools to {} selected tools: {}", toolCallbacks.length, selectedTools);
-        }
+			log.info("Filtered tools to {} selected tools: {}", toolCallbacks.length, selectedTools);
+		}
 
-        var request = chatClient
-                .prompt()
-                .user(inquiry.question())
-                .tools(toolCallbacks);
+		var request = chatClient.prompt().user(inquiry.question()).tools(toolCallbacks);
 
-        // Get the streaming response
-        var streamingResponse = request.stream();
+		// Get the streaming response
+		var streamingResponse = request.stream();
 
-        // Create holders for the final response metadata
-        AtomicInteger promptTokens = new AtomicInteger(0);
-        AtomicInteger completionTokens = new AtomicInteger(0);
-        AtomicInteger totalTokens = new AtomicInteger(0);
-        AtomicReference<String> modelRef = new AtomicReference<>("");
+		// Create holders for the final response metadata
+		AtomicInteger promptTokens = new AtomicInteger(0);
+		AtomicInteger completionTokens = new AtomicInteger(0);
+		AtomicInteger totalTokens = new AtomicInteger(0);
+		AtomicReference<String> modelRef = new AtomicReference<>("");
 
-        // Stream the content and collect metadata along the way
-        return streamingResponse.chatResponse()
-                .map(chatResponse -> {
-                    ChatResponseMetadata metadata = chatResponse.getMetadata();
-                    if (metadata != null && metadata.getUsage() != null) {
-                        Usage usage = metadata.getUsage();
+		// Stream the content and collect metadata along the way
+		return streamingResponse.chatResponse().map(chatResponse -> {
+			ChatResponseMetadata metadata = chatResponse.getMetadata();
+			if (metadata != null && metadata.getUsage() != null) {
+				Usage usage = metadata.getUsage();
 
-                        // Update with max values seen so far
-                        promptTokens.updateAndGet(current -> Math.max(current, usage.getPromptTokens()));
-                        completionTokens.updateAndGet(current -> Math.max(current, usage.getCompletionTokens()));
-                        totalTokens.updateAndGet(current -> Math.max(current, usage.getTotalTokens()));
+				// Update with max values seen so far
+				promptTokens.updateAndGet(current -> Math.max(current, usage.getPromptTokens()));
+				completionTokens.updateAndGet(current -> Math.max(current, usage.getCompletionTokens()));
+				totalTokens.updateAndGet(current -> Math.max(current, usage.getTotalTokens()));
 
-                        // Capture the model info (should be same for all responses)
-                        if (metadata.getModel() != null) {
-                            modelRef.set(metadata.getModel());
-                        }
-                    }
-                    // Safely extract content, handling potential nulls
-                    return Optional.ofNullable(chatResponse.getResult())
-                            .map(Generation::getOutput)
-                            .map(AbstractMessage::getText)
-                            .orElse("");
+				// Capture the model info (should be same for all responses)
+				if (metadata.getModel() != null) {
+					modelRef.set(metadata.getModel());
+				}
+			}
+			// Safely extract content, handling potential nulls
+			return Optional.ofNullable(chatResponse.getResult()).map(Generation::getOutput)
+					.map(AbstractMessage::getText).orElse("");
 
-                })
-                // After all content is streamed, send a final metadata chunk
-                .concatWith(Mono.defer(() -> {
-                    try {
-                        // Calculate response time at completion of streaming
-                        Instant endTime = Instant.now();
-                        Duration responseDuration = Duration.between(startTime, endTime);
-                        String formattedTime = MetricUtils.formatResponseTime(responseDuration);
+		})
+				// After all content is streamed, send a final metadata chunk
+				.concatWith(Mono.defer(() -> {
+					try {
+						// Calculate response time at completion of streaming
+						Instant endTime = Instant.now();
+						Duration responseDuration = Duration.between(startTime, endTime);
+						String formattedTime = MetricUtils.formatResponseTime(responseDuration);
 
-                        // Calculate tokens per second using accumulated metadata
-                        Double tokensPerSecond = MetricUtils.calculateTokensPerSecond(
-                                totalTokens.get(),
-                                responseDuration.toMillis()
-                        );
+						// Calculate tokens per second using accumulated metadata
+						Double tokensPerSecond = MetricUtils.calculateTokensPerSecond(totalTokens.get(),
+								responseDuration.toMillis());
 
-                        // Create metadata object from accumulated values
-                        ChatMetadata chatMetadata = ChatMetadata.builder()
-                                .inputTokens(promptTokens.get())
-                                .outputTokens(completionTokens.get())
-                                .totalTokens(totalTokens.get())
-                                .responseTime(formattedTime)
-                                .tokensPerSecond(tokensPerSecond)
-                                .model(modelRef.get())
-                                .build();
+						// Create metadata object from accumulated values
+						ChatMetadata chatMetadata = ChatMetadata.builder().inputTokens(promptTokens.get())
+								.outputTokens(completionTokens.get()).totalTokens(totalTokens.get())
+								.responseTime(formattedTime).tokensPerSecond(tokensPerSecond).model(modelRef.get())
+								.build();
 
-                        // Create and serialize a metadata response
-                        ChatResponse metadataResponse = ChatResponse.metadataChunk(chatMetadata);
-                        String metadataJson = objectMapper.writeValueAsString(metadataResponse);
+						// Create and serialize a metadata response
+						ChatResponse metadataResponse = ChatResponse.metadataChunk(chatMetadata);
+						String metadataJson = objectMapper.writeValueAsString(metadataResponse);
 
-                        return Mono.just(metadataJson);
-                    } catch (JsonProcessingException e) {
-                        log.error("Error serializing metadata", e);
+						return Mono.just(metadataJson);
+					} catch (JsonProcessingException e) {
+						log.error("Error serializing metadata", e);
 
-                        // Create a minimal JSON metadata if serialization fails
-                        try {
-                            Instant endTime = Instant.now();
-                            Duration responseDuration = Duration.between(startTime, endTime);
-                            String formattedTime = MetricUtils.formatResponseTime(responseDuration);
+						// Create a minimal JSON metadata if serialization fails
+						try {
+							Instant endTime = Instant.now();
+							Duration responseDuration = Duration.between(startTime, endTime);
+							String formattedTime = MetricUtils.formatResponseTime(responseDuration);
 
-                            return Mono.just(String.format("{\"type\":\"metadata\",\"responseTime\":\"%s\"}", formattedTime));
-                        } catch (RuntimeException fallbackError) {
-                            // Using specific RuntimeException for fallback error
-                            log.error("Failed to create fallback metadata", fallbackError);
-                            return Mono.empty();
-                        }
-                    }
-                }));
-    }
+							return Mono.just(
+									String.format("{\"type\":\"metadata\",\"responseTime\":\"%s\"}", formattedTime));
+						} catch (RuntimeException fallbackError) {
+							// Using specific RuntimeException for fallback error
+							log.error("Failed to create fallback metadata", fallbackError);
+							return Mono.empty();
+						}
+					}
+				}));
+	}
 
-    public Map<String, String> listTools() {
-        List<McpAsyncClient> clients = asyncClientManager.newMcpAsyncClients();
-        AsyncMcpToolCallbackProvider provider = new AsyncMcpToolCallbackProvider(clients);
-        return
-                Arrays
-                        .stream(provider.getToolCallbacks())
-                        .collect(
-                                Collectors
-                                        .toMap(k -> k.getToolDefinition().name(),
-                                                v -> v.getToolDefinition().description())
-                        );
-    }
+	public Map<String, String> listTools() {
+		List<McpAsyncClient> clients = asyncClientManager.newMcpAsyncClients();
+		AsyncMcpToolCallbackProvider provider = new AsyncMcpToolCallbackProvider(clients);
+		return Arrays.stream(provider.getToolCallbacks())
+				.collect(Collectors.toMap(k -> k.getToolDefinition().name(), v -> v.getToolDefinition().description()));
+	}
 }

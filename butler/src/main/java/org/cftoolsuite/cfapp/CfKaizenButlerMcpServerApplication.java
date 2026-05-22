@@ -19,20 +19,11 @@ public class CfKaizenButlerMcpServerApplication {
 	}
 
 	@Bean
-	public ToolCallbackProvider tools(
-			AccountingService accountingService,
-			PoliciesService policiesService,
-			ProductsService productsService,
-			PageableSnapshotService pageableSnapshotService,
+	public ToolCallbackProvider tools(AccountingService accountingService, PoliciesService policiesService,
+			ProductsService productsService, PageableSnapshotService pageableSnapshotService,
 			SnapshotService snapshotService) {
-		return ToolCallbackProvider.from(List.of(
-				ToolCallbacks.from(
-						accountingService,
-						policiesService,
-						productsService,
-						pageableSnapshotService,
-						snapshotService
-				)));
+		return ToolCallbackProvider.from(List.of(ToolCallbacks.from(accountingService, policiesService, productsService,
+				pageableSnapshotService, snapshotService)));
 	}
 
 }

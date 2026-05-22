@@ -10,8 +10,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties
 public class CfKaizenHooverFrontendApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(CfKaizenHooverFrontendApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(CfKaizenHooverFrontendApplication.class, args);
+	}
 
 }
