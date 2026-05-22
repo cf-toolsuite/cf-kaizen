@@ -3,7 +3,7 @@ package org.cftoolsuite.cfapp.service.ai;
 import io.modelcontextprotocol.client.McpAsyncClient;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.transport.WebFluxSseClientTransport;
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.spec.McpSchema;
 import org.springframework.ai.mcp.client.common.autoconfigure.NamedClientMcpTransport;
 import org.springframework.ai.mcp.client.common.autoconfigure.configurer.McpAsyncClientConfigurer;
@@ -45,7 +45,7 @@ public class McpAsyncClientManager {
 		for (Map.Entry<String, McpSseClientProperties.SseParameters> serverParameters : mcpSseClientProperties
 				.getConnections().entrySet()) {
 			var webClientBuilder = webClientBuilderTemplate.clone().baseUrl(serverParameters.getValue().url());
-			var transport = new WebFluxSseClientTransport(webClientBuilder, McpJsonMapper.getDefault());
+			var transport = new WebFluxSseClientTransport(webClientBuilder, McpJsonDefaults.getMapper());
 			namedTransports.add(new NamedClientMcpTransport(serverParameters.getKey(), transport));
 		}
 
