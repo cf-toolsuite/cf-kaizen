@@ -69,7 +69,7 @@ cf-kaizen follows a modular architecture with several components working togethe
 ### Backend
 
 - **Java 25**: Base programming language (LTS, Liberica distribution)
-- **Spring Boot 4.0.3+**: Primary application framework
+- **Spring Boot 4.0.6+**: Primary application framework
 - **Spring WebFlux**: Reactive web framework
 - **Spring AI**: Framework for AI model integration
 - **Model Context Protocol (MCP)**: Protocol for AI model interaction with external tools
