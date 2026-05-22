@@ -1,24 +1,26 @@
 package org.cftoolsuite.cfapp.config;
 
-import org.springframework.boot.web.client.RestClientCustomizer;
+import io.netty.channel.ChannelOption;
+import org.springframework.boot.webclient.WebClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 
 @Configuration
 public class Http {
 
-    @Bean
-    public RestClientCustomizer restClientCustomizer() {
-        return restClientBuilder -> {
-            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-            factory.setConnectTimeout((int) Duration.ofMinutes(10).toMillis());
-            factory.setReadTimeout((int) Duration.ofMinutes(10).toMillis());
-            restClientBuilder.defaultHeader(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate");
-            restClientBuilder.requestFactory(factory);
-        };
-    }
+	@Bean
+	public WebClientCustomizer webClientCustomizer() {
+		return webClientBuilder -> {
+			HttpClient httpClient = HttpClient.create()
+					.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) Duration.ofMinutes(10).toMillis())
+					.responseTimeout(Duration.ofMinutes(10));
+			webClientBuilder.defaultHeader(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
+					.clientConnector(new ReactorClientHttpConnector(httpClient));
+		};
+	}
 }

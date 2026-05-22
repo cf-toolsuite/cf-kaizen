@@ -68,8 +68,8 @@ cf-kaizen follows a modular architecture with several components working togethe
 
 ### Backend
 
-- **Java 21**: Base programming language
-- **Spring Boot 3.4.x+**: Primary application framework
+- **Java 25**: Base programming language (LTS, Liberica distribution)
+- **Spring Boot 4.0.3+**: Primary application framework
 - **Spring WebFlux**: Reactive web framework
 - **Spring AI**: Framework for AI model integration
 - **Model Context Protocol (MCP)**: Protocol for AI model interaction with external tools
@@ -98,8 +98,8 @@ cf-kaizen follows a modular architecture with several components working togethe
 
 - Git CLI (2.43.0 or better)
 - GitHub CLI (2.65.0 or better)
-- Java SDK (21 or better)
-- Maven (3.9.9 or better)
+- Java SDK (25 or better, Liberica distribution recommended)
+- Maven (3.9.16 or better)
 
 ### Building the Project
 

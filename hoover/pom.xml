@@ -97,7 +97,7 @@
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>7.17.0</version>
+                <version>7.18.0</version>
                 <executions>
                     <execution>
                         <id>generate-openapi</id>
@@ -171,7 +171,7 @@
                     <image>
                         <builder>paketobuildpacks/builder-jammy-tiny</builder>
                         <env>
-                            <BP_JVM_VERSION>21.0.7</BP_JVM_VERSION>
+                            <BP_JVM_VERSION>25</BP_JVM_VERSION>
                             <BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
                         </env>
                     </image>
