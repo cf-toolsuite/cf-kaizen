@@ -76,7 +76,7 @@
 		<spring-ai.version>1.1.2</spring-ai.version>
 		<jackson-databind-nullable.version>0.2.8</jackson-databind-nullable.version>
 		<spring-doc.version>3.0.1</spring-doc.version>
-		<cfenv.version>3.5.0</cfenv.version>
+		<cfenv.version>4.0.0</cfenv.version>
 		<commons-io.version>2.21.0</commons-io.version>
 		<json-io.version>4.80.0</json-io.version>
 		<node.version>v23.4.0</node.version>
