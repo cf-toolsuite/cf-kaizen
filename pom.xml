@@ -84,6 +84,8 @@
 		<spring-boot-hc5.version>2.0.1</spring-boot-hc5.version>
 		<spring-cloud-bindings.version>2.0.4</spring-cloud-bindings.version>
 		<assertj.version>3.27.7</assertj.version>
+		<!-- CVE remediation: override Spring Boot-managed Netty to fix HTTP smuggling/compression/transport CVEs -->
+		<netty.version>4.2.13.Final</netty.version>
 	</properties>
 
 	<build>
@@ -225,6 +227,18 @@
 				<version>1.62.0</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<!-- CVE remediation: commons-fileupload 1.6.0 fixes SNYK-JAVA-COMMONSFILEUPLOAD-10363252 -->
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.6.0</version>
+			</dependency>
+			<!-- CVE remediation: bcprov-jdk18on 1.84 fixes SNYK-JAVA-ORGBOUNCYCASTLE-16074612/16075254/16075266 -->
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-jdk18on</artifactId>
+				<version>1.84</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
