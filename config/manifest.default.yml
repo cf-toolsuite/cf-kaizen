@@ -16,7 +16,7 @@ applications:
   env:
     JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
     SPRING_PROFILES_ACTIVE: default,cloud
-    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 25.+ } }'
     CF_BUTLER_API_ENDPOINT: #@ "https://cf-butler." + data.values.cf_apps_domain
   services:
   - #@ data.values.llm_service_name
@@ -34,7 +34,7 @@ applications:
   env:
     JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
     SPRING_PROFILES_ACTIVE: default,cloud
-    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 25.+ } }'
     CF_HOOVER_API_ENDPOINT: #@ "https://cf-hoover." + data.values.cf_apps_domain
   services:
   - #@ data.values.llm_service_name
@@ -52,7 +52,7 @@ applications:
   env:
     JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
     SPRING_PROFILES_ACTIVE: default,cloud
-    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 25.+ } }'
     CF_KAIZEN_HOOVER_SERVER_URL: #@ "https://cf-kaizen-hoover-server." + data.values.cf_apps_domain
   services:
   - #@ data.values.llm_service_name
@@ -70,7 +70,7 @@ applications:
   env:
     JAVA_OPTS: -XX:MaxDirectMemorySize=512m -Djava.security.egd=file:///dev/urandom
     SPRING_PROFILES_ACTIVE: default,cloud
-    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+    JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 25.+ } }'
     CF_KAIZEN_BUTLER_SERVER_URL: #@ "https://cf-kaizen-butler-server." + data.values.cf_apps_domain
   services:
   - #@ data.values.llm_service_name

@@ -21,7 +21,7 @@
 	</description>
 
 	<prerequisites>
-		<maven>3.9.4</maven>
+		<maven>3.9.16</maven>
 	</prerequisites>
 
 	<modules>
@@ -71,7 +71,7 @@
 	</distributionManagement>
 
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring-ai.version>1.1.2</spring-ai.version>
 		<jackson-databind-nullable.version>0.2.8</jackson-databind-nullable.version>

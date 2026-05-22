@@ -131,7 +131,7 @@ function set_cf_env_vars() {
   fi
 
   cf set-env "$app_name" JAVA_OPTS '-Djava.security.egd=file:///dev/urandom'
-  cf set-env "$app_name" JBP_CONFIG_OPEN_JDK_JRE '{ jre: { version: 21.+ } }'
+  cf set-env "$app_name" JBP_CONFIG_OPEN_JDK_JRE '{ jre: { version: 25.+ } }'
   cf set-env "$app_name" JBP_CONFIG_SPRING_AUTO_RECONFIGURATION '{ enabled: false }'
 }
 
