@@ -75,7 +75,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring-ai.version>1.1.6</spring-ai.version>
 		<jackson-databind-nullable.version>0.2.10</jackson-databind-nullable.version>
-		<spring-doc.version>3.0.1</spring-doc.version>
+		<spring-doc.version>3.0.3</spring-doc.version>
 		<cfenv.version>4.0.0</cfenv.version>
 		<commons-io.version>2.22.0</commons-io.version>
 		<json-io.version>4.80.0</json-io.version>
