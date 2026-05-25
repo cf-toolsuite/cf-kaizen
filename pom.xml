@@ -73,7 +73,7 @@
 	<properties>
 		<java.version>25</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring-ai.version>1.1.6</spring-ai.version>
+		<spring-ai.version>1.1.7</spring-ai.version>
 		<jackson-databind-nullable.version>0.2.10</jackson-databind-nullable.version>
 		<spring-doc.version>3.0.1</spring-doc.version>
 		<cfenv.version>4.0.0</cfenv.version>
