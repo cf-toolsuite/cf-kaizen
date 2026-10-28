@@ -319,7 +319,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.84</version>
+                <version>1.85</version>
             </dependency>
             <!-- CVE remediation: spring-cloud-config-server 5.0.3 fixes directory traversal CVEs (BOM property non-overridable) -->
             <dependency>
